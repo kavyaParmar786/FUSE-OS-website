@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Fuse OS — The Ultimate All-In-One Discord Bot</title>
+<meta name="description" content="Fuse OS is the ultimate all-in-one Discord bot. AI, giveaways, tickets, polls, YouTube verification and more."/>
+<meta property="og:title" content="Fuse OS — The Ultimate Discord Bot"/>
+<meta property="og:description" content="AI, giveaways, tickets, polls, YouTube verification and more — one bot."/>
+<meta property="og:type" content="website"/>
+<meta name="theme-color" content="#5eead4"/>
+<link rel="stylesheet" href="css/style.css"/>
+<link rel="icon" href="assets/images/logo.png"/>
+</head>
+<body>
+
+<!-- ══ NAV ════════════════════════════════════ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/images/logo.png" alt="Fuse OS logo"/>
+      <span class="nav-logo-name">FUSE OS</span>
+    </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html"    class="nav-link">Home</a></li>
+      <li><a href="features.html" class="nav-link">Features</a></li>
+      <li><a href="commands.html" class="nav-link">Commands</a></li>
+      <li><a href="verify.html"   class="nav-link">Verify</a></li>
+      <li><a href="support.html"  class="nav-link">Support</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline" style="padding:9px 18px;font-size:0.85rem">Join Server</a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem">Invite Bot</a>
+    </div>
+    <button class="burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══ HERO ═══════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-blob hero-blob-1"></div>
+  <div class="hero-blob hero-blob-2"></div>
+  <div class="hero-blob hero-blob-3"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-content">
+    <div class="pill">All-In-One Discord Bot</div>
+
+    <div class="hero-logo">
+      <img src="assets/images/logo.png" alt="Fuse OS"/>
+    </div>
+
+    <h1 class="hero-title">FUSE <span class="grad-text">OS</span></h1>
+    <p class="hero-tagline grad-text">The Ultimate All-In-One Discord Utility Bot</p>
+    <p class="hero-desc">
+      One bot. Every feature your server needs. AI chat, giveaways, tickets, polls, reaction roles, YouTube verification and a whole lot more.
+    </p>
+
+    <div class="hero-btns">
+      <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Invite to Server
+      </a>
+      <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Support Server
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-val" data-count="2400" data-suffix="+">0</div>
+        <div class="hero-stat-lbl">Servers</div>
+      </div>
+      <div>
+        <div class="hero-stat-val" data-count="120000" data-suffix="+">0</div>
+        <div class="hero-stat-lbl">Users</div>
+      </div>
+      <div>
+        <div class="hero-stat-val" data-count="850000" data-suffix="+">0</div>
+        <div class="hero-stat-lbl">Commands Run</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-mouse"></div>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- ══ STATS BAND ════════════════════════════ -->
+<div class="stats-band">
+  <div class="container">
+    <div class="stats-grid reveal">
+      <div>
+        <div class="s-num" data-count="2400" data-suffix="+">0</div>
+        <div class="s-lbl">Servers Using Fuse OS</div>
+      </div>
+      <div>
+        <div class="s-num" data-count="850000" data-suffix="+">0</div>
+        <div class="s-lbl">Commands Executed</div>
+      </div>
+      <div>
+        <div class="s-num" data-count="120000" data-suffix="+">0</div>
+        <div class="s-lbl">Active Users</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FEATURES PREVIEW ══════════════════════ -->
+<section class="section-pad">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="pill">Core Systems</div>
+      <h2 class="section-title">Everything Built In.<br><span class="grad-text">Nothing Left Out.</span></h2>
+      <p class="section-sub">Over 60 commands across 12 systems. One invite. Zero compromise.</p>
+    </div>
+
+    <div class="feat-tabs reveal">
+      <button class="feat-tab active" data-cat="all">All</button>
+      <button class="feat-tab" data-cat="ai">AI</button>
+      <button class="feat-tab" data-cat="community">Community</button>
+      <button class="feat-tab" data-cat="moderation">Moderation</button>
+      <button class="feat-tab" data-cat="automation">Automation</button>
+    </div>
+
+    <div class="feat-grid">
+
+      <div class="feat-card reveal d1" data-cat="ai">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-name">AI Chat</div>
+        <div class="feat-desc">Claude-powered AI with per-user conversation memory, channel restrictions, daily limits and a full admin panel.</div>
+        <div class="feat-list">
+          <div class="feat-item">Persistent conversation history</div>
+          <div class="feat-item">Admin configuration panel</div>
+          <div class="feat-item">Per-user cooldowns & limits</div>
+          <div class="feat-item">Image generation support</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d2" data-cat="community">
+        <div class="feat-icon">🎉</div>
+        <div class="feat-name">Giveaway System</div>
+        <div class="feat-desc">Full-featured giveaways with live countdown, subscriber-only mode, role pings, winner DMs and reroll.</div>
+        <div class="feat-list">
+          <div class="feat-item">Live timer & entry counter</div>
+          <div class="feat-item">Subscriber-only giveaways</div>
+          <div class="feat-item">Auto winner DM</div>
+          <div class="feat-item">Reroll & leaderboard</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d3" data-cat="community">
+        <div class="feat-icon">🎟️</div>
+        <div class="feat-name">Ticket System</div>
+        <div class="feat-desc">Dropdown ticket panels, staff claim system, auto transcripts, star ratings and dedicated log channels.</div>
+        <div class="feat-list">
+          <div class="feat-item">Multi-category dropdown panels</div>
+          <div class="feat-item">Staff claim & assignment</div>
+          <div class="feat-item">Auto transcript logs</div>
+          <div class="feat-item">Rating system</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d1" data-cat="community">
+        <div class="feat-icon">📊</div>
+        <div class="feat-name">Poll System</div>
+        <div class="feat-desc">Single or multi-vote polls with visual bar graph results, cooldowns, tie detection and auto end timers.</div>
+        <div class="feat-list">
+          <div class="feat-item">Live bar graph results</div>
+          <div class="feat-item">Vote cooldowns</div>
+          <div class="feat-item">Tie detection</div>
+          <div class="feat-item">Automatic end timers</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d2" data-cat="automation">
+        <div class="feat-icon">🎭</div>
+        <div class="feat-name">Reaction Roles</div>
+        <div class="feat-desc">Emoji reactions, button panels, dropdown menus — fully customisable role assignment with multiple panel support.</div>
+        <div class="feat-list">
+          <div class="feat-item">Button & emoji styles</div>
+          <div class="feat-item">Dropdown select menus</div>
+          <div class="feat-item">Multiple simultaneous panels</div>
+          <div class="feat-item">Toggle mode (add/remove)</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d3" data-cat="automation">
+        <div class="feat-icon">📺</div>
+        <div class="feat-name">YouTube Verify</div>
+        <div class="feat-desc">Members post a unique code as a YouTube comment to prove subscription and earn the Content Fan role automatically.</div>
+        <div class="feat-list">
+          <div class="feat-item">Code-based verification</div>
+          <div class="feat-item">Automatic role assignment</div>
+          <div class="feat-item">30-minute code expiry</div>
+          <div class="feat-item">Admin rescan command</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d1" data-cat="moderation">
+        <div class="feat-icon">🛡️</div>
+        <div class="feat-name">Moderation</div>
+        <div class="feat-desc">Full moderation suite — ban, kick, mute, warn, purge, lock channels, and detailed mod action logs.</div>
+        <div class="feat-list">
+          <div class="feat-item">Ban, kick, timeout</div>
+          <div class="feat-item">Warning system & history</div>
+          <div class="feat-item">Bulk message purge</div>
+          <div class="feat-item">Channel lock/slowmode</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d2" data-cat="automation">
+        <div class="feat-icon">⚙️</div>
+        <div class="feat-name">Smart Autoroles</div>
+        <div class="feat-desc">Assign roles on join, after timers, on YouTube verification, or as leaderboard rewards. All configurable from a panel.</div>
+        <div class="feat-list">
+          <div class="feat-item">Join autorole</div>
+          <div class="feat-item">Timed role removal</div>
+          <div class="feat-item">Leaderboard reward roles</div>
+          <div class="feat-item">YouTube subscriber role</div>
+        </div>
+      </div>
+
+      <div class="feat-card reveal d3" data-cat="community">
+        <div class="feat-icon">🌐</div>
+        <div class="feat-name">Translation</div>
+        <div class="feat-desc">Auto language detection, flag emoji display, 50+ languages and per-channel translation panels for global communities.</div>
+        <div class="feat-list">
+          <div class="feat-item">Auto language detection</div>
+          <div class="feat-item">Flag emoji per language</div>
+          <div class="feat-item">50+ languages supported</div>
+          <div class="feat-item">Per-channel panels</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ════════════════════════════════════ -->
+<section class="section-pad" style="padding-top:0">
+  <div class="container">
+    <div class="cta-wrap reveal">
+      <div class="cta-glow"></div>
+      <h2 class="cta-title">Ready to level up<br><span class="grad-text">your server?</span></h2>
+      <p class="cta-sub">Free to add, instant setup, no credit card. Join thousands of servers already running Fuse OS.</p>
+      <div class="cta-btns">
+        <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary">Invite Fuse OS</a>
+        <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline">Join Support</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ═════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="index.html" class="nav-logo">
+          <img src="assets/images/logo.png" alt="Fuse OS" style="width:28px;height:28px;border-radius:7px"/>
+          <span class="nav-logo-name">FUSE OS</span>
+        </a>
+        <p>The ultimate all-in-one Discord bot for communities that want more.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="commands.html">Commands</a></li>
+          <li><a href="verify.html">YouTube Verify</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Community</h5>
+        <ul>
+          <li><a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Support Server</a></li>
+          <li><a href="support.html">FAQ</a></li>
+          <li><a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Bug Reports</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <p class="foot-copy">© 2025 <span>Fuse OS</span>. All rights reserved.</p>
+      <div class="foot-legal">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Discord</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Support — Fuse OS</title>
+<meta name="description" content="Get help with Fuse OS. FAQ, support server, bug reports and documentation."/>
+<link rel="stylesheet" href="css/style.css"/>
+<link rel="icon" href="assets/images/logo.png"/>
+</head>
+<body>
+<nav class="nav"><div class="nav-inner">
+  <a href="index.html" class="nav-logo"><img src="assets/images/logo.png" alt=""/><span class="nav-logo-name">FUSE OS</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="index.html" class="nav-link">Home</a></li>
+    <li><a href="features.html" class="nav-link">Features</a></li>
+    <li><a href="commands.html" class="nav-link">Commands</a></li>
+    <li><a href="verify.html" class="nav-link">Verify</a></li>
+    <li><a href="support.html" class="nav-link">Support</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline" style="padding:9px 18px;font-size:0.85rem">Join Server</a>
+    <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem">Invite Bot</a>
+  </div>
+  <button class="burger" id="burger"><span></span><span></span><span></span></button>
+</div></nav>
+
+<div class="page-hero">
+  <div class="page-hero-blob"></div>
+  <div class="container" style="position:relative;z-index:1">
+    <div class="pill" style="margin:0 auto 20px;display:table">Support Center</div>
+    <h1 class="section-title">We've Got <span class="grad-text">You Covered</span></h1>
+    <p class="section-sub" style="margin:16px auto 0">Find answers in the FAQ, join our support server, or open a ticket in Discord.</p>
+  </div>
+</div>
+
+<section class="section-pad" style="padding-top:48px">
+  <div class="container">
+
+    <!-- Support cards -->
+    <div class="support-grid reveal">
+      <div class="support-card">
+        <div class="support-card-icon">💬</div>
+        <h3>Discord Support Server</h3>
+        <p>Get help from our team and community. Open a support ticket for technical issues, feature requests or bug reports.</p>
+        <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-primary" style="font-size:0.88rem;padding:10px 20px">Join Support Server →</a>
+      </div>
+      <div class="support-card">
+        <div class="support-card-icon">📋</div>
+        <h3>Commands Reference</h3>
+        <p>Browse the full list of Fuse OS commands, organised by category, with descriptions and usage examples.</p>
+        <a href="commands.html" class="btn btn-ghost" style="font-size:0.88rem;padding:10px 20px">View Commands →</a>
+      </div>
+      <div class="support-card">
+        <div class="support-card-icon">📺</div>
+        <h3>YouTube Verification</h3>
+        <p>Want the Content Fan role? Follow our step-by-step verification process to prove your subscription.</p>
+        <a href="verify.html" class="btn btn-ghost" style="font-size:0.88rem;padding:10px 20px">Verify Now →</a>
+      </div>
+      <div class="support-card">
+        <div class="support-card-icon">⚡</div>
+        <h3>Invite the Bot</h3>
+        <p>Ready to add Fuse OS to your server? One click invite with all permissions pre-configured.</p>
+        <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary" style="font-size:0.88rem;padding:10px 20px">Invite Fuse OS →</a>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section-head reveal" style="margin-top:80px;margin-bottom:40px">
+      <div class="pill" style="display:table;margin:0 auto 16px">FAQ</div>
+      <h2 class="section-title" style="font-size:clamp(1.6rem,3.5vw,2.2rem)">Frequently Asked <span class="grad-text">Questions</span></h2>
+    </div>
+
+    <div class="faq-list reveal" style="max-width:720px;margin:0 auto">
+
+      <div class="faq-item">
+        <button class="faq-q">How do I add Fuse OS to my server? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Click the "Invite Bot" button at the top of the page or use this link: <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" style="color:var(--cyan)">Invite Fuse OS</a>. Select your server, authorise the permissions and the bot will join instantly.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">Is Fuse OS free to use? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Yes! All core features are completely free. There are no hidden paywalls or premium tiers required to use the main functionality of the bot.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">How do I set up the ticket system? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Run <code style="font-family:var(--font-mono);color:var(--cyan)">+ticketpanel</code> in the channel where you want the ticket panel to appear. You can configure categories, staff roles, and log channels through the panel interface.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">How does YouTube verification work? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Run <code style="font-family:var(--font-mono);color:var(--cyan)">+ytlink</code> in Discord. The bot sends you a unique code via DM. Post that code as a comment on the specified YouTube video, then click the "Check Verification" button in the DM. If your code is found, the Content Fan role is assigned instantly.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">How do I enable AI chat? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Run <code style="font-family:var(--font-mono);color:var(--cyan)">+aiconfig</code> as a server administrator to open the AI configuration panel. You can enable/disable AI chat, restrict it to a specific channel, set daily limits and configure cooldowns.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">Can I run subscriber-only giveaways? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Yes! When creating a giveaway using <code style="font-family:var(--font-mono);color:var(--cyan)">+gwy</code>, set "Subscriber-only" to Yes. Only members with the Content Fan role (YouTube verified) will be able to join that giveaway.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">The bot isn't responding. What do I do? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>First check that the bot has the required permissions in the channel (Send Messages, Embed Links, View Channel). If it still doesn't respond, join our <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" style="color:var(--cyan)">support server</a> and open a ticket — our team will help you debug.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">How do I report a bug or request a feature? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Join our <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" style="color:var(--cyan)">Discord support server</a> and open a support ticket. Describe the issue or feature in detail and our team will review it.</p></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">What data does Fuse OS collect? <span class="faq-arrow">▼</span></button>
+        <div class="faq-a"><p>Fuse OS only collects the minimum data needed to operate — Discord User IDs, Server IDs, and configuration preferences. We never sell data or use it for advertising. See our <a href="privacy.html" style="color:var(--cyan)">Privacy Policy</a> for full details.</p></div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<section class="section-pad" style="padding-top:0">
+  <div class="container">
+    <div class="cta-wrap reveal">
+      <div class="cta-glow"></div>
+      <h2 class="cta-title">Still need help?<br><span class="grad-text">We're here.</span></h2>
+      <p class="cta-sub">Our support team is active in Discord. Open a ticket and we'll get back to you fast.</p>
+      <div class="cta-btns">
+        <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-primary">Open Support Ticket</a>
+        <a href="commands.html" class="btn btn-ghost">Browse Commands</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="container">
+  <div class="foot-grid">
+    <div class="foot-brand"><a href="index.html" class="nav-logo"><img src="assets/images/logo.png" alt="" style="width:28px;height:28px;border-radius:7px"/><span class="nav-logo-name">FUSE OS</span></a><p>The ultimate all-in-one Discord bot.</p></div>
+    <div class="foot-col"><h5>Product</h5><ul><li><a href="features.html">Features</a></li><li><a href="commands.html">Commands</a></li></ul></div>
+    <div class="foot-col"><h5>Community</h5><ul><li><a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Support Server</a></li><li><a href="support.html">FAQ</a></li></ul></div>
+    <div class="foot-col"><h5>Legal</h5><ul><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li></ul></div>
+  </div>
+  <div class="foot-bottom"><p class="foot-copy">© 2025 <span>Fuse OS</span>. All rights reserved.</p><div class="foot-legal"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div></div>
+</div></footer>
+<script src="js/script.js"></script>
+</body></html>
