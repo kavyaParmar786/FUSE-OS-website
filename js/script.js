@@ -40,9 +40,13 @@ if (revealEls.length) {
   revealEls.forEach(el => io.observe(el));
 }
 
-/* ── Counter animation ─────────────────────── */
-function animCount(el) {
-  const target = parseInt(el.dataset.count);
+/* ── Stats — fetch from bot API ────────────── */
+// TODO: Replace with your real bot API URL once hosted
+// e.g. https://your-bot.railway.app/api/stats
+// Expected JSON: { "servers": 123, "users": 4567, "commands": 89000 }
+const STATS_API = 'https://your-bot-api.com/api/stats';
+
+function animCount(el, target) {
   const suffix = el.dataset.suffix || '';
   const dur    = 1800;
   const start  = performance.now();
@@ -54,10 +58,28 @@ function animCount(el) {
   };
   requestAnimationFrame(tick);
 }
-const counterIo = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) { animCount(e.target); counterIo.unobserve(e.target); } });
-}, { threshold: 0.5 });
-document.querySelectorAll('[data-count]').forEach(el => counterIo.observe(el));
+
+async function loadStats() {
+  const statEls = document.querySelectorAll('[data-stat]');
+  if (!statEls.length) return;
+  try {
+    const res  = await fetch(STATS_API, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    // data should have: servers, users, commands
+    statEls.forEach(el => {
+      const key = el.dataset.stat;
+      if (data[key] !== undefined) animCount(el, data[key]);
+    });
+  } catch {
+    // API not connected yet — show dashes instead of fake numbers
+    statEls.forEach(el => { el.textContent = '—'; });
+  }
+}
+
+const statsIO = new IntersectionObserver(entries => {
+  if (entries.some(e => e.isIntersecting)) { loadStats(); statsIO.disconnect(); }
+}, { threshold: 0.2 });
+document.querySelectorAll('[data-stat]').forEach(el => statsIO.observe(el));
 
 /* ── Feature tabs ──────────────────────────── */
 const tabs  = document.querySelectorAll('.feat-tab');
