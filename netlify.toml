@@ -1,0 +1,6 @@
+[[redirects]]
+  from = "/botapi/*"
+  to = "http://de1.bot-hosting.net:20600/:splat"
+  status = 200
+  force = true
+
