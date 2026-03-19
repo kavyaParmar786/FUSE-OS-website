@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/botapi/:path*",
+      "destination": "http://de1.bot-hosting.net:20600/:path*"
+    }
+  ]
+}
