@@ -222,8 +222,17 @@
       <li><a href="support.html"   class="nav-link">Support</a></li>
       <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
     </ul>
-    <div class="nav-actions">
+    <div class="nav-actions" style="display:flex;align-items:center;gap:10px">
       <span class="api-badge" id="api-badge" style="cursor:pointer" onclick="document.querySelector('[data-panel=general]').click();setTimeout(()=>document.getElementById('admin-password').focus(),300)">🔐 Admin</span>
+      <a id="discord-login-btn" href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&response_type=token&redirect_uri=https%3A%2F%2Ffuse-os-bot.vercel.app%2Fdashboard.html&scope=identify+guilds" style="background:#5865f2;color:#fff;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Login
+      </a>
+      <div id="discord-user-info" style="display:none;align-items:center;gap:8px">
+        <img id="discord-avatar" src="" style="width:28px;height:28px;border-radius:50%;border:2px solid #5865f2"/>
+        <span id="discord-username" style="font-size:0.82rem;color:var(--off-white);font-weight:600"></span>
+        <button onclick="discordLogout()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:0.75rem">Logout</button>
+      </div>
     </div>
     <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
@@ -236,10 +245,10 @@
       <span class="server-bar-label">📡 Server:</span>
       <div class="server-select-wrap">
         <select class="server-select" id="server-select" onchange="selectServer(this.value)">
-          <option value="">⏳ Loading servers...</option>
+          <option value="">— Login with Discord to load servers —</option>
         </select>
       </div>
-      <button class="d-btn d-btn-secondary d-btn-sm" onclick="loadServers()" style="flex-shrink:0">🔄</button>
+      <button class="d-btn d-btn-secondary d-btn-sm" onclick="loadServers()" style="flex-shrink:0" title="Refresh servers">🔄</button>
     </div>
   </div>
 
@@ -371,7 +380,7 @@
             <div class="d-card-title">📤 Send to Discord</div>
             <div class="d-grid-2">
               <div class="d-field"><label class="d-label">Server ID</label><input class="d-input" id="e-guild" type="text" placeholder="Your server ID"/></div>
-              <div class="d-field"><label class="d-label">Channel ID</label><input class="d-input" id="e-channel" type="text" placeholder="Channel to send to"/></div>
+              <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="e-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
             </div>
             <div class="d-field"><label class="d-label">Content (optional, above embed)</label><input class="d-input" id="e-content" type="text" placeholder="@everyone Check this out!" oninput="updatePreview()"/></div>
             <div class="d-btn-row">
@@ -417,7 +426,7 @@
         <div class="d-card-title">📣 Send Announcement</div>
         <div class="d-grid-2">
           <div class="d-field"><label class="d-label">Server ID</label><input class="d-input" id="ann-guild" type="text" placeholder="Your server ID"/></div>
-          <div class="d-field"><label class="d-label">Channel ID</label><input class="d-input" id="ann-channel" type="text" placeholder="Announcement channel ID"/></div>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="ann-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
         </div>
         <div class="d-field"><label class="d-label">Ping Role ID (optional)</label><input class="d-input" id="ann-ping" type="text" placeholder="Leave blank for no ping"/></div>
         <div class="d-field"><label class="d-label">Title</label><input class="d-input" id="ann-title" type="text" placeholder="📣 Announcement Title"/></div>
@@ -451,7 +460,7 @@
       <div class="d-grid-2">
         <div class="d-card">
           <div class="d-card-title">🟢 Welcome</div>
-          <div class="d-field"><label class="d-label">Channel ID</label><input class="d-input" id="wlc-channel" type="text" placeholder="Channel ID"/></div>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="wlc-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
           <div class="d-field"><label class="d-label">Embed Title</label><input class="d-input" id="wlc-title" type="text" value="Welcome to {server}! 🎉"/></div>
           <div class="d-field"><label class="d-label">Description</label><textarea class="d-textarea" id="wlc-desc">Hey {user}, welcome to {server}! We're glad you're here. 🎊</textarea></div>
           <div class="d-field"><label class="d-label">Footer</label><input class="d-input" id="wlc-footer" type="text" value="Member #{member_count}"/></div>
@@ -464,7 +473,7 @@
         </div>
         <div class="d-card">
           <div class="d-card-title">🔴 Farewell</div>
-          <div class="d-field"><label class="d-label">Channel ID</label><input class="d-input" id="bye-channel" type="text" placeholder="Same as welcome or different"/></div>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="bye-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
           <div class="d-field"><label class="d-label">Embed Title</label><input class="d-input" id="bye-title" type="text" value="Goodbye, {user} 👋"/></div>
           <div class="d-field"><label class="d-label">Description</label><textarea class="d-textarea" id="bye-desc">We hope to see you again some day. Take care!</textarea></div>
           <div class="d-field"><label class="d-label">Footer</label><input class="d-input" id="bye-footer" type="text" value="We'll miss you!"/></div>
@@ -485,10 +494,10 @@
       <div class="d-card">
         <div class="d-card-title">📋 Log Channels</div>
         <div class="d-grid-2">
-          <div class="d-field"><label class="d-label">Mod Action Log</label><input class="d-input" id="mod-log" type="text" placeholder="Channel ID"/></div>
-          <div class="d-field"><label class="d-label">Message Delete Log</label><input class="d-input" id="mod-del-log" type="text" placeholder="Channel ID"/></div>
-          <div class="d-field"><label class="d-label">Join / Leave Log</label><input class="d-input" id="mod-join-log" type="text" placeholder="Channel ID"/></div>
-          <div class="d-field"><label class="d-label">Voice Event Log</label><input class="d-input" id="mod-voice-log" type="text" placeholder="Channel ID"/></div>
+          <div class="d-field"><label class="d-label">Mod Action Log</label><select class="d-select" id="mod-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Message Delete Log</label><select class="d-select" id="mod-del-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Join / Leave Log</label><select class="d-select" id="mod-join-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Voice Event Log</label><select class="d-select" id="mod-voice-log" data-ch-sel><option value="">— Select channel —</option></select></div>
         </div>
         <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('mod_logs')">💾 Save Log Channels</button></div>
       </div>
@@ -539,7 +548,7 @@
         <div class="d-grid-2">
           <div class="d-field"><label class="d-label">Ticket Category ID</label><input class="d-input" id="tkt-category" type="text" placeholder="Category channel ID"/></div>
           <div class="d-field"><label class="d-label">Staff Role ID</label><input class="d-input" id="tkt-staff-role" type="text" placeholder="Role that can see tickets"/></div>
-          <div class="d-field"><label class="d-label">Transcript Log Channel</label><input class="d-input" id="tkt-log" type="text" placeholder="Channel ID"/></div>
+          <div class="d-field"><label class="d-label">Transcript Log Channel</label><select class="d-select" id="tkt-log" data-ch-sel><option value="">— Select channel —</option></select></div>
           <div class="d-field"><label class="d-label">Max Open Tickets Per User</label><input class="d-input" id="tkt-max" type="number" value="1" min="1" max="10"/></div>
         </div>
         <div class="d-toggle-row"><div class="d-toggle-info"><h4>Auto-close inactive tickets</h4><p>Close after 48h of no activity</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('tkt_autoclose',this.checked)"><span class="d-switch-slider"></span></label></div>
@@ -551,7 +560,7 @@
         <div class="d-card-title">📤 Deploy Panel to Channel</div>
         <div class="d-grid-2">
           <div class="d-field"><label class="d-label">Server ID</label><input class="d-input" id="tkt-guild" type="text" placeholder="Your server ID"/></div>
-          <div class="d-field"><label class="d-label">Channel ID</label><input class="d-input" id="tkt-channel" type="text" placeholder="Channel to deploy panel to"/></div>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="tkt-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
         </div>
         <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="deployTicketPanel()">🚀 Deploy Ticket Panel</button></div>
       </div>
@@ -579,7 +588,7 @@
         <div class="d-grid-3">
           <div class="d-field"><label class="d-label">Default Winners</label><input class="d-input" id="gwy-winners" type="number" value="1" min="1" max="50"/></div>
           <div class="d-field"><label class="d-label">Default Duration (hours)</label><input class="d-input" id="gwy-duration" type="number" value="24" min="1"/></div>
-          <div class="d-field"><label class="d-label">Log Channel ID</label><input class="d-input" id="gwy-log" type="text" placeholder="Optional"/></div>
+          <div class="d-field"><label class="d-label">Log Channel</label><select class="d-select" id="gwy-log" data-ch-sel><option value="">— Select channel —</option></select></div>
         </div>
         <div class="d-toggle-row"><div class="d-toggle-info"><h4>DM winners</h4><p>Send a DM to winners automatically</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('gwy_dm_winner',this.checked)"><span class="d-switch-slider"></span></label></div>
         <div class="d-toggle-row"><div class="d-toggle-info"><h4>Subscriber-only mode</h4><p>Require YouTube subscriber role to enter</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('gwy_sub_only',this.checked)"><span class="d-switch-slider"></span></label></div>
@@ -891,7 +900,7 @@
    ADMIN PASSWORD LOCK
    Change ADMIN_PASSWORD below to your own secret password
 ══════════════════════════════════════════════════════ */
-const ADMIN_PASSWORD = 'fuseos786'; // ← Change this to your password!
+const ADMIN_PASSWORD = 'fuseos_admin_2024'; // ← Change this to your password!
 let _adminUnlocked = false;
 
 function unlockAdmin() {
@@ -923,10 +932,73 @@ function lockAdmin() {
 }
 
 /* ── Config ─────────────────────────────────────── */
-let API_URL = localStorage.getItem('fuse_api_url') || 'https://fuseos-proxy.pages.dev/botapi';
+let API_URL = localStorage.getItem('fuse_api_url') || '/botapi';
 let API_KEY  = localStorage.getItem('fuse_api_key') || '';
 if (API_URL) { document.getElementById('api-url').value = API_URL; document.getElementById('api-badge').textContent = 'Saved (untested)'; }
 if (API_KEY)  document.getElementById('api-key').value  = API_KEY;
+
+/* ── Discord OAuth Login ─────────────────────────── */
+const DISCORD_CLIENT_ID = '1479852600370135173';
+
+function discordLogout() {
+  localStorage.removeItem('discord_token');
+  document.getElementById('discord-login-btn').style.display = 'inline-flex';
+  document.getElementById('discord-user-info').style.display = 'none';
+  document.getElementById('server-select').innerHTML = '<option value="">— Login with Discord to load servers —</option>';
+  showToast('success', '👋 Logged out.');
+}
+
+async function discordInit() {
+  // Handle OAuth callback — token comes in URL hash
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.slice(1));
+    const token = params.get('access_token');
+    if (token) {
+      localStorage.setItem('discord_token', token);
+      // Clean up URL without reloading
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }
+
+  const token = localStorage.getItem('discord_token');
+  if (!token) {
+    document.getElementById('server-select').innerHTML = '<option value="">— Login with Discord first —</option>';
+    return;
+  }
+
+  try {
+    // Fetch Discord user info
+    const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!userRes.ok) {
+      // Token expired or invalid
+      localStorage.removeItem('discord_token');
+      document.getElementById('server-select').innerHTML = '<option value="">— Login expired, please login again —</option>';
+      return;
+    }
+    const user = await userRes.json();
+
+    // Show user avatar + name in nav
+    const avatarUrl = user.avatar
+      ? 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png?size=64'
+      : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    document.getElementById('discord-avatar').src = avatarUrl;
+    document.getElementById('discord-username').textContent = user.global_name || user.username;
+    document.getElementById('discord-login-btn').style.display = 'none';
+    document.getElementById('discord-user-info').style.display = 'inline-flex';
+
+    // Auto-load bot servers now that user is logged in
+    await loadServers();
+    showToast('success', '✅ Welcome back, ' + (user.global_name || user.username) + '!');
+  } catch(e) {
+    console.error('Discord auth error:', e);
+  }
+}
+
+// Run on page load
+discordInit();
 
 /* ── Sidebar nav ─────────────────────────────────── */
 document.querySelectorAll('.sb-item').forEach(item => {
@@ -1214,7 +1286,11 @@ function selectServer(guildId) {
   document.querySelectorAll('.guild-id-field').forEach(el => {
     el.value = guildId;
   });
-  showToast('success', '✅ Server selected! Guild ID auto-filled.');
+  // Load channels into ALL channel dropdowns
+  document.querySelectorAll('[data-ch-sel]').forEach(sel => {
+    loadChannels(sel.id, guildId);
+  });
+  showToast('success', '✅ Server selected!');
 }
 
 // Auto-load servers when connected
