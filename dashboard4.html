@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard — Fuse OS</title>
+<link rel="stylesheet" href="css/style.css"/>
+<link rel="icon" href="assets/images/logo.png"/>
+<style>
+/* ═══════════════════════ DASHBOARD STYLES ═══════════════════════ */
+.server-selector-bar{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:45;
+  background:var(--bg-2);border-bottom:1px solid var(--border);
+  padding:10px 24px;
+}
+.server-bar-inner{
+  display:flex;align-items:center;gap:12px;
+  max-width:100%;
+}
+.server-bar-label{
+  font-family:var(--font-mono);font-size:0.72rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;
+}
+.server-select-wrap{flex:1;max-width:320px}
+.server-select{
+  width:100%;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:9px;padding:8px 12px;color:var(--off-white);
+  font-family:var(--font-body);font-size:0.88rem;outline:none;
+  cursor:pointer;transition:border-color 0.2s;
+}
+.server-select:focus{border-color:var(--border-glow)}
+.server-select option{background:var(--bg-card)}
+.server-icon{
+  width:28px;height:28px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--border);flex-shrink:0;
+}
+/* Push everything down to account for server bar */
+.dash-root{display:flex;min-height:100vh;padding-top:var(--nav-h)}
+
+.sidebar{width:252px;min-width:252px;background:var(--bg-2);border-right:1px solid var(--border);position:fixed;top:var(--nav-h);left:0;bottom:0;overflow-y:auto;z-index:40;padding:20px 0 40px;transition:transform 0.3s var(--ease)}
+.sidebar::-webkit-scrollbar{width:3px}
+.sb-label{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted-2);padding:14px 18px 5px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;color:var(--muted);font-size:0.88rem;font-weight:500;cursor:pointer;transition:all 0.18s;border-left:2px solid transparent;user-select:none}
+.sb-item:hover{color:var(--off-white);background:var(--surface)}
+.sb-item.active{color:var(--cyan);background:rgba(94,234,212,0.06);border-left-color:var(--cyan)}
+.sb-icon{font-size:1rem;width:18px;text-align:center;flex-shrink:0}
+.sb-divider{height:1px;background:var(--border);margin:10px 18px}
+.dash-main{flex:1;margin-left:252px;padding:36px 40px 80px;min-width:0}
+.dash-panel{display:none}
+.dash-panel.active{display:block;animation:fadeUp 0.3s var(--ease) both}
+.panel-title{font-family:var(--font-head);font-size:1.6rem;font-weight:800;color:var(--white);margin-bottom:6px}
+.panel-sub{font-size:0.88rem;color:var(--muted);margin-bottom:28px}
+.d-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px}
+.d-card-title{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--white);margin-bottom:4px}
+.d-card-sub{font-size:0.82rem;color:var(--muted);margin-bottom:22px}
+.d-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.d-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.d-field{margin-bottom:18px}
+.d-label{display:block;font-size:0.75rem;font-weight:600;color:var(--off-white);margin-bottom:7px;font-family:var(--font-mono);letter-spacing:0.05em;text-transform:uppercase}
+.d-input,.d-select,.d-textarea{width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--off-white);font-family:var(--font-body);font-size:0.9rem;outline:none;transition:border-color 0.2s}
+.d-input:focus,.d-select:focus,.d-textarea:focus{border-color:var(--border-glow);box-shadow:0 0 0 3px rgba(94,234,212,0.07)}
+.d-input::placeholder,.d-textarea::placeholder{color:var(--muted)}
+.d-select{cursor:pointer}
+.d-select option{background:var(--bg-card)}
+.d-textarea{resize:vertical;min-height:90px;line-height:1.6}
+.d-color-row{display:flex;gap:10px;align-items:center}
+.d-color-swatch{width:38px;height:38px;border-radius:8px;border:1px solid var(--border);cursor:pointer;padding:0;flex-shrink:0}
+.d-color-hex{flex:1;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;padding:9px 14px;color:var(--off-white);font-family:var(--font-mono);font-size:0.88rem;outline:none}
+.d-color-hex:focus{border-color:var(--border-glow)}
+.d-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.d-toggle-row:last-child{border-bottom:none}
+.d-toggle-info h4{font-size:0.9rem;font-weight:600;color:var(--off-white)}
+.d-toggle-info p{font-size:0.78rem;color:var(--muted);margin-top:2px}
+.d-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.d-switch input{opacity:0;width:0;height:0;position:absolute}
+.d-switch-slider{position:absolute;inset:0;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;cursor:pointer;transition:0.3s}
+.d-switch-slider::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:var(--muted);top:3px;left:3px;transition:0.3s}
+.d-switch input:checked+.d-switch-slider{background:rgba(94,234,212,0.2);border-color:var(--cyan)}
+.d-switch input:checked+.d-switch-slider::after{background:var(--cyan);transform:translateX(20px)}
+/* Embed builder */
+.embed-builder{display:grid;grid-template-columns:1fr 370px;gap:24px;align-items:start}
+.embed-preview-wrap{position:sticky;top:calc(var(--nav-h) + 24px)}
+.embed-preview-label{font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.discord-mock{background:#313338;border-radius:12px;padding:16px}
+.discord-msg{display:flex;gap:12px;align-items:flex-start}
+.discord-avatar{width:40px;height:40px;border-radius:50%;background:var(--grad-btn);flex-shrink:0;display:grid;place-items:center;font-size:18px}
+.discord-msg-right{flex:1;min-width:0}
+.discord-bot-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:6px;font-family:sans-serif}
+.discord-bot-tag{font-size:10px;background:#5865f2;color:#fff;padding:2px 5px;border-radius:3px;font-weight:700}
+.discord-embed{background:#2b2d31;border-radius:4px;border-left:4px solid #5eead4;padding:12px 16px 16px;margin-top:6px;overflow:hidden}
+.discord-embed-author{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#fff;margin-bottom:8px;font-family:sans-serif}
+.discord-embed-author img{width:20px;height:20px;border-radius:50%}
+.discord-embed-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.3;font-family:sans-serif}
+.discord-embed-desc{font-size:13px;color:#dbdee1;line-height:1.5;margin-bottom:10px;word-break:break-word;white-space:pre-wrap;font-family:sans-serif}
+.discord-embed-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.discord-embed-field-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;font-family:sans-serif}
+.discord-embed-field-val{font-size:12px;color:#dbdee1;font-family:sans-serif}
+.discord-embed-image{width:100%;border-radius:4px;margin-top:8px;max-height:200px;object-fit:cover;display:none}
+.discord-embed-thumbnail{float:right;width:80px;height:80px;border-radius:4px;object-fit:cover;margin-left:12px;display:none}
+.discord-embed-footer{font-size:11px;color:#87898c;margin-top:10px;display:flex;align-items:center;gap:6px;clear:both;font-family:sans-serif}
+.discord-embed-footer::before{content:'•';color:#87898c}
+/* Fields */
+.fields-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.field-item{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative}
+.field-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-remove{position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#f87171;width:24px;height:24px;border-radius:6px;font-size:14px;display:grid;place-items:center;cursor:pointer;transition:all 0.2s}
+.field-remove:hover{background:rgba(239,68,68,0.2)}
+/* Buttons */
+.d-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:9px;font-family:var(--font-head);font-size:0.88rem;font-weight:600;letter-spacing:0.02em;cursor:pointer;transition:all 0.2s;border:none}
+.d-btn-primary{background:var(--grad-btn);color:#000;box-shadow:0 0 16px rgba(94,234,212,0.2)}
+.d-btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 28px rgba(94,234,212,0.35)}
+.d-btn-secondary{background:var(--surface-2);color:var(--off-white);border:1px solid var(--border)}
+.d-btn-secondary:hover{background:var(--surface);border-color:var(--border-glow)}
+.d-btn-danger{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
+.d-btn-danger:hover{background:rgba(239,68,68,0.2)}
+.d-btn-sm{padding:7px 14px;font-size:0.8rem}
+.d-btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:22px}
+/* Toast */
+.toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:12px;font-size:0.9rem;color:var(--off-white);box-shadow:0 8px 32px rgba(0,0,0,0.4);transform:translateY(20px);opacity:0;transition:all 0.3s var(--ease);pointer-events:none;min-width:280px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(52,211,153,0.4)}
+.toast.error{border-color:rgba(239,68,68,0.4)}
+.toast-icon{font-size:1.1rem}
+/* API badge */
+.api-badge{display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;font-family:var(--font-mono);padding:4px 12px;border-radius:999px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);color:#f87171}
+.api-badge.connected{border-color:rgba(52,211,153,0.3);background:rgba(52,211,153,0.07);color:#34d399}
+.api-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s ease-in-out infinite}
+/* RR table */
+.rr-table{width:100%;border-collapse:collapse}
+.rr-table th{text-align:left;padding:10px 14px;font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+.rr-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.88rem;color:var(--off-white);vertical-align:middle}
+.rr-table tr:last-child td{border-bottom:none}
+.rr-table tr:hover td{background:rgba(94,234,212,0.02)}
+/* Sidebar mobile */
+/* ── Channel / Role selectors ───────────────────── */
+.ch-select,.role-select{
+  width:100%;background:var(--bg-2);border:1px solid var(--border);
+  border-radius:9px;padding:10px 14px;color:var(--off-white);
+  font-family:var(--font-body);font-size:0.9rem;outline:none;
+  transition:border-color 0.2s;cursor:pointer;
+}
+.ch-select:focus,.role-select:focus{border-color:var(--border-glow)}
+.ch-select option,.role-select option{background:var(--bg-card)}
+
+/* ── Page builder page item ─────────────────────── */
+.pb-page{
+  background:var(--bg-2);border:1px solid var(--border);
+  border-radius:12px;padding:18px;position:relative;
+}
+.pb-page-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+}
+.pb-page-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--grad-btn);display:grid;place-items:center;
+  font-size:0.8rem;font-weight:700;color:#000;flex-shrink:0;
+}
+.pb-page-remove{
+  position:absolute;top:14px;right:14px;
+  background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);
+  color:#f87171;width:24px;height:24px;border-radius:6px;
+  display:grid;place-items:center;cursor:pointer;transition:all 0.2s;font-size:12px;
+}
+.pb-page-remove:hover{background:rgba(239,68,68,0.2)}
+
+/* ── AR trigger card ────────────────────────────── */
+.ar-item{
+  background:var(--bg-2);border:1px solid var(--border);
+  border-radius:10px;padding:14px;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.ar-item-info{flex:1;min-width:0}
+.ar-trigger-badge{
+  display:inline-block;background:rgba(94,234,212,0.1);
+  border:1px solid rgba(94,234,212,0.2);color:var(--cyan);
+  font-family:var(--font-mono);font-size:0.78rem;
+  padding:2px 10px;border-radius:999px;margin-bottom:6px;
+}
+.ar-response-text{font-size:0.85rem;color:var(--muted);line-height:1.5}
+
+/* ── Admin lock styles ──────────────────────────── */
+.admin-badge {
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:0.75rem;font-family:var(--font-mono);
+  padding:3px 10px;border-radius:999px;
+  background:rgba(167,139,250,0.1);
+  border:1px solid rgba(167,139,250,0.3);
+  color:var(--violet);
+  cursor:pointer;transition:all 0.2s;
+}
+.admin-badge:hover{background:rgba(167,139,250,0.2)}
+
+.sb-toggle{display:none;position:fixed;bottom:24px;left:24px;z-index:60;width:48px;height:48px;border-radius:50%;background:var(--grad-btn);color:#000;font-size:1.2rem;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(94,234,212,0.3);cursor:pointer}
+/* Responsive */
+@media(max-width:1100px){.embed-builder{grid-template-columns:1fr}.embed-preview-wrap{position:static}}
+@media(max-width:900px){.d-grid-2{grid-template-columns:1fr}.d-grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);z-index:55}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,0.5)}
+  .dash-main{margin-left:0;padding:24px 16px 80px}
+  .sb-toggle{display:flex}
+  .d-grid-3{grid-template-columns:1fr}
+  .discord-embed-fields{grid-template-columns:1fr}
+}
+
+/* ── Server Picker Overlay ─────────────────────────── */
+#server-picker-overlay {
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg-1, #0d0f12);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+}
+.sp-overlay-inner {
+  width:100%;max-width:520px;padding:32px 24px;
+  text-align:center;
+}
+.sp-logo { width:72px;height:72px;border-radius:50%;margin:0 auto 20px; }
+.sp-title { font-family:var(--font-head);font-size:1.8rem;font-weight:800;color:var(--white);margin-bottom:8px; }
+.sp-sub { font-size:0.9rem;color:var(--muted);margin-bottom:32px; }
+.sp-server-grid {
+  display:flex;flex-direction:column;gap:10px;
+  max-height:380px;overflow-y:auto;margin-bottom:24px;
+  padding-right:4px;
+}
+.sp-server-grid::-webkit-scrollbar{width:3px}
+.sp-server-card {
+  display:flex;align-items:center;gap:14px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:12px;padding:14px 18px;cursor:pointer;
+  transition:all 0.18s;text-align:left;
+}
+.sp-server-card:hover { border-color:var(--cyan);background:rgba(94,234,212,0.05); }
+.sp-server-icon {
+  width:44px;height:44px;border-radius:50%;
+  background:var(--surface);display:grid;place-items:center;
+  font-size:1.2rem;flex-shrink:0;object-fit:cover;
+  border:2px solid var(--border);
+}
+.sp-server-name { font-weight:600;color:var(--off-white);font-size:0.95rem; }
+.sp-server-members { font-size:0.78rem;color:var(--muted);margin-top:2px; }
+.sp-loading { color:var(--muted);font-size:0.9rem;padding:40px 0; }
+.sp-login-prompt {
+  background:rgba(88,101,242,0.1);border:1px solid rgba(88,101,242,0.3);
+  border-radius:12px;padding:20px;margin-bottom:20px;
+}
+
+/* ── Emoji Picker ──────────────────────────────────── */
+.emoji-btn {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  font-size: 1rem; color: var(--muted); transition: all 0.2s;
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+}
+.emoji-btn:hover { border-color: var(--border-glow); color: var(--off-white); }
+.emoji-picker-wrap { position: relative; display: inline-block; }
+.emoji-picker {
+  position: fixed; z-index: 9998;
+  width: 340px; max-height: 420px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  display: none; flex-direction: column; overflow: hidden;
+}
+.emoji-picker.open { display: flex; }
+.emoji-picker-header {
+  padding: 10px 12px 6px; border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+}
+.emoji-search {
+  width: 100%; background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 12px; color: var(--off-white);
+  font-size: 0.85rem; outline: none;
+}
+.emoji-search:focus { border-color: var(--border-glow); }
+.emoji-cats {
+  display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px;
+}
+.emoji-cats::-webkit-scrollbar { height: 2px; }
+.emoji-cat-btn {
+  background: none; border: none; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px; font-size: 1rem;
+  flex-shrink: 0; opacity: 0.6; transition: all 0.15s;
+}
+.emoji-cat-btn:hover, .emoji-cat-btn.active { opacity: 1; background: var(--surface); }
+.emoji-grid-wrap { overflow-y: auto; flex: 1; padding: 8px; }
+.emoji-grid-wrap::-webkit-scrollbar { width: 3px; }
+.emoji-section-label {
+  font-size: 0.65rem; font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted); padding: 6px 4px 4px; display: block;
+}
+.emoji-grid {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px;
+  margin-bottom: 8px;
+}
+.emoji-item {
+  font-size: 1.4rem; padding: 4px; border-radius: 6px;
+  cursor: pointer; text-align: center; transition: background 0.1s;
+  line-height: 1.4; border: none; background: none;
+}
+.emoji-item:hover { background: var(--surface); }
+.emoji-item.custom-emoji { font-size: 0; padding: 2px; }
+.emoji-item.custom-emoji img {
+  width: 28px; height: 28px; border-radius: 4px; object-fit: cover;
+}
+</style>
+</head>
+<body>
+
+<!-- SERVER PICKER OVERLAY -->
+<div id="server-picker-overlay">
+  <div class="sp-overlay-inner">
+    <img src="assets/images/logo.png" class="sp-logo" alt="Fuse OS"/>
+    <div class="sp-title">Select a Server</div>
+    <div class="sp-sub" id="sp-overlay-sub">Login with Discord to manage your servers</div>
+
+    <!-- Login prompt (shown when not logged in) -->
+    <div class="sp-login-prompt" id="sp-login-prompt">
+      <p style="color:var(--off-white);font-size:0.9rem;margin-bottom:14px">Login with Discord to see your servers</p>
+      <a id="sp-discord-btn" href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&response_type=token&redirect_uri=https%3A%2F%2Ffuse-os-bot.vercel.app%2Fdashboard.html&scope=identify+guilds"
+        style="background:#5865f2;color:#fff;padding:11px 24px;border-radius:9px;font-size:0.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Login with Discord
+      </a>
+    </div>
+
+    <!-- Server grid (shown after login) -->
+    <div class="sp-server-grid" id="sp-server-grid" style="display:none">
+      <div class="sp-loading" id="sp-loading">⏳ Loading your servers...</div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav solid" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/images/logo.png" alt="Fuse OS logo"/>
+      <span class="nav-logo-name">FUSE OS</span>
+    </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html"     class="nav-link">Home</a></li>
+      <li><a href="features.html"  class="nav-link">Features</a></li>
+      <li><a href="commands.html"  class="nav-link">Commands</a></li>
+      <li><a href="verify.html"    class="nav-link">Verify</a></li>
+      <li><a href="support.html"   class="nav-link">Support</a></li>
+      <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
+    </ul>
+    <div class="nav-actions" style="display:flex;align-items:center;gap:10px">
+      <div id="nav-server-chip" style="display:none;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:5px 12px;cursor:pointer" onclick="showServerPicker()" title="Switch server">
+        <img id="nav-server-icon" src="" style="width:20px;height:20px;border-radius:50%" onerror="this.style.display='none'"/>
+        <span id="nav-server-name" style="font-size:0.82rem;font-weight:600;color:var(--off-white)"></span>
+        <span style="font-size:0.7rem;color:var(--muted)">▾</span>
+      </div>
+      <span class="api-badge" id="api-badge" style="cursor:pointer" onclick="document.querySelector('[data-panel=general]').click();setTimeout(()=>document.getElementById('admin-password').focus(),300)">🔐 Admin</span>
+      <a id="discord-login-btn" href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&response_type=token&redirect_uri=https%3A%2F%2Ffuse-os-bot.vercel.app%2Fdashboard.html&scope=identify+guilds" style="background:#5865f2;color:#fff;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Login
+      </a>
+      <div id="discord-user-info" style="display:none;align-items:center;gap:8px">
+        <img id="discord-avatar" src="" style="width:28px;height:28px;border-radius:50%;border:2px solid #5865f2"/>
+        <span id="discord-username" style="font-size:0.82rem;color:var(--off-white);font-weight:600"></span>
+        <button onclick="discordLogout()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:0.75rem">Logout</button>
+      </div>
+    </div>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="dash-root">
+  <!-- Hidden server select kept for JS compatibility -->
+  <select id="server-select" style="display:none" onchange="selectServer(this.value)"></select>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-label">Overview</div>
+    <div class="sb-item active" data-panel="general"><span class="sb-icon">⚙️</span> Bot Settings</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Messaging</div>
+    <div class="sb-item" data-panel="embed"><span class="sb-icon">📨</span> Embed Builder</div>
+    <div class="sb-item" data-panel="announce"><span class="sb-icon">📢</span> Announcements</div>
+    <div class="sb-item" data-panel="welcome"><span class="sb-icon">👋</span> Welcome & Farewell</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Moderation</div>
+    <div class="sb-item" data-panel="moderation"><span class="sb-icon">🛡️</span> Moderation</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Community</div>
+    <div class="sb-item" data-panel="tickets"><span class="sb-icon">🎟️</span> Ticket Panel</div>
+    <div class="sb-item" data-panel="giveaway"><span class="sb-icon">🎉</span> Giveaways</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Roles</div>
+    <div class="sb-item" data-panel="autorole"><span class="sb-icon">⚙️</span> Auto Roles</div>
+    <div class="sb-item" data-panel="reactionrole"><span class="sb-icon">🎭</span> Reaction Roles</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Advanced</div>
+    <div class="sb-item" data-panel="autoresponder" onclick="setTimeout(loadAutoResponders,100)"><span class="sb-icon">🤖</span> Auto Responder</div>
+    <div class="sb-item" data-panel="pagebuilder"><span class="sb-icon">📄</span> Page Builder</div>
+    <div class="sb-item" data-panel="socialpings"><span class="sb-icon">🔔</span> Social Pings</div>
+  </aside>
+
+  <main class="dash-main">
+
+    <!-- ── Bot Settings ───────────────────────────── -->
+    <div class="dash-panel active" id="panel-general">
+      <div class="panel-title">⚙️ Bot Settings</div>
+      <div class="panel-sub">Configure your bot prefix and module settings.</div>
+
+      <div class="d-card">
+        <div class="d-card-title">⌨️ Bot Prefix</div>
+        <div class="d-card-sub">Change the prefix used to trigger bot commands.</div>
+        <div class="d-field"><label class="d-label">Command Prefix</label><input class="d-input" id="bot-prefix" type="text" placeholder="+" value="+" maxlength="5" style="max-width:120px"/></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('general')">💾 Save Prefix</button></div>
+      </div>
+
+      <div class="d-card">
+        <div class="d-card-title">🔘 Module Toggles</div>
+        <div class="d-card-sub">Enable or disable entire bot modules instantly.</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>AI Chat</h4><p>Claude-powered AI chat system</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('ai_chat',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Ticket System</h4><p>Ticket panels and transcripts</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('tickets',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Giveaways</h4><p>Giveaway creation and management</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('giveaways',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Music</h4><p>Music playback system</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('music',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Translation</h4><p>Auto-translation system</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('translation',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Welcome Messages</h4><p>Welcome and farewell cards</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('welcome',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+
+      <!-- Admin lock -->
+      <div class="d-card" style="border-color:rgba(167,139,250,0.3)">
+        <div class="d-card-title">🔐 Admin Access</div>
+        <div class="d-card-sub">Owner-only settings are locked. Enter your admin password to access them.</div>
+        <div id="admin-locked">
+          <div style="display:flex;gap:10px;align-items:center">
+            <input class="d-input" id="admin-password" type="password" placeholder="Enter admin password..." style="flex:1" onkeydown="if(event.key==='Enter')unlockAdmin()"/>
+            <button class="d-btn d-btn-primary" onclick="unlockAdmin()">🔓 Unlock</button>
+          </div>
+          <div id="admin-error" style="display:none;color:#f87171;font-size:0.82rem;margin-top:8px">❌ Wrong password. Try again.</div>
+        </div>
+        <div id="admin-unlocked" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 14px;background:rgba(87,242,135,0.08);border:1px solid rgba(87,242,135,0.2);border-radius:9px">
+            <span>✅</span><span style="font-size:0.88rem;color:#57f287">Admin access granted</span>
+            <button class="d-btn d-btn-secondary d-btn-sm" style="margin-left:auto" onclick="lockAdmin()">🔒 Lock</button>
+          </div>
+
+          <div class="d-card-title" style="margin-bottom:16px">🔌 API Connection</div>
+          <div class="d-grid-2">
+            <div class="d-field"><label class="d-label">Bot API URL</label><input class="d-input" id="api-url" type="url" placeholder="https://your-bot.railway.app"/></div>
+            <div class="d-field"><label class="d-label">API Secret Key</label><input class="d-input" id="api-key" type="password" placeholder="Secret key from your .env"/></div>
+          </div>
+          <div class="d-btn-row">
+            <button class="d-btn d-btn-primary" onclick="testConnection()">🔌 Test Connection</button>
+            <button class="d-btn d-btn-secondary" onclick="saveApiConfig()">💾 Save</button>
+          </div>
+
+          <div style="height:1px;background:var(--border);margin:20px 0"></div>
+
+          <div class="d-card-title" style="margin-bottom:16px">🌐 Support Server</div>
+          <div class="d-field"><label class="d-label">Support Server URL</label><input class="d-input" id="support-url" type="url" placeholder="https://discord.gg/..."/></div>
+          <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('general')">💾 Save</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Embed Builder ──────────────────────────── -->
+    <div class="dash-panel" id="panel-embed">
+      <div class="panel-title">📨 Embed Builder</div>
+      <div class="panel-sub">Design and send custom embeds. Live preview updates as you type.</div>
+      <div class="embed-builder">
+        <div>
+          <div class="d-card">
+            <div class="d-card-title">📋 Author & Title</div>
+            <div class="d-field"><label class="d-label">Author Name</label><input class="d-input" id="e-author" type="text" placeholder="Fuse OS" oninput="updatePreview()"/></div>
+            <div class="d-field"><label class="d-label">Author Icon URL</label><input class="d-input" id="e-author-icon" type="url" placeholder="https://..." oninput="updatePreview()"/></div>
+            <div class="d-field"><label class="d-label">Title</label><input class="d-input" id="e-title" type="text" placeholder="Embed Title" oninput="updatePreview()"/></div>
+            <div class="d-field"><label class="d-label">Title URL (makes title clickable)</label><input class="d-input" id="e-title-url" type="url" placeholder="https://..." oninput="updatePreview()"/></div>
+            <div class="d-field"><label class="d-label">Description <button class="emoji-btn" onclick="openEmojiPicker('e-desc',this)">😀 Emoji</button></label><textarea class="d-textarea" id="e-desc" placeholder="Write your embed description here...&#10;Supports **markdown** formatting." oninput="updatePreview()"></textarea></div>
+            <div class="d-field"><label class="d-label">Sidebar Colour</label>
+              <div class="d-color-row"><input type="color" class="d-color-swatch" id="e-color-pick" value="#5eead4" oninput="syncColor('pick')"/><input type="text" class="d-color-hex" id="e-color-hex" value="#5eead4" placeholder="#5eead4" oninput="syncColor('hex')"/></div>
+            </div>
+          </div>
+          <div class="d-card">
+            <div class="d-card-title">🖼️ Images</div>
+            <div class="d-field"><label class="d-label">Thumbnail URL (small top-right)</label><input class="d-input" id="e-thumb" type="url" placeholder="https://..." oninput="updatePreview()"/></div>
+            <div class="d-field"><label class="d-label">Large Image URL (bottom of embed)</label><input class="d-input" id="e-image" type="url" placeholder="https://..." oninput="updatePreview()"/></div>
+          </div>
+          <div class="d-card">
+            <div class="d-card-title">📌 Fields</div>
+            <div class="d-card-sub">Add up to 25 fields. Toggle inline to show side by side.</div>
+            <div class="fields-list" id="fields-list"></div>
+            <button class="d-btn d-btn-secondary d-btn-sm" onclick="addField()">＋ Add Field</button>
+          </div>
+          <div class="d-card">
+            <div class="d-card-title">🔻 Footer</div>
+            <div class="d-field"><label class="d-label">Footer Text</label><input class="d-input" id="e-footer" type="text" placeholder="Footer text..." oninput="updatePreview()"/></div>
+            <div class="d-field"><label class="d-label">Footer Icon URL</label><input class="d-input" id="e-footer-icon" type="url" placeholder="https://..." oninput="updatePreview()"/></div>
+            <div class="d-field"><label class="d-label">Timestamp</label>
+              <select class="d-select" id="e-timestamp" onchange="updatePreview()"><option value="">No timestamp</option><option value="now">Current time</option></select>
+            </div>
+          </div>
+          <div class="d-card">
+            <div class="d-card-title">📤 Send to Discord</div>
+            <div class="d-grid-2">
+              <input type="hidden" id="e-guild"/>
+              <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="e-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+            </div>
+            <div class="d-field"><label class="d-label">Content (optional, above embed)</label><input class="d-input" id="e-content" type="text" placeholder="@everyone Check this out!" oninput="updatePreview()"/></div>
+            <div class="d-btn-row">
+              <button class="d-btn d-btn-primary" onclick="sendEmbed()">🚀 Send to Discord</button>
+              <button class="d-btn d-btn-secondary" onclick="clearEmbed()">🗑️ Clear</button>
+              <button class="d-btn d-btn-secondary" onclick="copyEmbedJson()">📋 Copy JSON</button>
+            </div>
+          </div>
+        </div>
+        <!-- Live Preview -->
+        <div class="embed-preview-wrap">
+          <div class="embed-preview-label">Live Discord Preview</div>
+          <div class="discord-mock">
+            <div class="discord-msg">
+              <div class="discord-avatar">⚡</div>
+              <div class="discord-msg-right">
+                <div class="discord-bot-name">Fuse OS <span class="discord-bot-tag">BOT</span></div>
+                <div id="preview-content" style="font-size:13px;color:#dbdee1;margin-bottom:6px;display:none;font-family:sans-serif"></div>
+                <div class="discord-embed" id="preview-embed" style="border-left-color:#5eead4">
+                  <div class="discord-embed-author" id="preview-author" style="display:none">
+                    <img id="preview-author-icon" src="" alt="" style="display:none"/>
+                    <span id="preview-author-name"></span>
+                  </div>
+                  <img class="discord-embed-thumbnail" id="preview-thumb" src="" alt=""/>
+                  <div class="discord-embed-title" id="preview-title" style="display:none"></div>
+                  <div class="discord-embed-desc" id="preview-desc">Your embed description will appear here...</div>
+                  <div class="discord-embed-fields" id="preview-fields"></div>
+                  <img class="discord-embed-image" id="preview-image" src="" alt=""/>
+                  <div class="discord-embed-footer" id="preview-footer" style="display:none"><span id="preview-footer-text"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Announcements ──────────────────────────── -->
+    <div class="dash-panel" id="panel-announce">
+      <div class="panel-title">📢 Announcements</div>
+      <div class="panel-sub">Send announcements with custom formatting to any channel.</div>
+      <div class="d-card">
+        <div class="d-card-title">📣 Send Announcement</div>
+        <div class="d-grid-2">
+          <input type="hidden" id="ann-guild"/>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="ann-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+        </div>
+        <div class="d-field"><label class="d-label">Ping Role ID (optional)</label><input class="d-input" id="ann-ping" type="text" placeholder="Leave blank for no ping"/></div>
+        <div class="d-field"><label class="d-label">Title</label><input class="d-input" id="ann-title" type="text" placeholder="📣 Announcement Title"/></div>
+        <div class="d-field"><label class="d-label">Body <button class="emoji-btn" onclick="openEmojiPicker('ann-body',this)">😀 Emoji</button></label><textarea class="d-textarea" id="ann-body" placeholder="Write your announcement here..." style="min-height:130px"></textarea></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Colour</label><div class="d-color-row"><input type="color" class="d-color-swatch" id="ann-color-pick" value="#5eead4" oninput="syncAnnColor('pick')"/><input type="text" class="d-color-hex" id="ann-color-hex" value="#5eead4" oninput="syncAnnColor('hex')"/></div></div>
+          <div class="d-field"><label class="d-label">Footer</label><input class="d-input" id="ann-footer" type="text" placeholder="Fuse OS Announcement"/></div>
+        </div>
+        <div class="d-btn-row">
+          <button class="d-btn d-btn-primary" onclick="sendAnnouncement()">📢 Send</button>
+          <button class="d-btn d-btn-secondary" onclick="clearAnnouncement()">🗑️ Clear</button>
+        </div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Announcement Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Auto-pin announcements</h4><p>Automatically pin each announcement</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('ann_pin',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Add timestamp</h4><p>Include timestamp in every announcement</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('ann_timestamp',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Cross-post to followers</h4><p>Publish to follower servers automatically</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('ann_crosspost',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- ── Welcome & Farewell ─────────────────────── -->
+    <div class="dash-panel" id="panel-welcome">
+      <div class="panel-title">👋 Welcome & Farewell</div>
+      <div class="panel-sub">Configure messages for when members join or leave. Use <code style="background:var(--surface);padding:2px 6px;border-radius:4px;font-size:0.8rem;font-family:var(--font-mono)">{user}</code> and <code style="background:var(--surface);padding:2px 6px;border-radius:4px;font-size:0.8rem;font-family:var(--font-mono)">{server}</code> as variables.</div>
+      <div class="d-card">
+        <div class="d-card-title">✅ System Toggles</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Welcome Messages</h4><p>Send embed when member joins</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('welcome_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Farewell Messages</h4><p>Send embed when member leaves</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('farewell_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+      <div class="d-grid-2">
+        <div class="d-card">
+          <div class="d-card-title">🟢 Welcome</div>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="wlc-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Embed Title</label><input class="d-input" id="wlc-title" type="text" value="Welcome to {server}! 🎉"/></div>
+          <div class="d-field"><label class="d-label">Description <button class="emoji-btn" onclick="openEmojiPicker('wlc-desc',this)">😀 Emoji</button></label><textarea class="d-textarea" id="wlc-desc">Hey {user}, welcome to {server}! We're glad you're here. 🎊</textarea></div>
+          <div class="d-field"><label class="d-label">Footer</label><input class="d-input" id="wlc-footer" type="text" value="Member #{member_count}"/></div>
+          <div class="d-field"><label class="d-label">Colour</label><div class="d-color-row"><input type="color" class="d-color-swatch" value="#57f287" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" value="#57f287"/></div></div>
+          <div class="d-field"><label class="d-label">Thumbnail / Banner Image URL</label><input class="d-input" id="wlc-image" type="url" placeholder="https://..."/></div>
+          <div class="d-btn-row">
+            <button class="d-btn d-btn-primary" onclick="saveSection('welcome')">💾 Save</button>
+            <button class="d-btn d-btn-secondary d-btn-sm" onclick="previewWelcome()">👁️ Preview</button>
+          </div>
+        </div>
+        <div class="d-card">
+          <div class="d-card-title">🔴 Farewell</div>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="bye-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Embed Title</label><input class="d-input" id="bye-title" type="text" value="Goodbye, {user} 👋"/></div>
+          <div class="d-field"><label class="d-label">Description <button class="emoji-btn" onclick="openEmojiPicker('bye-desc',this)">😀 Emoji</button></label><textarea class="d-textarea" id="bye-desc">We hope to see you again some day. Take care!</textarea></div>
+          <div class="d-field"><label class="d-label">Footer</label><input class="d-input" id="bye-footer" type="text" value="We'll miss you!"/></div>
+          <div class="d-field"><label class="d-label">Colour</label><div class="d-color-row"><input type="color" class="d-color-swatch" value="#ed4245" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" value="#ed4245"/></div></div>
+          <div class="d-field"><label class="d-label">Thumbnail / Banner Image URL</label><input class="d-input" id="bye-image" type="url" placeholder="https://..."/></div>
+          <div class="d-btn-row">
+            <button class="d-btn d-btn-primary" onclick="saveSection('farewell')">💾 Save</button>
+            <button class="d-btn d-btn-secondary d-btn-sm" onclick="previewFarewell()">👁️ Preview</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Moderation ─────────────────────────────── -->
+    <div class="dash-panel" id="panel-moderation">
+      <div class="panel-title">🛡️ Moderation</div>
+      <div class="panel-sub">Configure log channels, automod rules, and punishment thresholds.</div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Log Channels</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Mod Action Log</label><select class="d-select" id="mod-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Message Delete Log</label><select class="d-select" id="mod-del-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Join / Leave Log</label><select class="d-select" id="mod-join-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Voice Event Log</label><select class="d-select" id="mod-voice-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('mod_logs')">💾 Save Log Channels</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚡ AutoMod Rules</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Anti-Spam</h4><p>Auto-timeout users who spam messages rapidly</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('automod_spam',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Anti-Invite</h4><p>Delete messages with Discord invite links</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('automod_invite',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Bad Word Filter</h4><p>Auto-delete messages with banned words</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('automod_words',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Link Filter</h4><p>Block all links except from trusted roles</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('automod_links',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-field" style="margin-top:16px"><label class="d-label">Banned Words (comma separated)</label><textarea class="d-textarea" id="mod-banned-words" placeholder="word1, word2, word3..." style="min-height:70px"></textarea></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('automod')">💾 Save AutoMod</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚖️ Punishment Thresholds</div>
+        <div class="d-card-sub">Auto-punish members when they reach a certain number of warnings.</div>
+        <div class="d-grid-3">
+          <div class="d-field"><label class="d-label">Warns → Mute</label><input class="d-input" id="mod-warn-mute" type="number" placeholder="e.g. 3" min="1"/></div>
+          <div class="d-field"><label class="d-label">Warns → Kick</label><input class="d-input" id="mod-warn-kick" type="number" placeholder="e.g. 5" min="1"/></div>
+          <div class="d-field"><label class="d-label">Warns → Ban</label><input class="d-input" id="mod-warn-ban" type="number" placeholder="e.g. 7" min="1"/></div>
+        </div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Default Timeout Duration</label><select class="d-select" id="mod-timeout-dur"><option value="60">1 minute</option><option value="300">5 minutes</option><option value="600" selected>10 minutes</option><option value="3600">1 hour</option><option value="86400">1 day</option></select></div>
+          <div class="d-field"><label class="d-label">Mod Role ID</label><input class="d-input" id="mod-role" type="text" placeholder="Role ID allowed to mod"/></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('punishments')">💾 Save Punishments</button></div>
+      </div>
+    </div>
+
+    <!-- ── Tickets ────────────────────────────────── -->
+    <div class="dash-panel" id="panel-tickets">
+      <div class="panel-title">🎟️ Ticket Panel</div>
+      <div class="panel-sub">Customise the ticket panel embed and deploy it to a channel.</div>
+      <div class="d-card">
+        <div class="d-card-title">🎨 Panel Appearance</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Panel Title</label><input class="d-input" id="tkt-title" type="text" value="🎟️ Support Tickets"/></div>
+          <div class="d-field"><label class="d-label">Button Label</label><input class="d-input" id="tkt-btn-label" type="text" value="Open a Ticket"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Description</label><textarea class="d-textarea" id="tkt-desc">Click the button below to open a support ticket. Our team will respond as soon as possible.</textarea></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Embed Colour</label><div class="d-color-row"><input type="color" class="d-color-swatch" value="#5865f2" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" value="#5865f2"/></div></div>
+          <div class="d-field"><label class="d-label">Panel Image URL (optional)</label><input class="d-input" id="tkt-image" type="url" placeholder="https://..."/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Footer</label><input class="d-input" id="tkt-footer" type="text" value="Fuse OS Ticket System"/></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Ticket Settings</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Ticket Category ID</label><input class="d-input" id="tkt-category" type="text" placeholder="Category channel ID"/></div>
+          <div class="d-field"><label class="d-label">Staff Role ID</label><input class="d-input" id="tkt-staff-role" type="text" placeholder="Role that can see tickets"/></div>
+          <div class="d-field"><label class="d-label">Transcript Log Channel</label><select class="d-select" id="tkt-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Max Open Tickets Per User</label><input class="d-input" id="tkt-max" type="number" value="1" min="1" max="10"/></div>
+        </div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Auto-close inactive tickets</h4><p>Close after 48h of no activity</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('tkt_autoclose',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>DM transcript on close</h4><p>Send HTML transcript to user when ticket closes</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('tkt_dm_transcript',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Rating system</h4><p>Ask users to rate support after closing</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('tkt_ratings',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('tickets')">💾 Save Settings</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📤 Deploy Panel to Channel</div>
+        <div class="d-grid-2">
+          <input type="hidden" id="tkt-guild"/>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="tkt-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="deployTicketPanel()">🚀 Deploy Ticket Panel</button></div>
+      </div>
+    </div>
+
+    <!-- ── Giveaways ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-giveaway">
+      <div class="panel-title">🎉 Giveaway Settings</div>
+      <div class="panel-sub">Configure giveaway embed styles and default settings.</div>
+      <div class="d-card">
+        <div class="d-card-title">🎨 Embed Style</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Giveaway Embed Title</label><input class="d-input" id="gwy-title" type="text" value="🎉 GIVEAWAY 🎉"/></div>
+          <div class="d-field"><label class="d-label">Winner Announcement Title</label><input class="d-input" id="gwy-win-title" type="text" value="🏆 Winner Announced!"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Entry Instructions</label><textarea class="d-textarea" id="gwy-instructions">React with 🎉 to enter the giveaway!</textarea></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Giveaway Colour</label><div class="d-color-row"><input type="color" class="d-color-swatch" value="#ffd700" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" value="#ffd700"/></div></div>
+          <div class="d-field"><label class="d-label">Winner Embed Colour</label><div class="d-color-row"><input type="color" class="d-color-swatch" value="#57f287" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" value="#57f287"/></div></div>
+        </div>
+        <div class="d-field"><label class="d-label">Footer Text</label><input class="d-input" id="gwy-footer" type="text" value="Ends at"/></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Defaults</div>
+        <div class="d-grid-3">
+          <div class="d-field"><label class="d-label">Default Winners</label><input class="d-input" id="gwy-winners" type="number" value="1" min="1" max="50"/></div>
+          <div class="d-field"><label class="d-label">Default Duration (hours)</label><input class="d-input" id="gwy-duration" type="number" value="24" min="1"/></div>
+          <div class="d-field"><label class="d-label">Log Channel</label><select class="d-select" id="gwy-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+        </div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>DM winners</h4><p>Send a DM to winners automatically</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('gwy_dm_winner',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Subscriber-only mode</h4><p>Require YouTube subscriber role to enter</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('gwy_sub_only',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Show live entry count</h4><p>Display entry count in the embed</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('gwy_entry_count',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('giveaway')">💾 Save Giveaway Settings</button></div>
+      </div>
+    </div>
+
+    <!-- ── Auto Roles ──────────────────────────────── -->
+    <div class="dash-panel" id="panel-autorole">
+      <div class="panel-title">⚙️ Auto Roles</div>
+      <div class="panel-sub">Roles assigned to members automatically based on conditions.</div>
+      <div class="d-card">
+        <div class="d-card-title">👋 Join Auto Roles</div>
+        <div class="d-card-sub">Roles given immediately when a member joins.</div>
+        <div class="d-field"><label class="d-label">Role IDs (comma separated)</label><input class="d-input" id="ar-join-roles" type="text" placeholder="123456789, 987654321"/></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Join Autorole</h4><p>Assign roles when a member joins</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('ar_join',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSection('autorole_join')">💾 Save</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⏳ Timed Role Removal</div>
+        <div class="d-card-sub">Auto-remove a role after a set period.</div>
+        <div class="d-grid-3">
+          <div class="d-field"><label class="d-label">Role ID</label><input class="d-input" id="ar-timed-role" type="text" placeholder="Role ID to remove"/></div>
+          <div class="d-field"><label class="d-label">Remove After (hours)</label><input class="d-input" id="ar-timed-hours" type="number" placeholder="24" min="1"/></div>
+          <div class="d-field" style="display:flex;align-items:flex-end"><button class="d-btn d-btn-secondary" style="width:100%" onclick="addTimedRole()">＋ Add Rule</button></div>
+        </div>
+        <div id="timed-roles-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">🏆 Leaderboard Reward Roles</div>
+        <div class="d-card-sub">Award roles to top leaderboard members.</div>
+        <div class="d-grid-3">
+          <div class="d-field"><label class="d-label">Leaderboard Position</label><select class="d-select" id="ar-lb-pos"><option value="1">#1</option><option value="2">#2</option><option value="3">#3</option><option value="5">Top 5</option><option value="10">Top 10</option></select></div>
+          <div class="d-field"><label class="d-label">Role ID to Award</label><input class="d-input" id="ar-lb-role" type="text" placeholder="Role ID"/></div>
+          <div class="d-field" style="display:flex;align-items:flex-end"><button class="d-btn d-btn-secondary" style="width:100%" onclick="addLeaderboardRole()">＋ Add Reward</button></div>
+        </div>
+        <div id="lb-roles-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- ── Reaction Roles ─────────────────────────── -->
+    <div class="dash-panel" id="panel-reactionrole">
+      <div class="panel-title">🎭 Reaction Roles</div>
+      <div class="panel-sub">Manage emoji → role bindings. Users react to a message to get a role.</div>
+      <div class="d-card">
+        <div class="d-card-title">➕ Add Binding</div>
+        <div class="d-grid-3">
+          <div class="d-field"><label class="d-label">Message ID</label><input class="d-input" id="rr-msg-id" type="text" placeholder="Right-click message → Copy ID"/></div>
+          <div class="d-field"><label class="d-label">Emoji</label><input class="d-input" id="rr-emoji" type="text" placeholder="👍 or :custom_name:"/></div>
+          <div class="d-field"><label class="d-label">Role ID</label><input class="d-input" id="rr-role-id" type="text" placeholder="Role to assign"/></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="addReactionRole()">➕ Add Binding</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Active Bindings</div>
+        <table class="rr-table">
+          <thead><tr><th>Emoji</th><th>Role ID</th><th>Message ID</th><th>Action</th></tr></thead>
+          <tbody id="rr-table-body"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No bindings yet. Add one above.</td></tr></tbody>
+        </table>
+        <div class="d-btn-row" style="margin-top:16px"><button class="d-btn d-btn-secondary" onclick="loadReactionRoles()">🔄 Refresh from Bot</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Behaviour</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Toggle Mode</h4><p>Reacting again removes the role</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('rr_toggle',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Exclusive Roles</h4><p>Only one role from a panel at a time</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('rr_exclusive',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+    </div>
+
+
+    <!-- ── Auto Responder ───────────────────────────── -->
+    <div class="dash-panel" id="panel-autoresponder">
+      <div class="panel-title">🤖 Auto Responder</div>
+      <div class="panel-sub">Bot automatically replies when a message contains the trigger word anywhere (case-insensitive). Like if trigger is <code style="background:var(--surface);padding:2px 6px;border-radius:4px;font-size:0.8rem;font-family:var(--font-mono)">ip</code> it will match <code style="background:var(--surface);padding:2px 6px;border-radius:4px;font-size:0.8rem;font-family:var(--font-mono)">iphone</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:4px;font-size:0.8rem;font-family:var(--font-mono)">tip</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:4px;font-size:0.8rem;font-family:var(--font-mono)">zip</code> etc.</div>
+
+      <div class="d-card">
+        <div class="d-card-title">✅ Status</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Auto Responder</h4><p>Bot will reply when triggers are matched</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('autoresponder_enabled',this.checked,selectedGuildId)"><span class="d-switch-slider"></span></label></div>
+      </div>
+
+      <div class="d-card">
+        <div class="d-card-title">➕ Add Trigger</div>
+        <div class="d-card-sub">The bot will respond whenever a message contains the trigger anywhere — not case sensitive.</div>
+        <div class="d-field"><label class="d-label">Trigger Word / Phrase</label><input class="d-input" id="ar-trigger" type="text" placeholder="e.g. ip, hello, rules, website..."/></div>
+        <div class="d-field"><label class="d-label">Response <button class="emoji-btn" onclick="openEmojiPicker('ar-response',this)">😀 Emoji</button></label><textarea class="d-textarea" id="ar-response" placeholder="What should the bot reply with?..." style="min-height:100px"></textarea></div>
+        <div class="d-toggle-row" style="margin-top:12px">
+          <div class="d-toggle-info"><h4>Send as Embed</h4><p>Reply using a formatted embed instead of plain text</p></div>
+          <label class="d-switch"><input type="checkbox" id="ar-use-embed" onchange="toggleArEmbed(this.checked)"><span class="d-switch-slider"></span></label>
+        </div>
+        <div id="ar-embed-opts" style="display:none;margin-top:14px">
+          <div class="d-field"><label class="d-label">Embed Title (optional)</label><input class="d-input" id="ar-embed-title" type="text" placeholder="Title of the embed..."/></div>
+          <div class="d-field"><label class="d-label">Embed Footer (optional)</label><input class="d-input" id="ar-embed-footer" type="text" placeholder="e.g. Fuse OS • Hero's Verse"/></div>
+          <div class="d-field"><label class="d-label">Embed Colour</label>
+            <div class="d-color-row"><input type="color" class="d-color-swatch" id="ar-color-pick" value="#5eead4" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" id="ar-color-hex" value="#5eead4"/></div>
+          </div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="addAutoResponder()">➕ Add Trigger</button></div>
+      </div>
+
+      <div class="d-card">
+        <div class="d-card-title">📋 Active Triggers</div>
+        <div id="ar-list-wrap">
+          <div style="text-align:center;color:var(--muted);padding:24px" id="ar-empty">No triggers yet. Add one above then click Refresh.</div>
+          <div id="ar-list" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Page Builder ──────────────────────────────── -->
+    <div class="dash-panel" id="panel-pagebuilder">
+      <div class="panel-title">📄 Page Builder</div>
+      <div class="panel-sub">Create paginated messages with dropdowns — perfect for rules, FAQs, info pages, guides. Each dropdown option shows different content.</div>
+
+      <div class="d-card">
+        <div class="d-card-title">📋 Main Message</div>
+        <div class="d-card-sub">This is the main embed shown with the dropdown/buttons.</div>
+        <div class="d-field"><label class="d-label">Title</label><input class="d-input" id="pb-title" type="text" placeholder="📜 Server Rules" oninput="updatePbPreview()"/></div>
+        <div class="d-field"><label class="d-label">Description</label><textarea class="d-textarea" id="pb-desc" placeholder="Select a section from the dropdown below..." oninput="updatePbPreview()"></textarea></div>
+        <div class="d-field"><label class="d-label">Colour</label>
+          <div class="d-color-row"><input type="color" class="d-color-swatch" id="pb-color" value="#5eead4" oninput="this.nextElementSibling.value=this.value;updatePbPreview()"/><input type="text" class="d-color-hex" value="#5eead4" oninput="document.getElementById('pb-color').value=this.value;updatePbPreview()"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Thumbnail URL (optional)</label><input class="d-input" id="pb-thumb" type="url" placeholder="https://..." oninput="updatePbPreview()"/></div>
+      </div>
+
+      <div class="d-card">
+        <div class="d-card-title">📑 Pages / Sections</div>
+        <div class="d-card-sub">Each section becomes a dropdown option. When selected, the bot either updates the same message or sends a new one.</div>
+        <div id="pb-pages" style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px"></div>
+        <button class="d-btn d-btn-secondary d-btn-sm" onclick="addPage()">＋ Add Section</button>
+      </div>
+
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Behaviour</div>
+        <div class="d-toggle-row">
+          <div class="d-toggle-info"><h4>Edit same message</h4><p>Update the original message when a section is selected</p></div>
+          <label class="d-switch"><input type="checkbox" id="pb-edit-same" checked><span class="d-switch-slider"></span></label>
+        </div>
+        <div class="d-toggle-row">
+          <div class="d-toggle-info"><h4>Ephemeral response</h4><p>Only the user who clicked sees the response</p></div>
+          <label class="d-switch"><input type="checkbox" id="pb-ephemeral"><span class="d-switch-slider"></span></label>
+        </div>
+        <div class="d-toggle-row">
+          <div class="d-toggle-info"><h4>Dropdown style</h4><p>Use dropdown select menu (off = buttons)</p></div>
+          <label class="d-switch"><input type="checkbox" id="pb-use-dropdown" checked onchange="updatePbPreview()"><span class="d-switch-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="d-card">
+        <div class="d-card-title">👁️ Preview</div>
+        <div class="discord-mock" id="pb-preview">
+          <div class="discord-msg">
+            <div class="discord-avatar">⚡</div>
+            <div class="discord-msg-right">
+              <div class="discord-bot-name">Fuse OS <span class="discord-bot-tag">BOT</span></div>
+              <div class="discord-embed" id="pb-preview-embed" style="border-left-color:#5eead4">
+                <div class="discord-embed-title" id="pb-preview-title">📜 Server Rules</div>
+                <div class="discord-embed-desc" id="pb-preview-desc">Select a section from the dropdown below...</div>
+              </div>
+              <div id="pb-preview-component" style="margin-top:8px">
+                <select style="background:#2b2d31;border:1px solid #3f4147;color:#dbdee1;padding:6px 10px;border-radius:4px;font-size:13px;width:100%" id="pb-preview-select">
+                  <option>Select a section...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-card">
+        <div class="d-card-title">📤 Deploy to Channel</div>
+        <div class="d-grid-2">
+          <input type="hidden" id="pb-guild"/>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="pb-channel"><option value="">— Select channel —</option></select></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="deployPageBuilder()">🚀 Deploy Message</button></div>
+      </div>
+    </div>
+
+
+    <!-- ── Social Pings ─────────────────────────────── -->
+    <div class="dash-panel" id="panel-socialpings">
+      <div class="panel-title">🔔 Social Pings</div>
+      <div class="panel-sub">Bot auto-detects new posts on your social media and announces them in your server. No API keys needed — uses public RSS feeds.</div>
+
+      <div class="d-card">
+        <div class="d-card-title">➕ Add Social Feed</div>
+        <div class="d-card-sub">Enter your channel/username and the bot will verify it exists before saving.</div>
+
+        <div class="d-field">
+          <label class="d-label">Platform</label>
+          <select class="d-select" id="sp-platform" onchange="updateSpHint()">
+            <option value="">— Select platform —</option>
+            <option value="youtube">📺 YouTube</option>
+            <option value="twitch">🎮 Twitch</option>
+            <option value="twitter">🐦 Twitter / X</option>
+            <option value="instagram">📸 Instagram</option>
+            <option value="tiktok">🎵 TikTok</option>
+            <option value="reddit">🤖 Reddit</option>
+          </select>
+        </div>
+
+        <div class="d-field">
+          <label class="d-label" id="sp-id-label">Creator ID / Username</label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input class="d-input" id="sp-creator-id" type="text" placeholder="e.g. UCxxxxxx or @username" style="flex:1"/>
+            <button class="d-btn d-btn-secondary d-btn-sm" onclick="verifySocialFeed()" style="white-space:nowrap">🔍 Verify</button>
+          </div>
+          <div id="sp-hint" style="font-size:0.78rem;color:var(--muted);margin-top:6px"></div>
+        </div>
+
+        <!-- Verification result -->
+        <div id="sp-verify-result" style="display:none;margin-bottom:16px">
+          <div class="discord-mock" style="padding:12px">
+            <div class="discord-msg">
+              <div class="discord-avatar" id="sp-verify-icon" style="font-size:16px">📺</div>
+              <div class="discord-msg-right">
+                <div class="discord-bot-name" style="font-size:13px">Is this your channel?</div>
+                <div style="font-size:13px;color:#dbdee1;margin-top:2px" id="sp-verify-title"></div>
+                <div style="font-size:12px;color:#87898c;margin-top:2px" id="sp-verify-link"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid-2">
+          <div class="d-field">
+            <label class="d-label">Announce Channel</label>
+            <select class="d-select" id="sp-channel" data-ch-sel>
+              <option value="">— Select channel —</option>
+            </select>
+          </div>
+          <div class="d-field">
+            <label class="d-label">Ping Role (optional)</label>
+            <select class="d-select" id="sp-role" data-role-sel>
+              <option value="">— No ping —</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-field">
+          <label class="d-label">Custom Message (optional)</label>
+          <input class="d-input" id="sp-custom-msg" type="text" placeholder="e.g. 🔥 New video just dropped! Go check it out"/>
+        </div>
+
+        <div class="d-btn-row">
+          <button class="d-btn d-btn-primary" onclick="addSocialFeed()">➕ Add Feed</button>
+        </div>
+      </div>
+
+      <!-- Active feeds -->
+      <div class="d-card">
+        <div class="d-card-title">📋 Active Feeds</div>
+        <div id="sp-feeds-list">
+          <div style="text-align:center;color:var(--muted);padding:24px" id="sp-empty">No feeds added yet. Add one above.</div>
+          <div id="sp-feeds" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+        <div class="d-btn-row" style="margin-top:16px">
+          <button class="d-btn d-btn-secondary" onclick="loadSocialFeeds()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Per-platform embed editors -->
+      <div class="d-card">
+        <div class="d-card-title">🎨 Announcement Style</div>
+        <div class="d-card-sub">Customize how each platform's announcement looks.</div>
+
+        <div class="d-field">
+          <label class="d-label">Select Platform to Edit</label>
+          <select class="d-select" id="sp-edit-platform" onchange="loadSpEditor()">
+            <option value="">— Select platform —</option>
+            <option value="youtube">📺 YouTube</option>
+            <option value="twitch">🎮 Twitch</option>
+            <option value="twitter">🐦 Twitter / X</option>
+            <option value="instagram">📸 Instagram</option>
+            <option value="tiktok">🎵 TikTok</option>
+            <option value="reddit">🤖 Reddit</option>
+          </select>
+        </div>
+
+        <div id="sp-editor" style="display:none">
+          <div class="d-grid-2">
+            <div class="d-field"><label class="d-label">Embed Title Template</label><input class="d-input" id="sp-e-title" type="text" placeholder="{emoji} {post_title}"/></div>
+            <div class="d-field"><label class="d-label">Embed Colour</label>
+              <div class="d-color-row"><input type="color" class="d-color-swatch" id="sp-e-color" value="#ff0000" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" value="#ff0000"/></div>
+            </div>
+          </div>
+          <div class="d-field"><label class="d-label">Description Template</label><textarea class="d-textarea" id="sp-e-desc" placeholder="New {platform} post just dropped! Go check it out 🔥&#10;&#10;Variables: {post_title} {creator} {platform} {link}"></textarea></div>
+          <div class="d-field"><label class="d-label">Footer Text</label><input class="d-input" id="sp-e-footer" type="text" placeholder="Fuse OS Social Pings • {platform}"/></div>
+          <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveSpStyle()">💾 Save Style</button></div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- EMOJI PICKER (shared, repositioned by JS) -->
+<div class="emoji-picker" id="emoji-picker">
+  <div class="emoji-picker-header">
+    <input class="emoji-search" id="emoji-search" placeholder="🔍 Search emojis..." oninput="emojiSearch(this.value)"/>
+    <div class="emoji-cats" id="emoji-cats"></div>
+  </div>
+  <div class="emoji-grid-wrap" id="emoji-grid-wrap">
+    <div id="emoji-grid-content"></div>
+  </div>
+</div>
+
+<!-- Mobile sidebar toggle -->
+<button class="sb-toggle" id="sb-toggle" aria-label="Toggle sidebar">☰</button>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span class="toast-icon">✅</span><span id="toast-msg">Saved!</span></div>
+
+<script src="js/script.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════
+   ADMIN PASSWORD LOCK
+   Change ADMIN_PASSWORD below to your own secret password
+══════════════════════════════════════════════════════ */
+const ADMIN_PASSWORD = 'fuseos_admin_2024'; // ← Change this to your password!
+let _adminUnlocked = false;
+
+function unlockAdmin() {
+  const pwd = document.getElementById('admin-password').value;
+  const errEl = document.getElementById('admin-error');
+  if (pwd === ADMIN_PASSWORD) {
+    _adminUnlocked = true;
+    document.getElementById('admin-locked').style.display   = 'none';
+    document.getElementById('admin-unlocked').style.display = 'block';
+    errEl.style.display = 'none';
+    // Restore saved API config
+    const savedUrl = localStorage.getItem('fuse_api_url') || '';
+    const savedKey = localStorage.getItem('fuse_api_key') || '';
+    if (savedUrl) document.getElementById('api-url').value = savedUrl;
+    if (savedKey) document.getElementById('api-key').value = savedKey;
+    showToast('success', '🔓 Admin access granted!');
+  } else {
+    errEl.style.display = 'block';
+    document.getElementById('admin-password').value = '';
+  }
+}
+
+function lockAdmin() {
+  _adminUnlocked = false;
+  document.getElementById('admin-locked').style.display   = 'block';
+  document.getElementById('admin-unlocked').style.display = 'none';
+  document.getElementById('admin-password').value = '';
+  showToast('success', '🔒 Admin section locked.');
+}
+
+/* ── Config ─────────────────────────────────────── */
+let API_URL = localStorage.getItem('fuse_api_url') || '/botapi';
+let API_KEY  = localStorage.getItem('fuse_api_key') || '';
+if (API_URL) { document.getElementById('api-url').value = API_URL; document.getElementById('api-badge').textContent = 'Saved (untested)'; }
+if (API_KEY)  document.getElementById('api-key').value  = API_KEY;
+
+/* ── Discord OAuth + Server Picker ──────────────── */
+const DISCORD_CLIENT_ID = '1479852600370135173';
+let _discordUser = null;
+let _botServers  = [];
+
+function showServerPicker() {
+  document.getElementById('server-picker-overlay').style.display = 'flex';
+}
+
+function hideServerPicker() {
+  document.getElementById('server-picker-overlay').style.display = 'none';
+}
+
+function discordLogout() {
+  localStorage.removeItem('discord_token');
+  selectedGuildId = '';
+  _discordUser = null;
+  _botServers  = [];
+  document.getElementById('discord-login-btn').style.display = 'inline-flex';
+  document.getElementById('discord-user-info').style.display = 'none';
+  document.getElementById('nav-server-chip').style.display = 'none';
+  document.getElementById('sp-login-prompt').style.display = 'block';
+  document.getElementById('sp-server-grid').style.display = 'none';
+  document.getElementById('sp-overlay-sub').textContent = 'Login with Discord to manage your servers';
+  showServerPicker();
+}
+
+async function discordInit() {
+  // Handle OAuth token in URL hash
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.slice(1));
+    const token = params.get('access_token');
+    if (token) {
+      localStorage.setItem('discord_token', token);
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }
+
+  const token = localStorage.getItem('discord_token');
+  if (!token) {
+    // Not logged in — show overlay with login prompt
+    showServerPicker();
+    return;
+  }
+
+  try {
+    // Fetch Discord user
+    const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!userRes.ok) {
+      localStorage.removeItem('discord_token');
+      showServerPicker();
+      return;
+    }
+    _discordUser = await userRes.json();
+
+    // Show user in nav
+    const avatarUrl = _discordUser.avatar
+      ? 'https://cdn.discordapp.com/avatars/' + _discordUser.id + '/' + _discordUser.avatar + '.png?size=64'
+      : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    document.getElementById('discord-avatar').src = avatarUrl;
+    document.getElementById('discord-username').textContent = _discordUser.global_name || _discordUser.username;
+    document.getElementById('discord-login-btn').style.display = 'none';
+    document.getElementById('discord-user-info').style.display = 'inline-flex';
+
+    // Show server grid in overlay
+    document.getElementById('sp-login-prompt').style.display = 'none';
+    document.getElementById('sp-server-grid').style.display = 'flex';
+    document.getElementById('sp-overlay-sub').textContent = 'Select a server to manage';
+
+    // Load bot servers into overlay
+    await loadServerPicker();
+
+  } catch(e) {
+    console.error('Discord auth error:', e);
+    showServerPicker();
+  }
+}
+
+async function loadServerPicker() {
+  const grid    = document.getElementById('sp-server-grid');
+  const loading = document.getElementById('sp-loading');
+  loading.style.display = 'block';
+
+  const data = await apiFetch('/api/servers');
+  loading.style.display = 'none';
+
+  if (!data || !data.servers || !data.servers.length) {
+    grid.innerHTML = '<div class="sp-loading">❌ No servers found. Make sure the bot is in your server.</div>';
+    return;
+  }
+
+  _botServers = data.servers;
+
+  // Populate hidden select for compatibility
+  const sel = document.getElementById('server-select');
+  sel.innerHTML = '<option value="">— Pick a server —</option>';
+  data.servers.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.id; opt.textContent = g.name;
+    sel.appendChild(opt);
+  });
+
+  // Render server cards
+  grid.innerHTML = data.servers.map(g => {
+    const icon = g.icon
+      ? `<img src="${g.icon}" class="sp-server-icon" alt="${g.name}" onerror="this.style.display='none'"/>`
+      : `<div class="sp-server-icon">${g.name.charAt(0).toUpperCase()}</div>`;
+    return `<div class="sp-server-card"
+      data-id="${g.id}"
+      data-name="${g.name.replace(/"/g,'&quot;')}"
+      data-icon="${g.icon||''}">
+      ${icon}
+      <div>
+        <div class="sp-server-name">${g.name}</div>
+        <div class="sp-server-members">${(g.members||0).toLocaleString()} members</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Use event delegation — no inline onclick, avoids ALL escaping issues
+  grid.querySelectorAll('.sp-server-card').forEach(card => {
+    card.addEventListener('click', () => {
+      pickServer(card.dataset.id, card.dataset.name, card.dataset.icon);
+    });
+  });
+}
+
+function pickServer(guildId, guildName, guildIcon) {
+  // Update nav chip
+  document.getElementById('nav-server-name').textContent = guildName;
+  const iconEl = document.getElementById('nav-server-icon');
+  if (guildIcon) { iconEl.src = guildIcon; iconEl.style.display = 'inline'; }
+  else iconEl.style.display = 'none';
+  document.getElementById('nav-server-chip').style.display = 'inline-flex';
+
+  // Select the server
+  selectServer(guildId);
+
+  // Hide overlay
+  hideServerPicker();
+  showToast('success', '✅ Managing: ' + guildName);
+}
+
+// Run on page load
+discordInit();
+
+/* ── Sidebar nav ─────────────────────────────────── */
+document.querySelectorAll('.sb-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    const panel = document.getElementById('panel-' + item.dataset.panel);
+    if (panel) panel.classList.add('active');
+    if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+  });
+});
+document.getElementById('sb-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ── API ─────────────────────────────────────────── */
+async function apiFetch(path, method='GET', body=null) {
+  try {
+    const base = (API_URL || '/botapi').replace(/\/$/, '');
+    const key  = API_KEY || localStorage.getItem('fuse_api_key') || '';
+    const opts = { method, headers: { 'Content-Type':'application/json', 'X-API-Key': key } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(base + path, opts);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch(e) { showToast('error','❌ API Error: ' + e.message); return null; }
+}
+
+async function testConnection() {
+  // Save the key — URL is always /botapi proxy
+  API_KEY = document.getElementById('api-key').value.trim();
+  API_URL = '/botapi';
+  localStorage.setItem('fuse_api_key', API_KEY);
+  localStorage.setItem('fuse_api_url', API_URL);
+  showToast('info','🔄 Testing…');
+  const data = await apiFetch('/api/ping');
+  const badge = document.getElementById('api-badge');
+  if (data) { badge.textContent = '● Connected'; badge.classList.add('connected'); showToast('success','✅ Connected!'); }
+  else { badge.textContent = '● Not Connected'; badge.classList.remove('connected'); }
+}
+
+function saveApiConfig() {
+  API_URL = document.getElementById('api-url').value.trim();
+  API_KEY = document.getElementById('api-key').value.trim();
+  localStorage.setItem('fuse_api_url', API_URL);
+  localStorage.setItem('fuse_api_key', API_KEY);
+  showToast('success','💾 API config saved!');
+}
+
+function v(id) { return document.getElementById(id)?.value || ''; }
+
+async function saveSection(s) {
+  const map = {
+    general:       { bot_name:v('bot-name'), prefix:v('bot-prefix'), avatar:v('bot-avatar'), support_url:v('support-url') },
+    welcome:       { channel:v('wlc-channel'), title:v('wlc-title'), desc:v('wlc-desc'), footer:v('wlc-footer'), image:v('wlc-image') },
+    farewell:      { channel:v('bye-channel'), title:v('bye-title'), desc:v('bye-desc'), footer:v('bye-footer'), image:v('bye-image') },
+    mod_logs:      { mod_log:v('mod-log'), del_log:v('mod-del-log'), join_log:v('mod-join-log'), voice_log:v('mod-voice-log') },
+    automod:       { banned_words:v('mod-banned-words') },
+    punishments:   { warn_mute:v('mod-warn-mute'), warn_kick:v('mod-warn-kick'), warn_ban:v('mod-warn-ban'), timeout_dur:v('mod-timeout-dur'), mod_role:v('mod-role') },
+    tickets:       { title:v('tkt-title'), desc:v('tkt-desc'), btn_label:v('tkt-btn-label'), footer:v('tkt-footer'), image:v('tkt-image'), category:v('tkt-category'), staff_role:v('tkt-staff-role'), log:v('tkt-log'), max:v('tkt-max') },
+    giveaway:      { title:v('gwy-title'), win_title:v('gwy-win-title'), instructions:v('gwy-instructions'), footer:v('gwy-footer'), winners:v('gwy-winners'), duration:v('gwy-duration'), log:v('gwy-log') },
+    autorole_join: { role_ids:v('ar-join-roles') },
+  };
+  const res = await apiFetch('/api/config/' + s, 'POST', map[s] || {});
+  if (res) showToast('success','✅ ' + s.replace(/_/g,' ') + ' saved!');
+}
+
+async function saveToggle(key, val, guildId) {
+  const res = await apiFetch('/api/toggle','POST',{ key, value:val, guild_id: guildId || selectedGuildId });
+  if (res) showToast('success', `✅ ${key.replace(/_/g,' ')} ${val ? 'enabled' : 'disabled'}`);
+}
+
+/* ── Embed builder ───────────────────────────────── */
+function updatePreview() {
+  const title=v('e-title'), desc=v('e-desc'), author=v('e-author'),
+        authorIcon=v('e-author-icon'), thumb=v('e-thumb'), image=v('e-image'),
+        footer=v('e-footer'), color=v('e-color-hex')||'#5eead4',
+        content=v('e-content'), ts=v('e-timestamp');
+  document.getElementById('preview-embed').style.borderLeftColor = color;
+  const cEl = document.getElementById('preview-content');
+  cEl.textContent = content; cEl.style.display = content ? 'block' : 'none';
+  const aEl = document.getElementById('preview-author');
+  const aIconEl = document.getElementById('preview-author-icon');
+  const aNameEl = document.getElementById('preview-author-name');
+  if (author) {
+    aEl.style.display = 'flex'; aNameEl.textContent = author;
+    if (authorIcon) { aIconEl.src = authorIcon; aIconEl.style.display = 'inline'; }
+    else aIconEl.style.display = 'none';
+  } else aEl.style.display = 'none';
+  const tEl = document.getElementById('preview-title');
+  tEl.textContent = title; tEl.style.display = title ? 'block' : 'none';
+  document.getElementById('preview-desc').textContent = desc || 'Your embed description will appear here...';
+  const thEl = document.getElementById('preview-thumb');
+  if (thumb) { thEl.src = thumb; thEl.style.display = 'block'; } else thEl.style.display = 'none';
+  const iEl = document.getElementById('preview-image');
+  if (image) { iEl.src = image; iEl.style.display = 'block'; } else iEl.style.display = 'none';
+  const fEl = document.getElementById('preview-footer');
+  const ftEl = document.getElementById('preview-footer-text');
+  if (footer || ts) {
+    fEl.style.display = 'flex';
+    ftEl.textContent = footer + (ts==='now' ? (footer?' • ':'')+new Date().toLocaleTimeString() : '');
+  } else fEl.style.display = 'none';
+  const fieldsEl = document.getElementById('preview-fields');
+  fieldsEl.innerHTML = '';
+  document.querySelectorAll('.field-item').forEach(fi => {
+    const n = fi.querySelector('.field-name')?.value;
+    const vl = fi.querySelector('.field-val')?.value;
+    if (n||vl) { const d=document.createElement('div'); d.innerHTML=`<div class="discord-embed-field-name">${n||'\u200b'}</div><div class="discord-embed-field-val">${vl||'\u200b'}</div>`; fieldsEl.appendChild(d); }
+  });
+}
+
+function syncColor(from) {
+  if (from==='pick') document.getElementById('e-color-hex').value = document.getElementById('e-color-pick').value;
+  else { const h=v('e-color-hex'); if(/^#[0-9a-fA-F]{6}$/.test(h)) document.getElementById('e-color-pick').value=h; }
+  updatePreview();
+}
+function syncAnnColor(from) {
+  if (from==='pick') document.getElementById('ann-color-hex').value = document.getElementById('ann-color-pick').value;
+  else { const h=v('ann-color-hex'); if(/^#[0-9a-fA-F]{6}$/.test(h)) document.getElementById('ann-color-pick').value=h; }
+}
+
+let fieldCount = 0;
+function addField() {
+  const id = ++fieldCount;
+  const li = document.createElement('div');
+  li.className = 'field-item'; li.dataset.id = id;
+  li.innerHTML = `<button class="field-remove" onclick="removeField(${id})">✕</button>
+    <div class="field-item-grid">
+      <div class="d-field" style="margin:0"><label class="d-label" style="font-size:0.72rem">Name</label><input class="d-input field-name" type="text" placeholder="Field name" oninput="updatePreview()"/></div>
+      <div class="d-field" style="margin:0"><label class="d-label" style="font-size:0.72rem">Value</label><input class="d-input field-val" type="text" placeholder="Field value" oninput="updatePreview()"/></div>
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px"><label class="d-switch" style="margin:0"><input type="checkbox" class="field-inline" onchange="updatePreview()"><span class="d-switch-slider"></span></label><span style="font-size:0.78rem;color:var(--muted)">Inline</span></div>`;
+  document.getElementById('fields-list').appendChild(li);
+  updatePreview();
+}
+function removeField(id) { document.querySelector(`.field-item[data-id="${id}"]`)?.remove(); updatePreview(); }
+
+function buildEmbedPayload() {
+  const fields = [];
+  document.querySelectorAll('.field-item').forEach(fi => {
+    const n=fi.querySelector('.field-name')?.value, vl=fi.querySelector('.field-val')?.value, inline=fi.querySelector('.field-inline')?.checked;
+    if(n||vl) fields.push({name:n||'\u200b',value:vl||'\u200b',inline});
+  });
+  return {
+    author:      v('e-author')?{name:v('e-author'),icon_url:v('e-author-icon')||null}:null,
+    title:       v('e-title')||null, url:v('e-title-url')||null,
+    description: v('e-desc')||null,
+    color:       parseInt((v('e-color-hex')||'#5eead4').replace('#',''),16),
+    thumbnail:   v('e-thumb')?{url:v('e-thumb')}:null,
+    image:       v('e-image')?{url:v('e-image')}:null,
+    footer:      v('e-footer')?{text:v('e-footer'),icon_url:v('e-footer-icon')||null}:null,
+    timestamp:   v('e-timestamp')==='now'?new Date().toISOString():null,
+    fields,
+  };
+}
+
+async function sendEmbed() {
+  if (!v('e-guild')||!v('e-channel')) { showToast('error','⚠️ Enter server ID and channel ID.'); return; }
+  const res = await apiFetch('/api/send-embed','POST',{ guild_id:v('e-guild'), channel_id:v('e-channel'), content:v('e-content'), embed:buildEmbedPayload() });
+  if (res) showToast('success','🚀 Embed sent!');
+}
+function clearEmbed() {
+  ['e-author','e-author-icon','e-title','e-title-url','e-desc','e-thumb','e-image','e-footer','e-footer-icon','e-content'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('e-color-hex').value='#5eead4'; document.getElementById('e-color-pick').value='#5eead4';
+  document.getElementById('fields-list').innerHTML=''; updatePreview();
+}
+function copyEmbedJson() {
+  navigator.clipboard.writeText(JSON.stringify(buildEmbedPayload(),null,2)).then(()=>showToast('success','📋 JSON copied!'));
+}
+
+/* ── Announcements ───────────────────────────────── */
+async function sendAnnouncement() {
+  if (!v('ann-guild')||!v('ann-channel')) { showToast('error','⚠️ Enter server and channel ID.'); return; }
+  const res = await apiFetch('/api/send-embed','POST',{
+    guild_id:v('ann-guild'), channel_id:v('ann-channel'),
+    content: v('ann-ping') ? `<@&${v('ann-ping')}>` : null,
+    embed:{ title:v('ann-title')||null, description:v('ann-body')||null, color:parseInt((v('ann-color-hex')||'#5eead4').replace('#',''),16), footer:v('ann-footer')?{text:v('ann-footer')}:null, timestamp:new Date().toISOString() }
+  });
+  if (res) showToast('success','📢 Announcement sent!');
+}
+function clearAnnouncement() {
+  ['ann-guild','ann-channel','ann-ping','ann-title','ann-body','ann-footer'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+/* ── Ticket panel deploy ─────────────────────────── */
+async function deployTicketPanel() {
+  if (!v('tkt-guild')||!v('tkt-channel')) { showToast('error','⚠️ Enter server and channel ID.'); return; }
+  const res = await apiFetch('/api/deploy-ticket-panel','POST',{ guild_id:v('tkt-guild'), channel_id:v('tkt-channel'), title:v('tkt-title'), desc:v('tkt-desc'), btn_label:v('tkt-btn-label'), footer:v('tkt-footer'), image:v('tkt-image') });
+  if (res) showToast('success','🎟️ Ticket panel deployed!');
+}
+
+/* ── Reaction roles ──────────────────────────────── */
+const rrBindings = [];
+function addReactionRole() {
+  const msgId=v('rr-msg-id'), emoji=v('rr-emoji'), roleId=v('rr-role-id');
+  if (!msgId||!emoji||!roleId) { showToast('error','⚠️ Fill all three fields.'); return; }
+  rrBindings.push({msgId,emoji,roleId}); renderRRTable();
+  apiFetch('/api/reaction-roles','POST',{message_id:msgId,emoji,role_id:roleId}).then(r=>{ if(r) showToast('success','🎭 Binding added!'); });
+  ['rr-msg-id','rr-emoji','rr-role-id'].forEach(id=>document.getElementById(id).value='');
+}
+function removeRR(i) {
+  const b=rrBindings.splice(i,1)[0]; renderRRTable();
+  apiFetch('/api/reaction-roles/remove','POST',{message_id:b.msgId,emoji:b.emoji}).then(r=>{ if(r) showToast('success','🗑️ Binding removed!'); });
+}
+function renderRRTable() {
+  const tbody = document.getElementById('rr-table-body');
+  if (!rrBindings.length) { tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No bindings yet.</td></tr>'; return; }
+  tbody.innerHTML = rrBindings.map((b,i)=>`<tr><td style="font-size:1.3rem">${b.emoji}</td><td><code style="font-family:var(--font-mono);font-size:0.82rem;color:var(--cyan)">${b.roleId}</code></td><td><code style="font-family:var(--font-mono);font-size:0.82rem;color:var(--muted)">${b.msgId}</code></td><td><button class="d-btn d-btn-danger d-btn-sm" onclick="removeRR(${i})">Remove</button></td></tr>`).join('');
+}
+async function loadReactionRoles() {
+  const data = await apiFetch('/api/reaction-roles');
+  if (!data) return;
+  rrBindings.length=0; (data.bindings||[]).forEach(b=>rrBindings.push(b)); renderRRTable(); showToast('success','🔄 Refreshed!');
+}
+
+/* ── Auto roles ──────────────────────────────────── */
+const timedRoles=[],lbRoles=[];
+function addTimedRole() {
+  const roleId=v('ar-timed-role'),hours=v('ar-timed-hours');
+  if(!roleId||!hours){showToast('error','⚠️ Fill role ID and hours.');return;}
+  timedRoles.push({roleId,hours}); renderTimedRoles();
+  document.getElementById('ar-timed-role').value=''; document.getElementById('ar-timed-hours').value='';
+}
+function renderTimedRoles() {
+  document.getElementById('timed-roles-list').innerHTML = timedRoles.map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;padding:10px 14px"><span style="flex:1;font-family:var(--font-mono);font-size:0.82rem;color:var(--cyan)">Role: ${r.roleId}</span><span style="color:var(--muted);font-size:0.82rem">Remove after ${r.hours}h</span><button class="d-btn d-btn-danger d-btn-sm" onclick="timedRoles.splice(${i},1);renderTimedRoles()">✕</button></div>`).join('');
+}
+function addLeaderboardRole() {
+  const pos=v('ar-lb-pos'),roleId=v('ar-lb-role');
+  if(!pos||!roleId){showToast('error','⚠️ Fill position and role ID.');return;}
+  lbRoles.push({pos,roleId}); renderLbRoles(); document.getElementById('ar-lb-role').value='';
+}
+function renderLbRoles() {
+  document.getElementById('lb-roles-list').innerHTML = lbRoles.map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;padding:10px 14px"><span style="flex:1;font-family:var(--font-mono);font-size:0.82rem;color:var(--cyan)">Position #${r.pos}</span><span style="color:var(--muted);font-size:0.82rem">Role: ${r.roleId}</span><button class="d-btn d-btn-danger d-btn-sm" onclick="lbRoles.splice(${i},1);renderLbRoles()">✕</button></div>`).join('');
+}
+
+/* ── Welcome preview ─────────────────────────────── */
+function previewWelcome(){showToast('success','👋 Preview: "'+v('wlc-title').replace('{server}','Your Server').replace('{user}','NewMember')+'"');}
+function previewFarewell(){showToast('success','🚪 Preview: "'+v('bye-title').replace('{user}','OldMember')+'"');}
+
+/* ── Toast ───────────────────────────────────────── */
+let _tt;
+function showToast(type,msg){
+  const t=document.getElementById('toast'),m=document.getElementById('toast-msg'),ic=t.querySelector('.toast-icon');
+  clearTimeout(_tt); t.className='toast'; m.textContent=msg;
+  ic.textContent=type==='success'?'✅':type==='error'?'❌':'ℹ️';
+  if(type!=='info') t.classList.add(type);
+  void t.offsetWidth; t.classList.add('show');
+  _tt=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+/* ── Server Selector ─────────────────────────────── */
+let selectedGuildId = '';
+
+async function loadServers() {
+  // Refresh server picker
+  await loadServerPicker();
+  showServerPicker();
+}
+
+function selectServer(guildId) {
+  selectedGuildId = guildId;
+  if (!guildId) return;
+  // Auto-fill all guild ID fields
+  document.querySelectorAll('[id$="-guild"], [id$="ann-guild"], [id$="tkt-guild"]').forEach(el => { el.value = guildId; });
+  document.querySelectorAll('.guild-id-field').forEach(el => { el.value = guildId; });
+  // Load channels into ALL channel dropdowns
+  document.querySelectorAll('[data-ch-sel]').forEach(sel => { loadChannels(sel.id, guildId); });
+  // Load roles into ALL role dropdowns
+  document.querySelectorAll('[data-role-sel]').forEach(sel => { loadRoles(sel.id, guildId); });
+  // Set pb-guild hidden input
+  const pbGuild = document.getElementById('pb-guild');
+  if (pbGuild) pbGuild.value = guildId;
+  // Auto-load autoresponders for this server
+  loadAutoResponders();
+  showToast('success', '✅ Server selected!');
+}
+
+// Server loading now handled by discordInit()
+
+updatePreview();
+
+/* ══════════════════════════════════════════════════════
+   CHANNEL & ROLE SELECTORS
+══════════════════════════════════════════════════════ */
+const _channelCache = {};
+const _roleCache = {};
+
+async function loadChannels(targetId, guildId) {
+  if (!guildId) return;
+  const sel = document.getElementById(targetId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">⏳ Loading...</option>';
+
+  // Use cache if available
+  if (_channelCache[guildId]) {
+    populateChannels(sel, _channelCache[guildId]);
+    return;
+  }
+
+  const data = await apiFetch('/api/guild/' + guildId + '/channels');
+  if (!data || !data.channels) {
+    sel.innerHTML = '<option value="">❌ Could not load channels</option>';
+    return;
+  }
+  _channelCache[guildId] = data.channels;
+  populateChannels(sel, data.channels);
+}
+
+function populateChannels(sel, channels) {
+  sel.innerHTML = '<option value="">— Select channel —</option>';
+  // Group by category
+  const cats = {};
+  channels.forEach(ch => {
+    const cat = ch.category || 'No Category';
+    if (!cats[cat]) cats[cat] = [];
+    cats[cat].push(ch);
+  });
+  Object.entries(cats).forEach(([cat, chs]) => {
+    const og = document.createElement('optgroup');
+    og.label = '📁 ' + cat;
+    chs.forEach(ch => {
+      const opt = document.createElement('option');
+      opt.value = ch.id;
+      opt.textContent = (ch.type === 'text' ? '# ' : '🔊 ') + ch.name;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+}
+
+async function loadRoles(targetId, guildId) {
+  if (!guildId) return;
+  const sel = document.getElementById(targetId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">⏳ Loading...</option>';
+
+  if (_roleCache[guildId]) {
+    populateRoles(sel, _roleCache[guildId]);
+    return;
+  }
+
+  const data = await apiFetch('/api/guild/' + guildId + '/roles');
+  if (!data || !data.roles) {
+    sel.innerHTML = '<option value="">❌ Could not load roles</option>';
+    return;
+  }
+  _roleCache[guildId] = data.roles;
+  populateRoles(sel, data.roles);
+}
+
+function populateRoles(sel, roles) {
+  sel.innerHTML = '<option value="">— Select role —</option>';
+  roles.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = '@' + r.name;
+    opt.style.color = r.color || 'inherit';
+    sel.appendChild(opt);
+  });
+}
+
+// selectServer is fully defined above — no override needed
+
+
+
+/* ══════════════════════════════════════════════════════
+   AUTO RESPONDER
+══════════════════════════════════════════════════════ */
+function toggleArEmbed(on) {
+  document.getElementById('ar-embed-opts').style.display = on ? 'block' : 'none';
+}
+
+async function addAutoResponder() {
+  const trigger  = v('ar-trigger').trim().toLowerCase();
+  const response = v('ar-response').trim();
+  const useEmbed = document.getElementById('ar-use-embed').checked;
+  const title    = v('ar-embed-title');
+  const footer   = v('ar-embed-footer');
+  const color    = v('ar-color-hex') || '#5eead4';
+
+  if (!trigger || !response) { showToast('error','⚠️ Trigger and response are required.'); return; }
+
+  const res = await apiFetch('/api/autoresponder', 'POST', {
+    guild_id: selectedGuildId,
+    trigger, response, embed: useEmbed, title, footer, color
+  });
+  if (res) {
+    showToast('success','✅ Trigger "' + trigger + '" added!');
+    document.getElementById('ar-trigger').value = '';
+    document.getElementById('ar-response').value = '';
+    loadAutoResponders();
+  }
+}
+
+async function loadAutoResponders() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/autoresponder?guild_id=' + selectedGuildId);
+  if (!data) return;
+  const list = document.getElementById('ar-list');
+  const empty = document.getElementById('ar-empty');
+  const triggers = data.triggers || {};
+  const keys = Object.keys(triggers);
+
+  if (!keys.length) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = keys.map(trigger => {
+    const d = triggers[trigger];
+    const response = d.response || '';
+    const resp = response.substring(0, 120);
+    return `<div class="ar-item">
+      <div class="ar-item-info">
+        <div class="ar-trigger-badge">${trigger}</div>
+        ${d.embed ? '<span style="font-size:0.72rem;color:var(--violet);margin-left:6px">📋 embed</span>' : ''}
+        <div class="ar-response-text">${resp}${response.length > 120 ? '...' : ''}</div>
+      </div>
+      <button class="d-btn d-btn-danger d-btn-sm" onclick="removeAutoResponder('${trigger}')">Remove</button>
+    </div>`;
+  }).join('');
+}
+
+async function removeAutoResponder(trigger) {
+  const res = await apiFetch('/api/autoresponder/remove', 'POST', {
+    guild_id: selectedGuildId, trigger
+  });
+  if (res) { showToast('success','🗑️ Trigger removed!'); loadAutoResponders(); }
+}
+
+/* ══════════════════════════════════════════════════════
+   PAGE BUILDER
+══════════════════════════════════════════════════════ */
+let pbPages = [];
+let pbCount = 0;
+
+function addPage() {
+  const id = ++pbCount;
+  const div = document.createElement('div');
+  div.className = 'pb-page';
+  div.dataset.id = id;
+  div.innerHTML = `
+    <button class="pb-page-remove" onclick="removePage(${id})">✕</button>
+    <div class="pb-page-header">
+      <div class="pb-page-num">${pbCount}</div>
+      <input class="d-input" style="flex:1" placeholder="Section label (e.g. 📜 General Rules)" 
+             id="pb-label-${id}" oninput="updatePbPreview()"/>
+    </div>
+    <div class="d-field" style="margin:0">
+      <label class="d-label" style="font-size:0.72rem">Section Content</label>
+      <textarea class="d-textarea" id="pb-content-${id}" 
+                placeholder="Content shown when this section is selected..." 
+                style="min-height:100px" oninput="updatePbPreview()"></textarea>
+    </div>
+    <div class="d-field" style="margin-top:10px">
+      <label class="d-label" style="font-size:0.72rem">Section Emoji (optional)</label>
+      <input class="d-input" id="pb-emoji-${id}" type="text" placeholder="📜" style="width:80px" oninput="updatePbPreview()"/>
+    </div>`;
+  document.getElementById('pb-pages').appendChild(div);
+  pbPages.push(id);
+  updatePbPreview();
+}
+
+function removePage(id) {
+  document.querySelector(`.pb-page[data-id="${id}"]`)?.remove();
+  pbPages = pbPages.filter(p => p !== id);
+  updatePbPreview();
+}
+
+function updatePbPreview() {
+  const title = v('pb-title') || '📜 Server Rules';
+  const desc  = v('pb-desc') || 'Select a section from the dropdown below...';
+  const color = document.getElementById('pb-color')?.value || '#5eead4';
+  const useDropdown = document.getElementById('pb-use-dropdown')?.checked;
+
+  document.getElementById('pb-preview-title').textContent = title;
+  document.getElementById('pb-preview-desc').textContent  = desc;
+  document.getElementById('pb-preview-embed').style.borderLeftColor = color;
+
+  const sel = document.getElementById('pb-preview-select');
+  const compEl = document.getElementById('pb-preview-component');
+
+  if (useDropdown) {
+    compEl.innerHTML = `<select style="background:#2b2d31;border:1px solid #3f4147;color:#dbdee1;padding:6px 10px;border-radius:4px;font-size:13px;width:100%">
+      <option>Select a section...</option>
+      ${pbPages.map(id => {
+        const label = document.getElementById('pb-label-'+id)?.value || 'Section ' + id;
+        const emoji = document.getElementById('pb-emoji-'+id)?.value || '';
+        return `<option>${emoji} ${label}</option>`;
+      }).join('')}
+    </select>`;
+  } else {
+    compEl.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      ${pbPages.map(id => {
+        const label = document.getElementById('pb-label-'+id)?.value || 'Section ' + id;
+        const emoji = document.getElementById('pb-emoji-'+id)?.value || '';
+        return `<button style="background:#5865f2;color:#fff;border:none;padding:6px 14px;border-radius:4px;font-size:13px;cursor:pointer">${emoji} ${label}</button>`;
+      }).join('')}
+    </div>`;
+  }
+}
+
+async function deployPageBuilder() {
+  const guildId   = document.getElementById('pb-guild')?.value;
+  const channelId = document.getElementById('pb-channel')?.value;
+  if (!guildId || !channelId) { showToast('error','⚠️ Select server and channel.'); return; }
+
+  const pages = pbPages.map(id => ({
+    label:   document.getElementById('pb-label-'+id)?.value || 'Section ' + id,
+    content: document.getElementById('pb-content-'+id)?.value || '',
+    emoji:   document.getElementById('pb-emoji-'+id)?.value || '',
+  })).filter(p => p.label && p.content);
+
+  if (!pages.length) { showToast('error','⚠️ Add at least one section with content.'); return; }
+
+  const res = await apiFetch('/api/deploy-page-builder', 'POST', {
+    guild_id:   guildId,
+    channel_id: channelId,
+    title:      v('pb-title'),
+    desc:       v('pb-desc'),
+    color:      document.getElementById('pb-color')?.value || '#5eead4',
+    thumb:      v('pb-thumb'),
+    use_dropdown: document.getElementById('pb-use-dropdown')?.checked,
+    ephemeral:    document.getElementById('pb-ephemeral')?.checked,
+    edit_same:    document.getElementById('pb-edit-same')?.checked,
+    pages,
+  });
+  if (res) showToast('success','🚀 Page builder deployed!');
+}
+
+// Init page builder with one default page
+addPage();
+
+/* ══════════════════════════════════════════════════════
+   SOCIAL PINGS
+══════════════════════════════════════════════════════ */
+const SP_PLATFORMS = {
+  youtube:   { name:'YouTube',    emoji:'📺', hint:'Channel ID (starts with UC...) — find it in YouTube Studio', color:'#ff0000' },
+  twitch:    { name:'Twitch',     emoji:'🎮', hint:'Your Twitch username (e.g. ninja)', color:'#9146ff' },
+  twitter:   { name:'Twitter/X',  emoji:'🐦', hint:'Your Twitter/X username without @ (e.g. elonmusk)', color:'#1da1f2' },
+  instagram: { name:'Instagram',  emoji:'📸', hint:'Your Instagram username (e.g. instagram)', color:'#e1306c' },
+  tiktok:    { name:'TikTok',     emoji:'🎵', hint:'Your TikTok username without @ (e.g. charlidamelio)', color:'#010101' },
+  reddit:    { name:'Reddit',     emoji:'🤖', hint:'Subreddit name without r/ (e.g. discordapp)', color:'#ff4500' },
+};
+
+function updateSpHint() {
+  const p = document.getElementById('sp-platform').value;
+  const hint = document.getElementById('sp-hint');
+  const label = document.getElementById('sp-id-label');
+  if (p && SP_PLATFORMS[p]) {
+    hint.textContent = '💡 ' + SP_PLATFORMS[p].hint;
+    label.textContent = SP_PLATFORMS[p].name + ' ID / Username';
+  } else {
+    hint.textContent = '';
+    label.textContent = 'Creator ID / Username';
+  }
+  document.getElementById('sp-verify-result').style.display = 'none';
+}
+
+let _spVerified = false;
+
+async function verifySocialFeed() {
+  const platform   = document.getElementById('sp-platform').value;
+  const creatorId  = document.getElementById('sp-creator-id').value.trim();
+  if (!platform || !creatorId) { showToast('error','⚠️ Select a platform and enter your ID.'); return; }
+
+  showToast('info','🔍 Verifying...');
+  _spVerified = false;
+
+  const res = await apiFetch('/api/social/verify', 'POST', { platform, creator_id: creatorId });
+  const resultEl = document.getElementById('sp-verify-result');
+
+  if (res && res.found) {
+    const p = SP_PLATFORMS[platform];
+    document.getElementById('sp-verify-icon').textContent = p.emoji;
+    document.getElementById('sp-verify-title').textContent = res.latest_title || 'Latest post found!';
+    document.getElementById('sp-verify-link').textContent = res.latest_link || '';
+    resultEl.style.display = 'block';
+    _spVerified = true;
+    showToast('success','✅ Found! Is this your channel?');
+  } else {
+    resultEl.style.display = 'none';
+    showToast('error','❌ Could not find that channel. Check the ID and try again.');
+  }
+}
+
+async function addSocialFeed() {
+  const platform  = document.getElementById('sp-platform').value;
+  const creatorId = document.getElementById('sp-creator-id').value.trim();
+  const channelId = document.getElementById('sp-channel').value;
+  const roleId    = document.getElementById('sp-role').value;
+  const customMsg = document.getElementById('sp-custom-msg').value.trim();
+
+  if (!platform || !creatorId) { showToast('error','⚠️ Select platform and enter creator ID.'); return; }
+  if (!channelId) { showToast('error','⚠️ Select an announce channel.'); return; }
+  if (!_spVerified) { showToast('error','⚠️ Please verify the feed first by clicking 🔍 Verify.'); return; }
+
+  const res = await apiFetch('/api/social/add', 'POST', {
+    guild_id:   selectedGuildId,
+    platform, creator_id: creatorId,
+    channel_id: channelId,
+    ping_role:  roleId || '',
+    custom_msg: customMsg,
+  });
+
+  if (res) {
+    showToast('success','✅ ' + SP_PLATFORMS[platform].name + ' feed added!');
+    document.getElementById('sp-creator-id').value = '';
+    document.getElementById('sp-verify-result').style.display = 'none';
+    _spVerified = false;
+    loadSocialFeeds();
+  }
+}
+
+async function loadSocialFeeds() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const data = await apiFetch('/api/social/list?guild_id=' + selectedGuildId);
+  if (!data) return;
+
+  const feeds  = data.feeds || {};
+  const list   = document.getElementById('sp-feeds');
+  const empty  = document.getElementById('sp-empty');
+  const keys   = Object.keys(feeds);
+
+  if (!keys.length) { empty.style.display='block'; list.innerHTML=''; return; }
+  empty.style.display = 'none';
+
+  list.innerHTML = keys.map(key => {
+    const f = feeds[key];
+    const p = SP_PLATFORMS[f.platform] || {emoji:'🔔', name:f.platform};
+    const enabled = f.enabled !== false;
+    return `<div class="ar-item">
+      <div class="ar-item-info">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:1.4rem">${p.emoji}</span>
+          <div>
+            <div style="font-weight:600;color:var(--off-white)">${p.name}</div>
+            <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--cyan)">${f.creator_id}</div>
+          </div>
+          <span style="margin-left:auto;font-size:0.75rem;color:${enabled?'#34d399':'#f87171'}">${enabled?'✅ Active':'❌ Paused'}</span>
+        </div>
+        <div style="font-size:0.82rem;color:var(--muted)">Channel: <code style="font-family:var(--font-mono)">${f.channel_id}</code></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="d-btn d-btn-secondary d-btn-sm" onclick="toggleSocialFeed('${key}','${!enabled}')">
+          ${enabled ? '⏸️ Pause' : '▶️ Resume'}
+        </button>
+        <button class="d-btn d-btn-danger d-btn-sm" onclick="removeSocialFeed('${key}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleSocialFeed(key, enabled) {
+  const res = await apiFetch('/api/social/toggle', 'POST', {
+    guild_id: selectedGuildId, key, enabled: enabled === 'true'
+  });
+  if (res) { showToast('success','✅ Feed updated!'); loadSocialFeeds(); }
+}
+
+async function removeSocialFeed(key) {
+  const res = await apiFetch('/api/social/remove', 'POST', {
+    guild_id: selectedGuildId, key
+  });
+  if (res) { showToast('success','🗑️ Feed removed!'); loadSocialFeeds(); }
+}
+
+function loadSpEditor() {
+  const p = document.getElementById('sp-edit-platform').value;
+  const editor = document.getElementById('sp-editor');
+  if (!p) { editor.style.display='none'; return; }
+  editor.style.display = 'block';
+  const cfg = SP_PLATFORMS[p];
+  document.getElementById('sp-e-title').placeholder = cfg.emoji + ' {post_title}';
+  document.getElementById('sp-e-color').value = cfg.color;
+  document.getElementById('sp-e-footer').placeholder = 'Fuse OS Social Pings • ' + cfg.name;
+}
+
+async function saveSpStyle() {
+  const platform = document.getElementById('sp-edit-platform').value;
+  if (!platform) { showToast('error','⚠️ Select a platform.'); return; }
+  const res = await apiFetch('/api/social/style', 'POST', {
+    guild_id:  selectedGuildId,
+    platform,
+    title:     document.getElementById('sp-e-title').value,
+    color:     document.getElementById('sp-e-color').value,
+    desc:      document.getElementById('sp-e-desc').value,
+    footer:    document.getElementById('sp-e-footer').value,
+  });
+  if (res) showToast('success','💾 Style saved!');
+}
+
+/* ══════════════════════════════════════════════════════
+   EMOJI PICKER
+══════════════════════════════════════════════════════ */
+const EMOJI_CATEGORIES = [
+  { id: 'smileys',   icon: '😀', name: 'Smileys', emojis: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','💫','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖'] },
+  { id: 'people',    icon: '👋', name: 'People', emojis: ['👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🫀','🫁','🧠','🦷','🦴','👀','👁️','👅','👄','💋','🩸','👶','🧒','👦','👧','🧑','👱','👨','🧔','👩','🧓','👴','👵','🙍','🙎','🙅','🙆','💁','🙋','🧏','🙇','🤦','🤷','💆','💇','🚶','🧍','🧎','🏃','💃','🕺','🕴️','👯','🧖','🧗','🤺','🏇','⛷️','🏂','🏌️','🏄','🚣','🧘','🛀','🛌'] },
+  { id: 'nature',    icon: '🌿', name: 'Nature', emojis: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🕷️','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🦮','🐈','🐓','🦃','🦤','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔','🌵','🎄','🌲','🌳','🌴','🪵','🌱','🌿','☘️','🍀','🎍','🪴','🎋','🍃','🍂','🍁','🍄','🐚','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','🌛','🌜','🌚','🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔','🌙','🌟','⭐','🌠','🌌','☁️','⛅','🌤️','🌈','🌂','☂️','🌊','🌬️','🌀','🌪️','🌈','⚡','❄️','☃️','⛄','🔥','💧','🌊'] },
+  { id: 'food',      icon: '🍕', name: 'Food', emojis: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🦪','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🧃','🥤','🧋','☕','🍵','🫖','🧉','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧊'] },
+  { id: 'travel',    icon: '✈️', name: 'Travel', emojis: ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🛺','🚲','🛴','🛹','🛼','🚏','🛣️','🛤️','⛽','🛞','🚨','🚥','🚦','🛑','🚧','⚓','🛟','⛵','🚤','🛥️','🛳️','⛴️','🚢','✈️','🛩️','🛫','🛬','🪂','💺','🚁','🚟','🚠','🚡','🛰️','🚀','🛸','🪐','🌍','🌎','🌏','🗺️','🧭','🏔️','⛰️','🌋','🗻','🏕️','🏖️','🏜️','🏝️','🏞️','🏟️','🏛️','🏗️','🧱','🪨','🪵','🛖','🏘️','🏚️','🏠','🏡','🏢','🏣','🏤','🏥','🏦','🏨','🏩','🏪','🏫','🏬','🏭','🏯','🏰','💒','🗼','🗽','⛪','🕌','🛕','🕍','⛩️','🕋'] },
+  { id: 'objects',   icon: '💡', name: 'Objects', emojis: ['⌚','📱','📲','💻','⌨️','🖥️','🖨️','🖱️','🖲️','💽','💾','💿','📀','🧮','📷','📸','📹','🎥','📽️','🎞️','📞','☎️','📟','📠','📺','📻','🧭','⏱️','⏲️','⏰','🕰️','⌛','⏳','📡','🔋','🪫','🔌','💡','🔦','🕯️','🪔','🧯','🛢️','💸','💵','💴','💶','💷','🪙','💰','💳','💎','⚖️','🪜','🧰','🪛','🔧','🔨','⚒️','🛠️','⛏️','🪚','🔩','⚙️','🗜️','🔗','⛓️','🧲','🪝','🔫','💣','🧨','🪓','🔪','🗡️','⚔️','🛡️','🚬','⚰️','🪦','⚱️','🏺','🔮','📿','🧿','💈','⚗️','🔭','🔬','🩺','🩻','🩹','🩼','💊','💉','🩸','🧬','🦠','🧫','🧪','🌡️','🧹','🧺','🧻','🚽','🚰','🚿','🛁','🪠','🧴','🧷','🧼','🫧','🪥','🧽','🪣','🧹','🪒','🧻','🪞','🪟','🛋️','🪑','🚪','🧳','🌂','☂️','🧵','🪡','🧶','🪢','👓','🕶️','🥽','🌂'] },
+  { id: 'symbols',   icon: '❤️', name: 'Symbols', emojis: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','🉑','☢️','☣️','📴','📳','🈶','🈚','🈸','🈺','🈷️','✴️','🆚','💮','🉐','㊙️','㊗️','🈴','🈵','🈹','🈲','🅰️','🅱️','🆎','🆑','🅾️','🆘','❌','⭕','🛑','⛔','📛','🚫','💯','💢','♨️','🚷','🚯','🚳','🚱','🔞','📵','🚭','❗','❕','❓','❔','‼️','⁉️','🔅','🔆','〽️','⚠️','🚸','🔱','⚜️','🔰','♻️','✅','🈯','💹','❎','🌐','💠','Ⓜ️','🌀','💤','🏧','🚾','♿','🅿️','🛗','🈳','🈂️','🛂','🛃','🛄','🛅','🚹','🚺','🚼','⚧️','🚻','🚮','🎦','📶','🈁','🔣','ℹ️','🔤','🔡','🔠','🆖','🆗','🆙','🆒','🆕','🆓','0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟','🔢','#️⃣','*️⃣','⏏️','▶️','⏸️','⏹️','⏺️','⏭️','⏮️','⏩','⏪','⏫','⏬','◀️','🔼','🔽','➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','↪️','↩️','⤴️','⤵️','🔀','🔁','🔂','🔄','🔃','🎵','🎶','➕','➖','➗','✖️','♾️','💲','💱','™️','©️','®️','〰️','➰','➿','🔚','🔙','🔛','🔝','🔜','✔️','☑️','🔘','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🟤','🔺','🔻','🔷','🔶','🔹','🔸','🔲','🔳','▪️','▫️','◾','◽','◼️','◻️','🟥','🟧','🟨','🟩','🟦','🟪','⬛','⬜','🟫','🔈','🔇','🔉','🔊','🔔','🔕','📣','📢','👁️‍🗨️','💬','💭','🗯️','♠️','♣️','♥️','♦️','🃏','🎴','🀄'] },
+  { id: 'activities', icon: '⚽', name: 'Activities', emojis: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','⛹️','🤺','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚵','🚴','🏆','🥇','🥈','🥉','🏅','🎖️','🏵️','🎗️','🎫','🎟️','🎪','🤹','🎭','🩰','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🪘','🎷','🎺','🎸','🪕','🎻','🪗','🎲','♟️','🎯','🎳','🎮','🎰','🧩'] },
+  { id: 'flags',     icon: '🏳️', name: 'Flags', emojis: ['🏳️','🏴','🏁','🚩','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇦🇫','🇦🇽','🇦🇱','🇩🇿','🇦🇸','🇦🇩','🇦🇴','🇦🇮','🇦🇶','🇦🇬','🇦🇷','🇦🇲','🇦🇼','🇦🇺','🇦🇹','🇦🇿','🇧🇸','🇧🇭','🇧🇩','🇧🇧','🇧🇾','🇧🇪','🇧🇿','🇧🇯','🇧🇲','🇧🇹','🇧🇴','🇧🇦','🇧🇼','🇧🇷','🇧🇳','🇧🇬','🇧🇫','🇧🇮','🇨🇻','🇰🇭','🇨🇲','🇨🇦','🇰🇾','🇨🇫','🇹🇩','🇨🇱','🇨🇳','🇨🇽','🇨🇨','🇨🇴','🇰🇲','🇨🇬','🇨🇩','🇨🇰','🇨🇷','🇨🇮','🇭🇷','🇨🇺','🇨🇼','🇨🇾','🇨🇿','🇩🇰','🇩🇯','🇩🇲','🇩🇴','🇪🇨','🇪🇬','🇸🇻','🇬🇶','🇪🇷','🇪🇪','🇸🇿','🇪🇹','🇫🇰','🇫🇴','🇫🇯','🇫🇮','🇫🇷','🇬🇫','🇵🇫','🇹🇫','🇬🇦','🇬🇲','🇬🇪','🇩🇪','🇬🇭','🇬🇮','🇬🇷','🇬🇱','🇬🇩','🇬🇵','🇬🇺','🇬🇹','🇬🇬','🇬🇳','🇬🇼','🇬🇾','🇭🇹','🇭🇳','🇭🇰','🇭🇺','🇮🇸','🇮🇳','🇮🇩','🇮🇷','🇮🇶','🇮🇪','🇮🇲','🇮🇱','🇮🇹','🇯🇲','🇯🇵','🇯🇪','🇯🇴','🇰🇿','🇰🇪','🇰🇮','🇽🇰','🇰🇼','🇰🇬','🇱🇦','🇱🇻','🇱🇧','🇱🇸','🇱🇷','🇱🇾','🇱🇮','🇱🇹','🇱🇺','🇲🇴','🇲🇬','🇲🇼','🇲🇾','🇲🇻','🇲🇱','🇲🇹','🇲🇭','🇲🇶','🇲🇷','🇲🇺','🇾🇹','🇲🇽','🇫🇲','🇲🇩','🇲🇨','🇲🇳','🇲🇪','🇲🇸','🇲🇦','🇲🇿','🇲🇲','🇳🇦','🇳🇷','🇳🇵','🇳🇱','🇳🇨','🇳🇿','🇳🇮','🇳🇪','🇳🇬','🇳🇺','🇳🇫','🇲🇵','🇳🇴','🇴🇲','🇵🇰','🇵🇼','🇵🇸','🇵🇦','🇵🇬','🇵🇾','🇵🇪','🇵🇭','🇵🇳','🇵🇱','🇵🇹','🇵🇷','🇶🇦','🇷🇪','🇷🇴','🇷🇺','🇷🇼','🇧🇱','🇸🇭','🇰🇳','🇱🇨','🇵🇲','🇻🇨','🇼🇸','🇸🇲','🇸🇹','🇸🇦','🇸🇳','🇷🇸','🇸🇨','🇸🇱','🇸🇬','🇸🇽','🇸🇰','🇸🇮','🇸🇧','🇸🇴','🇿🇦','🇬🇸','🇸🇸','🇪🇸','🇱🇰','🇸🇩','🇸🇷','🇸🇯','🇸🇪','🇨🇭','🇸🇾','🇹🇼','🇹🇯','🇹🇿','🇹🇭','🇹🇱','🇹🇬','🇹🇰','🇹🇴','🇹🇹','🇹🇳','🇹🇷','🇹🇲','🇹🇨','🇹🇻','🇺🇬','🇺🇦','🇦🇪','🇬🇧','🏴󠁧󠁢󠁥󠁮󠁧󠁿','🏴󠁧󠁢󠁳󠁣󠁴󠁿','🏴󠁧󠁢󠁷󠁬󠁳󠁿','🇺🇸','🇺🇾','🇺🇿','🇻🇺','🇻🇦','🇻🇪','🇻🇳','🇻🇬','🇻🇮','🇼🇫','🇪🇭','🇾🇪','🇿🇲','🇿🇼'] },
+];
+
+let _emojiTarget = null;
+let _emojiCurrentCat = 'smileys';
+let _customEmojis = [];
+let _emojiInitialized = false;
+
+function initEmojiPicker() {
+  if (_emojiInitialized) return;
+  _emojiInitialized = true;
+
+  // Build category tabs
+  const cats = document.getElementById('emoji-cats');
+  cats.innerHTML = '';
+
+  // Add custom emojis tab if available
+  if (_customEmojis.length) {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-cat-btn' + (_emojiCurrentCat === 'custom' ? ' active' : '');
+    btn.textContent = '✨';
+    btn.title = 'Server Emojis';
+    btn.onclick = () => showEmojiCat('custom');
+    cats.appendChild(btn);
+  }
+
+  EMOJI_CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-cat-btn' + (_emojiCurrentCat === cat.id ? ' active' : '');
+    btn.textContent = cat.icon;
+    btn.title = cat.name;
+    btn.onclick = () => showEmojiCat(cat.id);
+    cats.appendChild(btn);
+  });
+
+  showEmojiCat(_emojiCurrentCat);
+}
+
+function showEmojiCat(catId) {
+  _emojiCurrentCat = catId;
+  document.querySelectorAll('.emoji-cat-btn').forEach((b,i) => {
+    const allCats = _customEmojis.length ? ['custom', ...EMOJI_CATEGORIES.map(c=>c.id)] : EMOJI_CATEGORIES.map(c=>c.id);
+    b.classList.toggle('active', allCats[i] === catId);
+  });
+
+  const content = document.getElementById('emoji-grid-content');
+  content.innerHTML = '';
+
+  if (catId === 'custom') {
+    // Group custom emojis by guild
+    const label = document.createElement('span');
+    label.className = 'emoji-section-label';
+    label.textContent = 'Server Emojis';
+    content.appendChild(label);
+    const grid = document.createElement('div');
+    grid.className = 'emoji-grid';
+    _customEmojis.forEach(e => {
+      const btn = document.createElement('button');
+      btn.className = 'emoji-item custom-emoji';
+      btn.title = ':' + e.name + ':';
+      btn.innerHTML = `<img src="https://cdn.discordapp.com/emojis/${e.id}.${e.animated ? 'gif' : 'webp'}?size=48" alt="${e.name}"/>`;
+      btn.onclick = () => insertEmoji(e.animated ? `<a:${e.name}:${e.id}>` : `<:${e.name}:${e.id}>`);
+      grid.appendChild(btn);
+    });
+    content.appendChild(grid);
+    return;
+  }
+
+  const cat = EMOJI_CATEGORIES.find(c => c.id === catId);
+  if (!cat) return;
+  const label = document.createElement('span');
+  label.className = 'emoji-section-label';
+  label.textContent = cat.name;
+  content.appendChild(label);
+  const grid = document.createElement('div');
+  grid.className = 'emoji-grid';
+  cat.emojis.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-item';
+    btn.textContent = e;
+    btn.title = e;
+    btn.onclick = () => insertEmoji(e);
+    grid.appendChild(btn);
+  });
+  content.appendChild(grid);
+}
+
+function emojiSearch(query) {
+  const content = document.getElementById('emoji-grid-content');
+  content.innerHTML = '';
+  if (!query.trim()) { showEmojiCat(_emojiCurrentCat); return; }
+
+  const q = query.toLowerCase();
+  const grid = document.createElement('div');
+  grid.className = 'emoji-grid';
+
+  // Search unicode emojis
+  EMOJI_CATEGORIES.forEach(cat => {
+    cat.emojis.forEach(e => {
+      if (e.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)) {
+        const btn = document.createElement('button');
+        btn.className = 'emoji-item';
+        btn.textContent = e; btn.title = e;
+        btn.onclick = () => insertEmoji(e);
+        grid.appendChild(btn);
+      }
+    });
+  });
+
+  // Search custom emojis
+  _customEmojis.filter(e => e.name.toLowerCase().includes(q)).forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-item custom-emoji';
+    btn.title = ':' + e.name + ':';
+    btn.innerHTML = `<img src="https://cdn.discordapp.com/emojis/${e.id}.${e.animated?'gif':'webp'}?size=48" alt="${e.name}"/>`;
+    btn.onclick = () => insertEmoji(e.animated ? `<a:${e.name}:${e.id}>` : `<:${e.name}:${e.id}>`);
+    grid.appendChild(btn);
+  });
+
+  if (!grid.children.length) {
+    content.innerHTML = '<div class="sp-loading">No emojis found</div>';
+  } else {
+    content.appendChild(grid);
+  }
+}
+
+function insertEmoji(emoji) {
+  if (!_emojiTarget) return;
+  const el = document.getElementById(_emojiTarget);
+  if (!el) return;
+  const start = el.selectionStart ?? el.value.length;
+  const end   = el.selectionEnd ?? el.value.length;
+  el.value = el.value.slice(0, start) + emoji + el.value.slice(end);
+  el.selectionStart = el.selectionEnd = start + emoji.length;
+  el.focus();
+  el.dispatchEvent(new Event('input'));
+}
+
+function openEmojiPicker(targetId, btnEl) {
+  const picker = document.getElementById('emoji-picker');
+  _emojiTarget = targetId;
+
+  // Toggle close
+  if (picker.classList.contains('open') && picker.dataset.target === targetId) {
+    picker.classList.remove('open');
+    return;
+  }
+  picker.dataset.target = targetId;
+
+  // Position near button
+  const rect = btnEl.getBoundingClientRect();
+  const pickerH = 420;
+  const pickerW = 340;
+  let top  = rect.bottom + 6;
+  let left = rect.left;
+  if (top + pickerH > window.innerHeight) top = rect.top - pickerH - 6;
+  if (left + pickerW > window.innerWidth)  left = window.innerWidth - pickerW - 8;
+  picker.style.top  = top  + 'px';
+  picker.style.left = left + 'px';
+  picker.classList.add('open');
+
+  // Init + load custom emojis
+  if (!_emojiInitialized && selectedGuildId) {
+    apiFetch('/api/guild/' + selectedGuildId + '/emojis').then(data => {
+      if (data && data.emojis) _customEmojis = data.emojis;
+      initEmojiPicker();
+    });
+  } else {
+    initEmojiPicker();
+  }
+  document.getElementById('emoji-search').value = '';
+  showEmojiCat(_emojiCurrentCat);
+}
+
+// Close picker when clicking outside
+document.addEventListener('click', e => {
+  const picker = document.getElementById('emoji-picker');
+  if (!picker.classList.contains('open')) return;
+  if (picker.contains(e.target)) return;
+  if (e.target.closest('.emoji-btn')) return;
+  picker.classList.remove('open');
+}, true);
+
+</script>
+</body>
+</html>
