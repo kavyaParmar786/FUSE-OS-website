@@ -1107,7 +1107,10 @@ async function loadServerPicker() {
     const icon = g.icon
       ? `<img src="${g.icon}" class="sp-server-icon" alt="${g.name}" onerror="this.style.display='none'"/>`
       : `<div class="sp-server-icon">${g.name.charAt(0).toUpperCase()}</div>`;
-    return `<div class="sp-server-card" onclick="pickServer('${g.id}','${g.name.replace(/'/g,"\'")}','${g.icon||''}')">
+    return `<div class="sp-server-card"
+      data-id="${g.id}"
+      data-name="${g.name.replace(/"/g,'&quot;')}"
+      data-icon="${g.icon||''}">
       ${icon}
       <div>
         <div class="sp-server-name">${g.name}</div>
@@ -1115,6 +1118,13 @@ async function loadServerPicker() {
       </div>
     </div>`;
   }).join('');
+
+  // Use event delegation — no inline onclick, avoids ALL escaping issues
+  grid.querySelectorAll('.sp-server-card').forEach(card => {
+    card.addEventListener('click', () => {
+      pickServer(card.dataset.id, card.dataset.name, card.dataset.icon);
+    });
+  });
 }
 
 function pickServer(guildId, guildName, guildIcon) {
