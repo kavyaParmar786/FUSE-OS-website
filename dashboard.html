@@ -386,7 +386,7 @@
     <div class="sb-divider"></div>
     <div class="sb-label">Community</div>
     <div class="sb-item" data-panel="tickets"><span class="sb-icon">🎟️</span> Ticket Panel</div>
-    <div class="sb-item" data-panel="giveaway"><span class="sb-icon">🎉</span> Giveaways</div>
+    <div class="sb-item" data-panel="giveaway" onclick="if(selectedGuildId){loadChannels('gwy-start-channel',selectedGuildId);loadChannels('gwy-log',selectedGuildId);loadRoles('gwy-ping-role',selectedGuildId)}"><span class="sb-icon">🎉</span> Giveaways</div>
     <div class="sb-divider"></div>
     <div class="sb-label">Roles</div>
     <div class="sb-item" data-panel="autorole"><span class="sb-icon">⚙️</span> Auto Roles</div>
@@ -396,6 +396,25 @@
     <div class="sb-item" data-panel="autoresponder" onclick="setTimeout(loadAutoResponders,100)"><span class="sb-icon">🤖</span> Auto Responder</div>
     <div class="sb-item" data-panel="pagebuilder"><span class="sb-icon">📄</span> Page Builder</div>
     <div class="sb-item" data-panel="socialpings"><span class="sb-icon">🔔</span> Social Pings</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Features</div>
+    <div class="sb-item" data-panel="aichat" onclick="if(selectedGuildId)loadChannels('ai-channel',selectedGuildId)"><span class="sb-icon">🤖</span> AI Chat</div>
+    <div class="sb-item" data-panel="polls" onclick="if(selectedGuildId)loadChannels('poll-log-channel',selectedGuildId)"><span class="sb-icon">📊</span> Polls</div>
+    <div class="sb-item" data-panel="music"><span class="sb-icon">🎵</span> Music</div>
+    <div class="sb-item" data-panel="translation" onclick="if(selectedGuildId)loadChannels('tr-channel',selectedGuildId)"><span class="sb-icon">🌐</span> Translation</div>
+    <div class="sb-item" data-panel="buttonroles"><span class="sb-icon">🎭</span> Button Roles</div>
+    <div class="sb-item" data-panel="utilities" onclick="if(selectedGuildId)loadChannels('util-reminder-channel',selectedGuildId)"><span class="sb-icon">⏰</span> Utilities</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Insights</div>
+    <div class="sb-item" data-panel="serverstats" onclick="if(selectedGuildId)loadServerStats()"><span class="sb-icon">📊</span> Server Stats</div>
+    <div class="sb-item" data-panel="auditlog" onclick="if(selectedGuildId)loadAuditLog()"><span class="sb-icon">📜</span> Audit Log</div>
+    <div class="sb-item" data-panel="invitetracker" onclick="if(selectedGuildId)loadInviteStats()"><span class="sb-icon">🔗</span> Invite Tracker</div>
+    <div class="sb-item" data-panel="leaderboard" onclick="if(selectedGuildId)loadLeaderboard()"><span class="sb-icon">🏆</span> Leaderboard</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Tools</div>
+    <div class="sb-item" data-panel="scheduled"><span class="sb-icon">📅</span> Scheduled Messages</div>
+    <div class="sb-item" data-panel="botcustomize"><span class="sb-icon">🎨</span> Bot Customization</div>
+    <div class="sb-item" data-panel="permissions" onclick="if(selectedGuildId)loadPermissions()"><span class="sb-icon">🔒</span> Permissions</div>
   </aside>
 
   <main class="dash-main">
@@ -703,6 +722,21 @@
         <div class="d-field"><label class="d-label">Footer Text</label><input class="d-input" id="gwy-footer" type="text" value="Ends at"/></div>
       </div>
       <div class="d-card">
+        <div class="d-card-title">🚀 Start a Giveaway</div>
+        <div class="d-card-sub">Launch a giveaway directly to a channel from here.</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Giveaway Channel</label><select class="d-select" id="gwy-start-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Prize</label><input class="d-input" id="gwy-prize" type="text" placeholder="e.g. Discord Nitro, 100 Robux..."/></div>
+        </div>
+        <div class="d-grid-3">
+          <div class="d-field"><label class="d-label">Duration (hours)</label><input class="d-input" id="gwy-start-duration" type="number" value="24" min="1"/></div>
+          <div class="d-field"><label class="d-label">Winners</label><input class="d-input" id="gwy-start-winners" type="number" value="1" min="1" max="50"/></div>
+          <div class="d-field"><label class="d-label">Ping Role (optional)</label><select class="d-select" id="gwy-ping-role" data-role-sel><option value="">— No ping —</option></select></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="startGiveaway()">🎉 Start Giveaway</button></div>
+      </div>
+
+      <div class="d-card">
         <div class="d-card-title">⚙️ Defaults</div>
         <div class="d-grid-3">
           <div class="d-field"><label class="d-label">Default Winners</label><input class="d-input" id="gwy-winners" type="number" value="1" min="1" max="50"/></div>
@@ -1008,6 +1042,296 @@
         </div>
       </div>
 
+    </div>
+
+
+    <!-- ── AI Chat ──────────────────────────────────── -->
+    <div class="dash-panel" id="panel-aichat">
+      <div class="panel-title">🤖 AI Chat</div>
+      <div class="panel-sub">Configure Claude-powered AI chat, image generation, and usage limits.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ AI Chat Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable AI Chat</h4><p>Allow members to chat with Claude AI</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('ai_chat_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Image Generation</h4><p>Allow +imgen command to generate images</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('ai_imgen_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Conversation Memory</h4><p>Remember conversation history per user</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('ai_memory_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Channel & Limits</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">AI Chat Channel</label><select class="d-select" id="ai-channel" data-ch-sel><option value="">— Any channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Daily Message Limit Per User</label><input class="d-input" id="ai-daily-limit" type="number" value="50" min="1"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">System Prompt (optional)</label><textarea class="d-textarea" id="ai-system-prompt" placeholder="You are a helpful assistant for this Discord server..." style="min-height:100px"></textarea></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveAiConfig()">💾 Save AI Settings</button></div>
+      </div>
+    </div>
+
+    <!-- ── Polls ─────────────────────────────────────── -->
+    <div class="dash-panel" id="panel-polls">
+      <div class="panel-title">📊 Polls</div>
+      <div class="panel-sub">Create polls and configure poll settings.</div>
+      <div class="d-card">
+        <div class="d-card-title">➕ Create Poll</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Poll Channel</label><select class="d-select" id="poll-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Duration (hours, 0 = no end)</label><input class="d-input" id="poll-duration" type="number" value="24" min="0"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Question</label><input class="d-input" id="poll-question" type="text" placeholder="What is your favourite colour?"/></div>
+        <div class="d-field"><label class="d-label">Options (one per line, min 2)</label><textarea class="d-textarea" id="poll-options" placeholder="Red&#10;Blue&#10;Green&#10;Yellow" style="min-height:100px"></textarea></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Multi-vote</h4><p>Allow users to vote for multiple options</p></div><label class="d-switch"><input type="checkbox" id="poll-multivote"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="createPoll()">📊 Create Poll</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Poll Settings</div>
+        <div class="d-field"><label class="d-label">Poll Log Channel</label><select class="d-select" id="poll-log-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Show vote counts</h4><p>Show live vote counts on poll</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('poll_show_counts',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Anonymous voting</h4><p>Hide who voted for what</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('poll_anonymous',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="savePollConfig()">💾 Save Poll Settings</button></div>
+      </div>
+    </div>
+
+    <!-- ── Music ─────────────────────────────────────── -->
+    <div class="dash-panel" id="panel-music">
+      <div class="panel-title">🎵 Music</div>
+      <div class="panel-sub">Configure music settings and now-playing channel.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Music Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Music</h4><p>Allow music commands in your server</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('music_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>24/7 Mode</h4><p>Bot stays in voice channel even when empty</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('music_247',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Auto-play</h4><p>Auto-play related songs when queue ends</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('music_autoplay',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>DJ Only Mode</h4><p>Only DJ role can control music</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('music_dj_only',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">🎚️ Defaults</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Default Volume (1-100)</label><input class="d-input" id="music-volume" type="number" value="50" min="1" max="100"/></div>
+          <div class="d-field"><label class="d-label">Max Queue Length</label><input class="d-input" id="music-queue-max" type="number" value="50" min="1"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">DJ Role</label><select class="d-select" id="music-dj-role" data-role-sel><option value="">— No DJ role —</option></select></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveMusicConfig()">💾 Save Music Settings</button></div>
+      </div>
+    </div>
+
+    <!-- ── Translation ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-translation">
+      <div class="panel-title">🌐 Translation</div>
+      <div class="panel-sub">Auto-translate messages and configure translation channels.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Translation Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Translation</h4><p>Auto-detect and translate foreign messages</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('translation_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Flag Emoji Reactions</h4><p>Show flag emoji next to detected language</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('translation_flags',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Auto-translate to English</h4><p>Automatically translate non-English messages</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('translation_auto',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Translation Channel</div>
+        <div class="d-card-sub">Set a specific channel where all translations are posted.</div>
+        <div class="d-field"><label class="d-label">Translation Output Channel</label><select class="d-select" id="tr-channel" data-ch-sel><option value="">— Same channel as message —</option></select></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveTranslationConfig()">💾 Save Translation Settings</button></div>
+      </div>
+    </div>
+
+    <!-- ── Button Roles ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-buttonroles">
+      <div class="panel-title">🎭 Button Roles</div>
+      <div class="panel-sub">Create button and dropdown role panels for easy self-assignment.</div>
+      <div class="d-card">
+        <div class="d-card-title">➕ Create Role Panel</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Panel Channel</label><select class="d-select" id="br-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Panel Style</label>
+            <select class="d-select" id="br-style">
+              <option value="buttons">🔘 Buttons</option>
+              <option value="dropdown">📋 Dropdown</option>
+              <option value="auto">🎭 Auto (buttons → dropdown if >5)</option>
+            </select>
+          </div>
+        </div>
+        <div class="d-field"><label class="d-label">Panel Title</label><input class="d-input" id="br-title" type="text" placeholder="🎭 Pick Your Roles"/></div>
+        <div class="d-field"><label class="d-label">Panel Description</label><textarea class="d-textarea" id="br-desc" placeholder="Click a button below to get a role!" style="min-height:80px"></textarea></div>
+        <div class="d-card-sub" style="margin-top:16px">Role Buttons — add up to 10</div>
+        <div id="br-roles-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+        <button class="d-btn d-btn-secondary d-btn-sm" onclick="addBrRole()">＋ Add Role</button>
+        <div class="d-btn-row" style="margin-top:16px"><button class="d-btn d-btn-primary" onclick="deployButtonRoles()">🚀 Deploy Panel</button></div>
+      </div>
+    </div>
+
+    <!-- ── Utilities ─────────────────────────────────── -->
+    <div class="dash-panel" id="panel-utilities">
+      <div class="panel-title">⏰ Utilities</div>
+      <div class="panel-sub">Set reminders, timers, and scheduled countdowns.</div>
+      <div class="d-card">
+        <div class="d-card-title">⏰ Set Reminder</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="util-reminder-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">In (minutes)</label><input class="d-input" id="util-reminder-mins" type="number" placeholder="e.g. 60" min="1"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Reminder Message</label><input class="d-input" id="util-reminder-msg" type="text" placeholder="e.g. Server event starting now!"/></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="setReminder()">⏰ Set Reminder</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⏱️ Countdown</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="util-cd-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Event Name</label><input class="d-input" id="util-cd-name" type="text" placeholder="e.g. Season 2 Launch"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">End Date & Time</label><input class="d-input" id="util-cd-date" type="datetime-local"/></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="startCountdown()">⏱️ Start Countdown</button></div>
+      </div>
+    </div>
+
+    <!-- ── Server Stats ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-serverstats">
+      <div class="panel-title">📊 Server Stats</div>
+      <div class="panel-sub">Live overview of your server's activity and growth.</div>
+      <div class="d-grid-3" id="stats-cards" style="margin-bottom:20px">
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:var(--cyan)" id="stat-members">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Total Members</div>
+        </div>
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:var(--violet)" id="stat-online">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Online Now</div>
+        </div>
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:#57f287" id="stat-channels">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Channels</div>
+        </div>
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:#ffd700" id="stat-roles">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Roles</div>
+        </div>
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:#ff7070" id="stat-bots">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Bots</div>
+        </div>
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:var(--cyan)" id="stat-boosts">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Boosts</div>
+        </div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Server Info</div>
+        <div id="server-info-list" style="display:flex;flex-direction:column;gap:10px;font-size:0.88rem;color:var(--off-white)">
+          <div style="color:var(--muted)">Select a server and open this panel to load stats.</div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadServerStats()">🔄 Refresh</button></div>
+      </div>
+    </div>
+
+    <!-- ── Audit Log ──────────────────────────────────── -->
+    <div class="dash-panel" id="panel-auditlog">
+      <div class="panel-title">📜 Audit Log</div>
+      <div class="panel-sub">View recent mod actions and server events.</div>
+      <div class="d-card">
+        <div id="audit-log-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);text-align:center;padding:24px">Select a server and open this panel to load the audit log.</div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadAuditLog()">🔄 Refresh</button></div>
+      </div>
+    </div>
+
+    <!-- ── Invite Tracker ─────────────────────────────── -->
+    <div class="dash-panel" id="panel-invitetracker">
+      <div class="panel-title">🔗 Invite Tracker</div>
+      <div class="panel-sub">See who invited who and track top inviters.</div>
+      <div class="d-card">
+        <div class="d-card-title">🏆 Top Inviters</div>
+        <div id="invite-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);text-align:center;padding:24px">Loading invite data...</div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadInviteStats()">🔄 Refresh</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Invite Settings</div>
+        <div class="d-field"><label class="d-label">Invite Log Channel</label><select class="d-select" id="invite-log-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Track Invites</h4><p>Log who joined using which invite</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('invite_tracking',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveInviteConfig()">💾 Save</button></div>
+      </div>
+    </div>
+
+    <!-- ── Leaderboard ────────────────────────────────── -->
+    <div class="dash-panel" id="panel-leaderboard">
+      <div class="panel-title">🏆 Leaderboard</div>
+      <div class="panel-sub">View giveaway wins and message activity rankings.</div>
+      <div class="d-card">
+        <div class="d-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>🎉 Giveaway Wins</span>
+          <select class="d-select" style="width:auto;padding:6px 12px" onchange="loadLeaderboard(this.value)">
+            <option value="giveaway">Giveaway Wins</option>
+            <option value="messages">Messages</option>
+            <option value="invites">Invites</option>
+          </select>
+        </div>
+        <div id="leaderboard-list" style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+          <div style="color:var(--muted);text-align:center;padding:24px">Loading leaderboard...</div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadLeaderboard()">🔄 Refresh</button></div>
+      </div>
+    </div>
+
+    <!-- ── Scheduled Messages ─────────────────────────── -->
+    <div class="dash-panel" id="panel-scheduled">
+      <div class="panel-title">📅 Scheduled Messages</div>
+      <div class="panel-sub">Schedule messages to be sent at a specific time.</div>
+      <div class="d-card">
+        <div class="d-card-title">➕ Schedule a Message</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="sched-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+          <div class="d-field"><label class="d-label">Send At</label><input class="d-input" id="sched-datetime" type="datetime-local"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Message <button class="emoji-btn" onclick="openEmojiPicker('sched-message',this)">😀 Emoji</button></label><textarea class="d-textarea" id="sched-message" placeholder="Message to send..." style="min-height:100px"></textarea></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Send as Embed</h4><p>Send the message as a formatted embed</p></div><label class="d-switch"><input type="checkbox" id="sched-as-embed"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Repeat Daily</h4><p>Send this message every day at this time</p></div><label class="d-switch"><input type="checkbox" id="sched-repeat"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="scheduleMessage()">📅 Schedule</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Scheduled Messages</div>
+        <div id="sched-list">
+          <div style="color:var(--muted);text-align:center;padding:24px">No scheduled messages yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Bot Customization ──────────────────────────── -->
+    <div class="dash-panel" id="panel-botcustomize">
+      <div class="panel-title">🎨 Bot Customization</div>
+      <div class="panel-sub">Customize how the bot appears in your server.</div>
+      <div class="d-card">
+        <div class="d-card-title">🤖 Bot Appearance</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Bot Nickname (in this server)</label><input class="d-input" id="bot-nick" type="text" placeholder="Leave blank to reset"/></div>
+          <div class="d-field"><label class="d-label">Bot Status</label>
+            <select class="d-select" id="bot-status">
+              <option value="online">🟢 Online</option>
+              <option value="idle">🟡 Idle</option>
+              <option value="dnd">🔴 Do Not Disturb</option>
+            </select>
+          </div>
+        </div>
+        <div class="d-field"><label class="d-label">Activity Type</label>
+          <select class="d-select" id="bot-activity-type">
+            <option value="playing">🎮 Playing</option>
+            <option value="watching">📺 Watching</option>
+            <option value="listening">🎵 Listening to</option>
+            <option value="competing">🏆 Competing in</option>
+          </select>
+        </div>
+        <div class="d-field"><label class="d-label">Activity Text</label><input class="d-input" id="bot-activity-text" type="text" placeholder="e.g. Hero's Verse | +help"/></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveBotCustomize()">💾 Save</button></div>
+      </div>
+    </div>
+
+    <!-- ── Permissions ────────────────────────────────── -->
+    <div class="dash-panel" id="panel-permissions">
+      <div class="panel-title">🔒 Permissions</div>
+      <div class="panel-sub">Check what permissions the bot has in each channel.</div>
+      <div class="d-card">
+        <div class="d-card-title">🔍 Permission Check</div>
+        <div id="perms-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);text-align:center;padding:24px">Select a server and open this panel to check permissions.</div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadPermissions()">🔄 Refresh</button></div>
+      </div>
     </div>
 
   </main>
@@ -1921,6 +2245,327 @@ async function saveSpStyle() {
     footer:    document.getElementById('sp-e-footer').value,
   });
   if (res) showToast('success','💾 Style saved!');
+}
+
+/* ── Start Giveaway ─────────────────────────────── */
+async function startGiveaway() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const channel  = v('gwy-start-channel');
+  const prize    = v('gwy-prize').trim();
+  const duration = v('gwy-start-duration') || '24';
+  const winners  = v('gwy-start-winners') || '1';
+  const pingRole = v('gwy-ping-role');
+
+  if (!channel) { showToast('error','⚠️ Select a channel.'); return; }
+  if (!prize)   { showToast('error','⚠️ Enter a prize.'); return; }
+
+  const res = await apiFetch('/api/giveaway/start', 'POST', {
+    guild_id:  selectedGuildId,
+    channel_id: channel,
+    prize, duration: parseInt(duration),
+    winners: parseInt(winners),
+    ping_role: pingRole || '',
+  });
+  if (res) {
+    showToast('success', '🎉 Giveaway started in #' + (res.channel || 'channel') + '!');
+    document.getElementById('gwy-prize').value = '';
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   NEW FEATURE JS
+══════════════════════════════════════════════════════ */
+
+/* ── AI Chat ─────────────────────────────────────── */
+async function saveAiConfig() {
+  const res = await apiFetch('/api/config/ai', 'POST', {
+    guild_id: selectedGuildId,
+    channel: v('ai-channel'),
+    daily_limit: v('ai-daily-limit'),
+    system_prompt: v('ai-system-prompt'),
+  });
+  if (res) showToast('success', '✅ AI settings saved!');
+}
+
+/* ── Polls ───────────────────────────────────────── */
+async function createPoll() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const channel  = v('poll-channel');
+  const question = v('poll-question').trim();
+  const options  = v('poll-options').split('\n').map(o => o.trim()).filter(Boolean);
+  const duration = parseInt(v('poll-duration') || '24');
+  const multivote = document.getElementById('poll-multivote').checked;
+  if (!channel)  { showToast('error','⚠️ Select a channel.'); return; }
+  if (!question) { showToast('error','⚠️ Enter a question.'); return; }
+  if (options.length < 2) { showToast('error','⚠️ Add at least 2 options.'); return; }
+  const res = await apiFetch('/api/polls/create', 'POST', {
+    guild_id: selectedGuildId, channel_id: channel,
+    question, options, duration, multivote,
+  });
+  if (res) {
+    showToast('success', '📊 Poll created!');
+    document.getElementById('poll-question').value = '';
+    document.getElementById('poll-options').value = '';
+  }
+}
+
+async function savePollConfig() {
+  const res = await apiFetch('/api/config/polls', 'POST', {
+    guild_id: selectedGuildId, log_channel: v('poll-log-channel'),
+  });
+  if (res) showToast('success', '✅ Poll settings saved!');
+}
+
+/* ── Music ───────────────────────────────────────── */
+async function saveMusicConfig() {
+  const res = await apiFetch('/api/config/music', 'POST', {
+    guild_id: selectedGuildId,
+    volume: v('music-volume'),
+    queue_max: v('music-queue-max'),
+    dj_role: v('music-dj-role'),
+  });
+  if (res) showToast('success', '✅ Music settings saved!');
+}
+
+/* ── Translation ─────────────────────────────────── */
+async function saveTranslationConfig() {
+  const res = await apiFetch('/api/config/translation', 'POST', {
+    guild_id: selectedGuildId, channel: v('tr-channel'),
+  });
+  if (res) showToast('success', '✅ Translation settings saved!');
+}
+
+/* ── Button Roles ────────────────────────────────── */
+let _brRoles = [];
+let _brRoleCount = 0;
+
+function addBrRole() {
+  const id = ++_brRoleCount;
+  const div = document.createElement('div');
+  div.className = 'ar-item';
+  div.dataset.id = id;
+  div.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;flex:1;align-items:center">
+      <select class="d-select br-role-sel-${id}" data-role-sel>
+        <option value="">— Select role —</option>
+      </select>
+      <input class="d-input" id="br-label-${id}" type="text" placeholder="Button label"/>
+      <input class="d-input" id="br-emoji-${id}" type="text" placeholder="😀"/>
+    </div>
+    <button class="d-btn d-btn-danger d-btn-sm" onclick="this.closest('.ar-item').remove()">✕</button>`;
+  document.getElementById('br-roles-list').appendChild(div);
+  // Load roles into the new select
+  if (selectedGuildId) loadRoles('br-role-sel-' + id, selectedGuildId);
+}
+
+async function deployButtonRoles() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const channel = v('br-channel');
+  if (!channel) { showToast('error','⚠️ Select a channel.'); return; }
+  const roles = [];
+  document.querySelectorAll('[data-id]').forEach(item => {
+    const id = item.dataset.id;
+    const sel = item.querySelector(`[class*="br-role-sel-${id}"]`);
+    const label = document.getElementById('br-label-' + id);
+    const emoji = document.getElementById('br-emoji-' + id);
+    if (sel && sel.value) {
+      roles.push({ role_id: sel.value, label: label?.value || '', emoji: emoji?.value || '' });
+    }
+  });
+  if (!roles.length) { showToast('error','⚠️ Add at least one role.'); return; }
+  const res = await apiFetch('/api/deploy-button-roles', 'POST', {
+    guild_id: selectedGuildId, channel_id: channel,
+    title: v('br-title'), desc: v('br-desc'),
+    style: v('br-style'), roles,
+  });
+  if (res) showToast('success', '🎭 Button roles panel deployed!');
+}
+
+/* ── Utilities ───────────────────────────────────── */
+async function setReminder() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const channel = v('util-reminder-channel');
+  const mins    = v('util-reminder-mins');
+  const msg     = v('util-reminder-msg').trim();
+  if (!channel) { showToast('error','⚠️ Select a channel.'); return; }
+  if (!mins)    { showToast('error','⚠️ Enter duration in minutes.'); return; }
+  if (!msg)     { showToast('error','⚠️ Enter a reminder message.'); return; }
+  const res = await apiFetch('/api/utils/reminder', 'POST', {
+    guild_id: selectedGuildId, channel_id: channel,
+    minutes: parseInt(mins), message: msg,
+  });
+  if (res) {
+    showToast('success', `⏰ Reminder set for ${mins} min!`);
+    document.getElementById('util-reminder-msg').value = '';
+  }
+}
+
+async function startCountdown() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const channel = v('util-cd-channel');
+  const name    = v('util-cd-name').trim();
+  const date    = v('util-cd-date');
+  if (!channel) { showToast('error','⚠️ Select a channel.'); return; }
+  if (!name)    { showToast('error','⚠️ Enter event name.'); return; }
+  if (!date)    { showToast('error','⚠️ Pick a date and time.'); return; }
+  const res = await apiFetch('/api/utils/countdown', 'POST', {
+    guild_id: selectedGuildId, channel_id: channel,
+    name, end_time: new Date(date).toISOString(),
+  });
+  if (res) showToast('success', '⏱️ Countdown started!');
+}
+
+/* ── Server Stats ────────────────────────────────── */
+async function loadServerStats() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/guild/' + selectedGuildId + '/stats');
+  if (!data) return;
+  document.getElementById('stat-members').textContent  = (data.members  || 0).toLocaleString();
+  document.getElementById('stat-online').textContent   = (data.online   || 0).toLocaleString();
+  document.getElementById('stat-channels').textContent = (data.channels || 0).toLocaleString();
+  document.getElementById('stat-roles').textContent    = (data.roles    || 0).toLocaleString();
+  document.getElementById('stat-bots').textContent     = (data.bots     || 0).toLocaleString();
+  document.getElementById('stat-boosts').textContent   = (data.boosts   || 0).toLocaleString();
+
+  const info = document.getElementById('server-info-list');
+  info.innerHTML = [
+    ['Server Name',    data.name       || '—'],
+    ['Owner',          data.owner      || '—'],
+    ['Created',        data.created_at || '—'],
+    ['Boost Level',    `Level ${data.boost_tier || 0}`],
+    ['Verification',   data.verification || '—'],
+  ].map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+    <span style="color:var(--muted)">${k}</span>
+    <span style="font-weight:600">${v}</span>
+  </div>`).join('');
+}
+
+/* ── Audit Log ───────────────────────────────────── */
+async function loadAuditLog() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/guild/' + selectedGuildId + '/audit-log');
+  if (!data) return;
+  const list = document.getElementById('audit-log-list');
+  if (!data.entries || !data.entries.length) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:24px">No recent audit log entries.</div>';
+    return;
+  }
+  list.innerHTML = data.entries.map(e => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-2);border:1px solid var(--border);border-radius:9px">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:1rem;flex-shrink:0">${e.icon || '🔨'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.88rem;font-weight:600;color:var(--off-white)">${e.action || 'Unknown'}</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">${e.user || 'Unknown'} • ${e.target || ''}</div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--muted);flex-shrink:0">${e.time || ''}</div>
+    </div>`).join('');
+}
+
+/* ── Invite Stats ────────────────────────────────── */
+async function loadInviteStats() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/guild/' + selectedGuildId + '/invites');
+  if (!data) return;
+  const list = document.getElementById('invite-list');
+  if (!data.top || !data.top.length) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:24px">No invite data yet.</div>';
+    return;
+  }
+  list.innerHTML = data.top.map((u, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-2);border:1px solid var(--border);border-radius:9px">
+      <div style="font-size:1.2rem;font-weight:800;color:var(--cyan);width:28px;text-align:center">#${i+1}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;color:var(--off-white)">${u.name || 'Unknown'}</div>
+        <div style="font-size:0.78rem;color:var(--muted)">${u.invites || 0} invites</div>
+      </div>
+    </div>`).join('');
+}
+
+async function saveInviteConfig() {
+  const res = await apiFetch('/api/config/invites', 'POST', {
+    guild_id: selectedGuildId, log_channel: v('invite-log-channel'),
+  });
+  if (res) showToast('success', '✅ Invite settings saved!');
+}
+
+/* ── Leaderboard ─────────────────────────────────── */
+async function loadLeaderboard(type = 'giveaway') {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/guild/' + selectedGuildId + '/leaderboard?type=' + type);
+  if (!data) return;
+  const list = document.getElementById('leaderboard-list');
+  if (!data.entries || !data.entries.length) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:24px">No data yet.</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = data.entries.slice(0,20).map((u, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-2);border:1px solid var(--border);border-radius:9px">
+      <div style="font-size:1.2rem;width:28px;text-align:center">${medals[i] || '#'+(i+1)}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;color:var(--off-white)">${u.name || 'Unknown'}</div>
+      </div>
+      <div style="font-size:0.88rem;font-weight:700;color:var(--cyan)">${u.score || 0}</div>
+    </div>`).join('');
+}
+
+/* ── Scheduled Messages ──────────────────────────── */
+async function scheduleMessage() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const channel  = v('sched-channel');
+  const datetime = v('sched-datetime');
+  const message  = v('sched-message').trim();
+  const asEmbed  = document.getElementById('sched-as-embed').checked;
+  const repeat   = document.getElementById('sched-repeat').checked;
+  if (!channel)  { showToast('error','⚠️ Select a channel.'); return; }
+  if (!datetime) { showToast('error','⚠️ Pick a date and time.'); return; }
+  if (!message)  { showToast('error','⚠️ Enter a message.'); return; }
+  const res = await apiFetch('/api/scheduled/add', 'POST', {
+    guild_id: selectedGuildId, channel_id: channel,
+    send_at: new Date(datetime).toISOString(),
+    message, as_embed: asEmbed, repeat,
+  });
+  if (res) {
+    showToast('success', '📅 Message scheduled!');
+    document.getElementById('sched-message').value = '';
+    document.getElementById('sched-datetime').value = '';
+  }
+}
+
+/* ── Bot Customization ───────────────────────────── */
+async function saveBotCustomize() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res = await apiFetch('/api/bot/customize', 'POST', {
+    guild_id: selectedGuildId,
+    nickname:      v('bot-nick'),
+    status:        v('bot-status'),
+    activity_type: v('bot-activity-type'),
+    activity_text: v('bot-activity-text'),
+  });
+  if (res) showToast('success', '🎨 Bot appearance updated!');
+}
+
+/* ── Permissions ─────────────────────────────────── */
+async function loadPermissions() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/guild/' + selectedGuildId + '/permissions');
+  if (!data) return;
+  const list = document.getElementById('perms-list');
+  if (!data.permissions) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:24px">Could not load permissions.</div>';
+    return;
+  }
+  const CRITICAL = ['send_messages','embed_links','attach_files','read_message_history','add_reactions','manage_messages','administrator'];
+  list.innerHTML = Object.entries(data.permissions).map(([perm, has]) => {
+    const isCritical = CRITICAL.includes(perm);
+    const icon = has ? '✅' : (isCritical ? '❌' : '⚪');
+    const label = perm.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="color:${isCritical && !has ? '#f87171' : 'var(--off-white)'}${isCritical ? ';font-weight:600' : ''}">${label}</span>
+      <span>${icon}</span>
+    </div>`;
+  }).join('');
 }
 
 /* ══════════════════════════════════════════════════════
