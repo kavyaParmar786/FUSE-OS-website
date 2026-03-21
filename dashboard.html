@@ -416,6 +416,20 @@
     <div class="sb-item" data-panel="botcustomize"><span class="sb-icon">🎨</span> Bot Customization</div>
     <div class="sb-item" data-panel="permissions" onclick="if(selectedGuildId)loadPermissions()"><span class="sb-icon">🔒</span> Permissions</div>
     <div class="sb-item" data-panel="customcmds" onclick="if(selectedGuildId)loadCustomCmds()"><span class="sb-icon">⚡</span> Custom Commands</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Progression</div>
+    <div class="sb-item" data-panel="levels" onclick="if(selectedGuildId){loadChannels('lvl-channel',selectedGuildId);loadRoles('lvl-role',selectedGuildId)}"><span class="sb-icon">⭐</span> Levels & XP</div>
+    <div class="sb-item" data-panel="economy"><span class="sb-icon">💰</span> Economy</div>
+    <div class="sb-item" data-panel="automod" onclick="if(selectedGuildId)loadChannels('automod-log',selectedGuildId)"><span class="sb-icon">🤖</span> AutoMod</div>
+    <div class="sb-item" data-panel="starboard" onclick="if(selectedGuildId)loadChannels('starboard-channel',selectedGuildId)"><span class="sb-icon">⭐</span> Starboard</div>
+    <div class="sb-item" data-panel="minigames"><span class="sb-icon">🎮</span> Mini Games</div>
+    <div class="sb-divider"></div>
+    <div class="sb-label">Server</div>
+    <div class="sb-item" data-panel="growthtracker" onclick="if(selectedGuildId)loadGrowthStats()"><span class="sb-icon">📈</span> Growth Tracker</div>
+    <div class="sb-item" data-panel="cmdstats" onclick="if(selectedGuildId)loadCmdStats()"><span class="sb-icon">📊</span> Command Stats</div>
+    <div class="sb-item" data-panel="tempchannel"><span class="sb-icon">🔊</span> Temp Channels</div>
+    <div class="sb-item" data-panel="embedmanager" onclick="if(selectedGuildId)loadEmbeds()"><span class="sb-icon">📝</span> Embed Manager</div>
+    <div class="sb-item" data-panel="backup"><span class="sb-icon">💾</span> Backup System</div>
   </aside>
 
   <main class="dash-main">
@@ -1454,6 +1468,242 @@
         </div>
         <div id="cc-list" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
           <div style="color:var(--muted);text-align:center;padding:24px">No custom commands yet. Add one above!</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── Levels & XP ─────────────────────────────────── -->
+    <div class="dash-panel" id="panel-levels">
+      <div class="panel-title">⭐ Levels & XP</div>
+      <div class="panel-sub">Configure the XP system, level up messages, and role rewards.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ XP Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Level System</h4><p>Users earn XP by chatting</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('levels_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Level Up DM</h4><p>DM users when they level up</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('levels_dm',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Min XP Per Message</label><input class="d-input" id="lvl-xp-min" type="number" value="15" min="1"/></div>
+          <div class="d-field"><label class="d-label">Max XP Per Message</label><input class="d-input" id="lvl-xp-max" type="number" value="25" min="1"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">XP Cooldown (seconds)</label><input class="d-input" id="lvl-cooldown" type="number" value="60" min="1"/></div>
+        <div class="d-field"><label class="d-label">Level Up Channel</label><select class="d-select" id="lvl-channel" data-ch-sel><option value="">— Same channel —</option></select></div>
+        <div class="d-field"><label class="d-label">Level Up Message</label><input class="d-input" id="lvl-message" type="text" placeholder="🎉 {user} just reached Level {level}!"/></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveLevelConfig()">💾 Save Level Settings</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">🎭 Role Rewards</div>
+        <div class="d-card-sub">Automatically give roles when users reach a certain level.</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Level Required</label><input class="d-input" id="lvl-reward-level" type="number" placeholder="e.g. 10" min="1"/></div>
+          <div class="d-field"><label class="d-label">Role to Give</label><select class="d-select" id="lvl-role" data-role-sel><option value="">— Select role —</option></select></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="addLevelRole()">➕ Add Role Reward</button></div>
+        <div id="lvl-rewards-list" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+    <!-- ── Economy ─────────────────────────────────────── -->
+    <div class="dash-panel" id="panel-economy">
+      <div class="panel-title">💰 Economy</div>
+      <div class="panel-sub">Configure the coin economy, daily rewards, and shop items.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Economy Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Economy</h4><p>Allow users to earn and spend coins</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('economy_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Daily Reward Amount</label><input class="d-input" id="eco-daily" type="number" value="500" min="1"/></div>
+          <div class="d-field"><label class="d-label">Work Min Coins</label><input class="d-input" id="eco-work-min" type="number" value="50" min="1"/></div>
+        </div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Work Max Coins</label><input class="d-input" id="eco-work-max" type="number" value="300" min="1"/></div>
+          <div class="d-field"><label class="d-label">Currency Symbol</label><input class="d-input" id="eco-symbol" type="text" value="🪙" maxlength="4"/></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveEcoConfig()">💾 Save Economy Settings</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">👤 Manage User Balance</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">User ID</label><input class="d-input" id="eco-user-id" type="text" placeholder="Discord User ID"/></div>
+          <div class="d-field"><label class="d-label">Amount</label><input class="d-input" id="eco-amount" type="number" placeholder="e.g. 1000"/></div>
+        </div>
+        <div class="d-btn-row">
+          <button class="d-btn d-btn-primary" onclick="manageCoins('add')">➕ Add Coins</button>
+          <button class="d-btn d-btn-secondary" onclick="manageCoins('set')">✏️ Set Coins</button>
+          <button class="d-btn d-btn-danger" onclick="manageCoins('reset')">🗑️ Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AutoMod ─────────────────────────────────────── -->
+    <div class="dash-panel" id="panel-automod">
+      <div class="panel-title">🤖 AutoMod</div>
+      <div class="panel-sub">Configure automatic moderation, anti-raid, and filters.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ AutoMod Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable AutoMod</h4><p>Automatic message moderation</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('automod_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Invite Filter</h4><p>Block Discord invite links</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('automod_invite_filter',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Link Filter</h4><p>Block all external links</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('automod_link_filter',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Caps Filter</h4><p>Mute messages with excessive caps</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('automod_caps_filter',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Spam Limit (msgs)</label><input class="d-input" id="automod-spam-limit" type="number" value="5" min="2"/></div>
+          <div class="d-field"><label class="d-label">Spam Window (secs)</label><input class="d-input" id="automod-spam-secs" type="number" value="5" min="1"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">AutoMod Log Channel</label><select class="d-select" id="automod-log" data-ch-sel><option value="">— Select channel —</option></select></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveAutomodConfig()">💾 Save AutoMod Settings</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">🛡️ Anti-Raid</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Anti-Raid</h4><p>Auto lockdown on mass joins</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('antiraid_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Join Threshold</label><input class="d-input" id="antiraid-joins" type="number" value="10" min="2"/></div>
+          <div class="d-field"><label class="d-label">Within (seconds)</label><input class="d-input" id="antiraid-secs" type="number" value="10" min="1"/></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveAntiraidConfig()">💾 Save Anti-Raid</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">🚫 Bad Words</div>
+        <div class="d-field"><label class="d-label">Add Bad Word</label>
+          <div style="display:flex;gap:8px">
+            <input class="d-input" id="automod-new-word" type="text" placeholder="Type a word to ban..."/>
+            <button class="d-btn d-btn-danger" style="white-space:nowrap" onclick="addBadWord()">➕ Add</button>
+          </div>
+        </div>
+        <div id="automod-words-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- ── Starboard ───────────────────────────────────── -->
+    <div class="dash-panel" id="panel-starboard">
+      <div class="panel-title">⭐ Starboard</div>
+      <div class="panel-sub">Highlight great messages by starring them to a dedicated channel.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Starboard Settings</div>
+        <div class="d-field"><label class="d-label">Starboard Channel</label><select class="d-select" id="starboard-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+        <div class="d-field"><label class="d-label">Stars Required</label><input class="d-input" id="starboard-count" type="number" value="3" min="1"/></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Allow Bot Messages</h4><p>Bot messages can reach starboard</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('starboard_allow_bots',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Self Star</h4><p>Allow users to star their own messages</p></div><label class="d-switch"><input type="checkbox" onchange="saveToggle('starboard_self_star',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveStarboardConfig()">💾 Save Starboard</button></div>
+      </div>
+    </div>
+
+    <!-- ── Mini Games ──────────────────────────────────── -->
+    <div class="dash-panel" id="panel-minigames">
+      <div class="panel-title">🎮 Mini Games</div>
+      <div class="panel-sub">Configure mini games and their settings.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Game Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Akinator</h4><p>AI character guessing game</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('akinator_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable OwO/Hunt/Battle</h4><p>OwO style games</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('owo_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Trivia</h4><p>Multiple choice trivia questions</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('trivia_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Slots</h4><p>Slot machine game</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('slots_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- ── Growth Tracker ──────────────────────────────── -->
+    <div class="dash-panel" id="panel-growthtracker">
+      <div class="panel-title">📈 Growth Tracker</div>
+      <div class="panel-sub">Track your server's member growth over time.</div>
+      <div class="d-grid-3" id="growth-stats-row" style="margin-bottom:20px">
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:var(--cyan)" id="growth-total">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Total Members</div>
+        </div>
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:#57f287" id="growth-today">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Joined Today</div>
+        </div>
+        <div class="d-card" style="text-align:center;padding:20px">
+          <div style="font-size:2rem;font-weight:800;color:#f87171" id="growth-left">—</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">Left Today</div>
+        </div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📊 Growth History (Last 7 Days)</div>
+        <div id="growth-chart" style="padding:16px;min-height:160px;display:flex;align-items:flex-end;gap:8px">
+          <div style="color:var(--muted);margin:auto">Select a server and open this panel to load growth data.</div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadGrowthStats()">🔄 Refresh</button></div>
+      </div>
+    </div>
+
+    <!-- ── Command Stats ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-cmdstats">
+      <div class="panel-title">📊 Command Stats</div>
+      <div class="panel-sub">See which commands are used most in your server.</div>
+      <div class="d-card">
+        <div class="d-card-title">🏆 Most Used Commands</div>
+        <div id="cmdstats-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);text-align:center;padding:24px">Loading command stats...</div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadCmdStats()">🔄 Refresh</button></div>
+      </div>
+    </div>
+
+    <!-- ── Temp Channels ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-tempchannel">
+      <div class="panel-title">🔊 Temp Channels</div>
+      <div class="panel-sub">Auto-create private voice channels when users join a trigger channel.</div>
+      <div class="d-card">
+        <div class="d-card-title">⚙️ Temp Channel Settings</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Enable Temp Channels</h4><p>Auto-create voice channels on join</p></div><label class="d-switch"><input type="checkbox" checked onchange="saveToggle('temp_channels_enabled',this.checked)"><span class="d-switch-slider"></span></label></div>
+        <div class="d-field"><label class="d-label">Trigger Voice Channel</label><select class="d-select" id="temp-trigger-ch" data-ch-sel><option value="">— Select voice channel —</option></select></div>
+        <div class="d-field"><label class="d-label">Channel Name Template</label><input class="d-input" id="temp-name-template" type="text" value="{user}'s Channel" placeholder="Use {user} for username"/></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">User Limit (0 = unlimited)</label><input class="d-input" id="temp-user-limit" type="number" value="0" min="0" max="99"/></div>
+          <div class="d-field"><label class="d-label">Bitrate (kbps)</label><input class="d-input" id="temp-bitrate" type="number" value="64" min="8" max="384"/></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveTempChannelConfig()">💾 Save Temp Channel Settings</button></div>
+      </div>
+    </div>
+
+    <!-- ── Embed Manager ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-embedmanager">
+      <div class="panel-title">📝 Embed Manager</div>
+      <div class="panel-sub">Save, edit, and send custom embeds by name.</div>
+      <div class="d-card">
+        <div class="d-card-title">➕ Save New Embed</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Embed Name</label><input class="d-input" id="em-name" type="text" placeholder="e.g. rules, welcome, info"/></div>
+          <div class="d-field"><label class="d-label">Title</label><input class="d-input" id="em-title" type="text" placeholder="Embed title"/></div>
+        </div>
+        <div class="d-field"><label class="d-label">Description</label><textarea class="d-textarea" id="em-desc" placeholder="Embed description..." style="min-height:100px"></textarea></div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Colour</label><div class="d-color-row"><input type="color" class="d-color-swatch" value="#5865f2" oninput="this.nextElementSibling.value=this.value"/><input type="text" class="d-color-hex" value="#5865f2"/></div></div>
+          <div class="d-field"><label class="d-label">Image URL (optional)</label><input class="d-input" id="em-image" type="url" placeholder="https://..."/></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="saveEmbed()">💾 Save Embed</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Saved Embeds</div>
+        <div id="em-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);text-align:center;padding:24px">No saved embeds yet.</div>
+        </div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📤 Send Saved Embed</div>
+        <div class="d-grid-2">
+          <div class="d-field"><label class="d-label">Embed Name</label><input class="d-input" id="em-send-name" type="text" placeholder="e.g. rules"/></div>
+          <div class="d-field"><label class="d-label">Channel</label><select class="d-select" id="em-send-channel" data-ch-sel><option value="">— Select channel —</option></select></div>
+        </div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="sendEmbed()">📤 Send Embed</button></div>
+      </div>
+    </div>
+
+    <!-- ── Backup System ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-backup">
+      <div class="panel-title">💾 Backup System</div>
+      <div class="panel-sub">Create and restore server configuration backups.</div>
+      <div class="d-card">
+        <div class="d-card-title">📦 Create Backup</div>
+        <div class="d-card-sub">Saves roles, channel names, and bot configuration.</div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Include Roles</h4><p>Backup all server roles</p></div><label class="d-switch"><input type="checkbox" id="backup-roles" checked><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Include Channels</h4><p>Backup channel names and structure</p></div><label class="d-switch"><input type="checkbox" id="backup-channels" checked><span class="d-switch-slider"></span></label></div>
+        <div class="d-toggle-row"><div class="d-toggle-info"><h4>Include Bot Config</h4><p>Backup all bot settings</p></div><label class="d-switch"><input type="checkbox" id="backup-config" checked><span class="d-switch-slider"></span></label></div>
+        <div class="d-btn-row"><button class="d-btn d-btn-primary" onclick="createBackup()">💾 Create Backup</button></div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Saved Backups</div>
+        <div id="backup-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);text-align:center;padding:24px">No backups yet. Create one above!</div>
         </div>
       </div>
     </div>
@@ -2874,6 +3124,144 @@ async function deleteCustomCmd(name) {
 /* ══════════════════════════════════════════════════════
    EMOJI PICKER
 ══════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+   NEW FEATURE JS — Levels, Economy, AutoMod, Starboard, etc.
+══════════════════════════════════════════════════════════════ */
+async function saveLevelConfig() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res = await apiFetch('/api/config/levels', 'POST', {
+    guild_id: selectedGuildId, xp_min: parseInt(v('lvl-xp-min')||15),
+    xp_max: parseInt(v('lvl-xp-max')||25), cooldown: parseInt(v('lvl-cooldown')||60),
+    channel: v('lvl-channel'), message: v('lvl-message'),
+  });
+  if (res) showToast('success', '✅ Level settings saved!');
+}
+async function addLevelRole() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const level=v('lvl-reward-level'), roleId=v('lvl-role');
+  if (!level||!roleId) { showToast('error','⚠️ Select a level and role.'); return; }
+  const res = await apiFetch('/api/config/level_role','POST',{guild_id:selectedGuildId,level:parseInt(level),role_id:roleId});
+  if (res) showToast('success',`✅ Role reward added for Level ${level}!`);
+}
+async function saveEcoConfig() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res = await apiFetch('/api/config/economy','POST',{guild_id:selectedGuildId,daily_amt:parseInt(v('eco-daily')||500),work_min:parseInt(v('eco-work-min')||50),work_max:parseInt(v('eco-work-max')||300),currency:v('eco-symbol')||'🪙'});
+  if (res) showToast('success','✅ Economy settings saved!');
+}
+async function manageCoins(action) {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const userId=v('eco-user-id').trim(), amount=parseInt(v('eco-amount'));
+  if (!userId) { showToast('error','⚠️ Enter a User ID.'); return; }
+  const res = await apiFetch('/api/economy/manage','POST',{guild_id:selectedGuildId,user_id:userId,action,amount});
+  if (res) showToast('success',`✅ Coins ${action}d!`);
+}
+async function saveAutomodConfig() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res = await apiFetch('/api/config/automod','POST',{guild_id:selectedGuildId,spam_limit:parseInt(v('automod-spam-limit')||5),spam_secs:parseInt(v('automod-spam-secs')||5),log_channel:v('automod-log')});
+  if (res) showToast('success','✅ AutoMod settings saved!');
+}
+async function saveAntiraidConfig() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res = await apiFetch('/api/config/antiraid','POST',{guild_id:selectedGuildId,joins:parseInt(v('antiraid-joins')||10),seconds:parseInt(v('antiraid-secs')||10)});
+  if (res) showToast('success','✅ Anti-Raid settings saved!');
+}
+async function addBadWord() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const word=document.getElementById('automod-new-word').value.trim();
+  if (!word) { showToast('error','⚠️ Enter a word.'); return; }
+  const res = await apiFetch('/api/automod/addword','POST',{guild_id:selectedGuildId,word});
+  if (res) { showToast('success',`✅ "${word}" banned!`); document.getElementById('automod-new-word').value=''; loadBadWords(); }
+}
+async function loadBadWords() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/automod/words/'+selectedGuildId);
+  if (!data) return;
+  const list=document.getElementById('automod-words-list');
+  list.innerHTML=(data.words||[]).map(w=>`<span style="background:rgba(242,63,67,0.15);border:1px solid rgba(242,63,67,0.3);border-radius:6px;padding:4px 10px;font-size:0.82rem;display:flex;align-items:center;gap:6px">${w}<button onclick="removeBadWord('${w}')" style="background:none;border:none;color:#f87171;cursor:pointer">✕</button></span>`).join('');
+}
+async function removeBadWord(word) {
+  const res=await apiFetch('/api/automod/removeword','POST',{guild_id:selectedGuildId,word});
+  if (res) { showToast('success',`✅ "${word}" removed!`); loadBadWords(); }
+}
+async function saveStarboardConfig() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res=await apiFetch('/api/config/starboard','POST',{guild_id:selectedGuildId,channel:v('starboard-channel'),count:parseInt(v('starboard-count')||3)});
+  if (res) showToast('success','✅ Starboard settings saved!');
+}
+async function loadGrowthStats() {
+  if (!selectedGuildId) return;
+  const data=await apiFetch('/api/guild/'+selectedGuildId+'/growth');
+  if (!data) return;
+  document.getElementById('growth-total').textContent=(data.total||0).toLocaleString();
+  document.getElementById('growth-today').textContent=(data.joined_today||0).toLocaleString();
+  document.getElementById('growth-left').textContent=(data.left_today||0).toLocaleString();
+  const chart=document.getElementById('growth-chart');
+  const history=data.history||[];
+  if (!history.length) { chart.innerHTML='<div style="color:var(--muted);margin:auto">No history yet.</div>'; return; }
+  const max=Math.max(...history.map(d=>d.count||1),1);
+  chart.innerHTML=history.map(d=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1"><div style="font-size:0.72rem;color:var(--muted)">${d.count}</div><div style="height:${Math.max(8,Math.round((d.count/max)*140))}px;background:var(--cyan);border-radius:4px 4px 0 0;width:100%;min-width:20px;opacity:0.8"></div><div style="font-size:0.65rem;color:var(--muted-2);writing-mode:vertical-rl;transform:rotate(180deg)">${d.date}</div></div>`).join('');
+}
+async function loadCmdStats() {
+  if (!selectedGuildId) return;
+  const data=await apiFetch('/api/guild/'+selectedGuildId+'/cmdstats');
+  if (!data) return;
+  const list=document.getElementById('cmdstats-list');
+  if (!data.stats||!data.stats.length) { list.innerHTML='<div style="color:var(--muted);text-align:center;padding:24px">No data yet.</div>'; return; }
+  const max=data.stats[0].count||1;
+  list.innerHTML=data.stats.slice(0,15).map((s,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0"><div style="font-size:0.82rem;font-weight:700;color:var(--muted);width:20px">#${i+1}</div><div style="flex:1"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:0.88rem;font-weight:600">+${s.cmd}</span><span style="font-size:0.82rem;color:var(--muted)">${s.count.toLocaleString()} uses</span></div><div style="height:6px;background:var(--surface);border-radius:3px"><div style="height:100%;width:${Math.round((s.count/max)*100)}%;background:var(--cyan);border-radius:3px"></div></div></div></div>`).join('');
+}
+async function saveTempChannelConfig() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res=await apiFetch('/api/config/tempchannels','POST',{guild_id:selectedGuildId,trigger_ch:v('temp-trigger-ch'),name_template:v('temp-name-template')||"{user}'s Channel",user_limit:parseInt(v('temp-user-limit')||0),bitrate:parseInt(v('temp-bitrate')||64)});
+  if (res) showToast('success','✅ Temp channel settings saved!');
+}
+async function saveEmbed() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const name=v('em-name').trim();
+  if (!name) { showToast('error','⚠️ Enter an embed name.'); return; }
+  const res=await apiFetch('/api/embeds/save','POST',{guild_id:selectedGuildId,name,title:v('em-title'),desc:v('em-desc'),colour:document.querySelector('#panel-embedmanager .d-color-hex')?.value||'#5865f2',image:v('em-image')});
+  if (res) { showToast('success',`✅ Embed "${name}" saved!`); loadEmbeds(); }
+}
+async function loadEmbeds() {
+  if (!selectedGuildId) return;
+  const data=await apiFetch('/api/embeds/'+selectedGuildId);
+  if (!data) return;
+  const list=document.getElementById('em-list');
+  const embeds=data.embeds||{};
+  if (!Object.keys(embeds).length) { list.innerHTML='<div style="color:var(--muted);text-align:center;padding:24px">No saved embeds yet.</div>'; return; }
+  list.innerHTML=Object.entries(embeds).map(([name,e])=>`<div class="ar-item"><div style="flex:1"><div style="font-weight:600;color:var(--off-white)">${name}</div><div style="font-size:0.78rem;color:var(--muted)">${e.title||'No title'}</div></div><button class="d-btn d-btn-secondary d-btn-sm" onclick="document.getElementById('em-send-name').value='${name}'">📤 Use</button><button class="d-btn d-btn-danger d-btn-sm" onclick="deleteEmbed('${name}')">✕</button></div>`).join('');
+}
+async function deleteEmbed(name) {
+  const res=await apiFetch('/api/embeds/delete','POST',{guild_id:selectedGuildId,name});
+  if (res) { showToast('success',`✅ Embed "${name}" deleted!`); loadEmbeds(); }
+}
+async function sendEmbed() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const name=v('em-send-name').trim(), channel=v('em-send-channel');
+  if (!name||!channel) { showToast('error','⚠️ Enter embed name and select a channel.'); return; }
+  const res=await apiFetch('/api/embeds/send','POST',{guild_id:selectedGuildId,name,channel_id:channel});
+  if (res) showToast('success',`✅ Embed "${name}" sent!`);
+}
+async function createBackup() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const res=await apiFetch('/api/backup/create','POST',{guild_id:selectedGuildId,include_roles:document.getElementById('backup-roles').checked,include_channels:document.getElementById('backup-channels').checked,include_config:document.getElementById('backup-config').checked});
+  if (res) { showToast('success','✅ Backup created!'); loadBackups(); }
+}
+async function loadBackups() {
+  if (!selectedGuildId) return;
+  const data=await apiFetch('/api/backup/list/'+selectedGuildId);
+  if (!data) return;
+  const list=document.getElementById('backup-list');
+  if (!data.backups||!data.backups.length) { list.innerHTML='<div style="color:var(--muted);text-align:center;padding:24px">No backups yet.</div>'; return; }
+  list.innerHTML=data.backups.map(b=>`<div class="ar-item"><div style="flex:1"><div style="font-weight:600;color:var(--off-white)">Backup — ${b.date}</div><div style="font-size:0.78rem;color:var(--muted)">${b.roles} roles • ${b.channels} channels</div></div><button class="d-btn d-btn-danger d-btn-sm" onclick="restoreBackup('${b.id}')">♻️ Restore</button></div>`).join('');
+}
+async function restoreBackup(id) {
+  if (!confirm('⚠️ Restore this backup? This will modify server roles and channels.')) return;
+  const res=await apiFetch('/api/backup/restore','POST',{guild_id:selectedGuildId,backup_id:id});
+  if (res) showToast('success','✅ Backup restored!');
+}
+
 const EMOJI_CATEGORIES = [
   { id: 'smileys',   icon: '😀', name: 'Smileys', emojis: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','💫','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖'] },
   { id: 'people',    icon: '👋', name: 'People', emojis: ['👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🫀','🫁','🧠','🦷','🦴','👀','👁️','👅','👄','💋','🩸','👶','🧒','👦','👧','🧑','👱','👨','🧔','👩','🧓','👴','👵','🙍','🙎','🙅','🙆','💁','🙋','🧏','🙇','🤦','🤷','💆','💇','🚶','🧍','🧎','🏃','💃','🕺','🕴️','👯','🧖','🧗','🤺','🏇','⛷️','🏂','🏌️','🏄','🚣','🧘','🛀','🛌'] },
