@@ -415,6 +415,7 @@
     <div class="sb-item" data-panel="scheduled"><span class="sb-icon">📅</span> Scheduled Messages</div>
     <div class="sb-item" data-panel="botcustomize"><span class="sb-icon">🎨</span> Bot Customization</div>
     <div class="sb-item" data-panel="permissions" onclick="if(selectedGuildId)loadPermissions()"><span class="sb-icon">🔒</span> Permissions</div>
+    <div class="sb-item" data-panel="customcmds" onclick="if(selectedGuildId)loadCustomCmds()"><span class="sb-icon">⚡</span> Custom Commands</div>
   </aside>
 
   <main class="dash-main">
@@ -1341,6 +1342,119 @@
           <div style="color:var(--muted);text-align:center;padding:24px">Select a server and open this panel to check permissions.</div>
         </div>
         <div class="d-btn-row"><button class="d-btn d-btn-secondary" onclick="loadPermissions()">🔄 Refresh</button></div>
+      </div>
+    </div>
+
+
+    <!-- ── Custom Commands ────────────────────────────────── -->
+    <div class="dash-panel" id="panel-customcmds">
+      <div class="panel-title">⚡ Custom Commands</div>
+      <div class="panel-sub">Create custom commands that respond with a message when triggered.</div>
+      <div class="d-card">
+        <div class="d-card-title">➕ Add Custom Command</div>
+        <div class="d-grid-2">
+          <div class="d-field">
+            <label class="d-label">Trigger (without prefix)</label>
+            <input class="d-input" id="cc-trigger" type="text" placeholder="e.g. ip, rules, discord"/>
+          </div>
+          <div class="d-field">
+            <label class="d-label">Response Type</label>
+            <select class="d-select" id="cc-type">
+              <option value="text">💬 Plain Text</option>
+              <option value="embed">📨 Embed</option>
+            </select>
+          </div>
+        </div>
+        <div class="d-field">
+          <label class="d-label">Response <button class="emoji-btn" onclick="openEmojiPicker('cc-response',this)">😀 Emoji</button></label>
+          <textarea class="d-textarea" id="cc-response" placeholder="Message to send when command is used..." style="min-height:100px"></textarea>
+        </div>
+        <div class="d-grid-2">
+          <div class="d-field">
+            <label class="d-label">Embed Color (if embed type)</label>
+            <div class="d-color-row">
+              <input type="color" class="d-color-swatch" id="cc-color-picker" value="#5865f2" oninput="document.getElementById('cc-color').value=this.value"/>
+              <input type="text" class="d-color-hex" id="cc-color" value="#5865f2"/>
+            </div>
+          </div>
+          <div class="d-field">
+            <label class="d-label">Allowed Role (optional)</label>
+            <select class="d-select" id="cc-role" data-role-sel>
+              <option value="">— Everyone —</option>
+            </select>
+          </div>
+        </div>
+        <div class="d-toggle-row">
+          <div class="d-toggle-info"><h4>Delete trigger message</h4><p>Auto-delete the user's command message</p></div>
+          <label class="d-switch"><input type="checkbox" id="cc-delete-trigger"><span class="d-switch-slider"></span></label>
+        </div>
+        <div class="d-btn-row">
+          <button class="d-btn d-btn-primary" onclick="addCustomCmd()">⚡ Add Command</button>
+        </div>
+      </div>
+      <div class="d-card">
+        <div class="d-card-title">📋 Existing Commands <span id="cc-count" style="color:var(--muted);font-size:0.8rem"></span></div>
+        <div id="cc-list">
+          <div style="color:var(--muted);text-align:center;padding:24px">No custom commands yet. Add one above!</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── Custom Commands ───────────────────────────────── -->
+    <div class="dash-panel" id="panel-customcmds">
+      <div class="panel-title">⚡ Custom Commands</div>
+      <div class="panel-sub">Create custom commands that respond with text or embeds.</div>
+
+      <!-- Add/Edit form -->
+      <div class="d-card">
+        <div class="d-card-title" id="cc-form-title">➕ Add Custom Command</div>
+        <input type="hidden" id="cc-editing" value="">
+        <div class="d-grid-2">
+          <div class="d-field">
+            <label class="d-label">Command Name (no prefix)</label>
+            <input class="d-input" id="cc-name" type="text" placeholder="e.g. ip, discord, rules" maxlength="20"/>
+          </div>
+          <div class="d-field">
+            <label class="d-label">Response Type</label>
+            <select class="d-select" id="cc-type" onchange="toggleEmbedFields()">
+              <option value="text">💬 Plain Text</option>
+              <option value="embed">📨 Embed</option>
+            </select>
+          </div>
+        </div>
+        <div id="cc-embed-fields" style="display:none">
+          <div class="d-grid-2">
+            <div class="d-field"><label class="d-label">Embed Title (optional)</label><input class="d-input" id="cc-embed-title" type="text" placeholder="e.g. Server IP"/></div>
+            <div class="d-field"><label class="d-label">Embed Color</label><div class="d-color-row"><input type="color" class="d-color-swatch" id="cc-color-pick" value="#5865f2" oninput="document.getElementById('cc-color-hex').value=this.value.replace('#','')"/><input type="text" class="d-color-hex" id="cc-color-hex" value="5865f2"/></div></div>
+          </div>
+          <div class="d-field"><label class="d-label">Embed Footer (optional)</label><input class="d-input" id="cc-footer" type="text" placeholder="e.g. FUSE OS • Footer text"/></div>
+        </div>
+        <div class="d-field">
+          <label class="d-label">
+            Response
+            <button class="emoji-btn" onclick="openEmojiPicker('cc-response',this)">😀 Emoji</button>
+          </label>
+          <textarea class="d-textarea" id="cc-response" placeholder="Response text... Use {user} {username} {server} {membercount} {prefix}" style="min-height:100px"></textarea>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">
+            Variables: <code>{user}</code> <code>{username}</code> <code>{server}</code> <code>{membercount}</code> <code>{prefix}</code>
+          </div>
+        </div>
+        <div class="d-btn-row">
+          <button class="d-btn d-btn-primary" onclick="saveCustomCmd()">💾 Save Command</button>
+          <button class="d-btn d-btn-secondary d-btn-sm" onclick="resetCcForm()">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Commands list -->
+      <div class="d-card">
+        <div class="d-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>📋 Commands <span id="cc-count" style="font-size:0.8rem;color:var(--muted)">(0/50)</span></span>
+          <input class="d-input" id="cc-search" type="text" placeholder="🔍 Search..." style="width:180px;padding:6px 10px" oninput="filterCmds(this.value)"/>
+        </div>
+        <div id="cc-list" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+          <div style="color:var(--muted);text-align:center;padding:24px">No custom commands yet. Add one above!</div>
+        </div>
       </div>
     </div>
 
@@ -2576,6 +2690,185 @@ async function loadPermissions() {
       <span>${icon}</span>
     </div>`;
   }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   CUSTOM COMMANDS
+══════════════════════════════════════════════════════ */
+
+async function loadCustomCmds() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/customcmds/' + selectedGuildId);
+  if (!data) return;
+  const cmds = data.commands || [];
+  const list  = document.getElementById('cc-list');
+  const count = document.getElementById('cc-count');
+  count.textContent = `(${cmds.length} commands)`;
+  if (!cmds.length) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:24px">No custom commands yet. Add one above!</div>';
+    return;
+  }
+  list.innerHTML = cmds.map(cmd => `
+    <div class="ar-item" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-2);border:1px solid var(--border);border-radius:9px;margin-bottom:8px">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="background:var(--surface);color:var(--cyan);padding:2px 8px;border-radius:5px;font-family:var(--font-mono);font-size:0.82rem">+${cmd.trigger}</span>
+          <span style="font-size:0.75rem;color:var(--muted);background:var(--bg-3);padding:2px 6px;border-radius:4px">${cmd.type === 'embed' ? '📨 Embed' : '💬 Text'}</span>
+          ${cmd.role_id ? `<span style="font-size:0.75rem;color:var(--violet);background:rgba(139,92,246,0.1);padding:2px 6px;border-radius:4px">🎭 Role restricted</span>` : ''}
+        </div>
+        <div style="font-size:0.83rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cmd.response.substring(0,80)}${cmd.response.length>80?'...':''}</div>
+      </div>
+      <button class="d-btn d-btn-danger d-btn-sm" onclick="deleteCustomCmd('${cmd.trigger}')">🗑️</button>
+    </div>`).join('');
+}
+
+async function addCustomCmd() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const trigger  = v('cc-trigger').trim().toLowerCase().replace(/[^a-z0-9_-]/g,'');
+  const response = v('cc-response').trim();
+  const type     = v('cc-type');
+  const color    = v('cc-color');
+  const role_id  = v('cc-role');
+  const del_trig = document.getElementById('cc-delete-trigger').checked;
+
+  if (!trigger)  { showToast('error','⚠️ Enter a trigger word.'); return; }
+  if (!response) { showToast('error','⚠️ Enter a response.'); return; }
+  if (trigger.length > 20) { showToast('error','⚠️ Trigger too long (max 20 chars).'); return; }
+
+  const res = await apiFetch('/api/customcmds/' + selectedGuildId, 'POST', {
+    trigger, response, type, color, role_id, delete_trigger: del_trig
+  });
+  if (res && res.ok) {
+    showToast('success', `⚡ Command +${trigger} added!`);
+    document.getElementById('cc-trigger').value  = '';
+    document.getElementById('cc-response').value = '';
+    loadCustomCmds();
+  }
+}
+
+async function deleteCustomCmd(trigger) {
+  if (!selectedGuildId) return;
+  const res = await apiFetch('/api/customcmds/' + selectedGuildId + '/' + trigger, 'DELETE');
+  if (res && res.ok) {
+    showToast('success', `🗑️ Command +${trigger} deleted!`);
+    loadCustomCmds();
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   CUSTOM COMMANDS
+══════════════════════════════════════════════════════ */
+let _allCmds = [];
+
+function toggleEmbedFields() {
+  const isEmbed = document.getElementById('cc-type').value === 'embed';
+  document.getElementById('cc-embed-fields').style.display = isEmbed ? 'block' : 'none';
+}
+
+async function loadCustomCmds() {
+  if (!selectedGuildId) return;
+  const data = await apiFetch('/api/customcmds/' + selectedGuildId);
+  if (!data) return;
+  _allCmds = data.commands || [];
+  renderCmds(_allCmds);
+  document.getElementById('cc-count').textContent = `(${_allCmds.length}/50)`;
+}
+
+function filterCmds(q) {
+  const filtered = _allCmds.filter(c => c.name.includes(q.toLowerCase()) || c.response.toLowerCase().includes(q.toLowerCase()));
+  renderCmds(filtered);
+}
+
+function renderCmds(cmds) {
+  const list = document.getElementById('cc-list');
+  if (!cmds.length) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:24px">No custom commands yet. Add one above!</div>';
+    return;
+  }
+  list.innerHTML = cmds.map(cmd => `
+    <div class="ar-item" style="align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-weight:700;color:var(--cyan);font-family:var(--font-mono)">+${cmd.name}</span>
+          ${cmd.embed ? '<span style="font-size:0.7rem;background:var(--violet);color:#fff;padding:2px 6px;border-radius:4px">EMBED</span>' : ''}
+          <span style="font-size:0.75rem;color:var(--muted)">${cmd.uses || 0} uses</span>
+        </div>
+        <div style="font-size:0.82rem;color:var(--muted-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:400px">${cmd.response}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="d-btn d-btn-secondary d-btn-sm" onclick="editCcForm('${cmd.name}')">✏️</button>
+        <button class="d-btn d-btn-danger d-btn-sm" onclick="deleteCustomCmd('${cmd.name}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function editCcForm(name) {
+  const cmd = _allCmds.find(c => c.name === name);
+  if (!cmd) return;
+  document.getElementById('cc-name').value         = cmd.name;
+  document.getElementById('cc-response').value     = cmd.response;
+  document.getElementById('cc-type').value         = cmd.embed ? 'embed' : 'text';
+  document.getElementById('cc-embed-title').value  = cmd.title || '';
+  document.getElementById('cc-footer').value       = cmd.footer || '';
+  document.getElementById('cc-color-hex').value    = cmd.color || '5865f2';
+  document.getElementById('cc-color-pick').value   = '#' + (cmd.color || '5865f2');
+  document.getElementById('cc-editing').value      = name;
+  document.getElementById('cc-form-title').textContent = '✏️ Edit Command: +' + name;
+  toggleEmbedFields();
+  document.getElementById('panel-customcmds').scrollTop = 0;
+}
+
+function resetCcForm() {
+  document.getElementById('cc-name').value         = '';
+  document.getElementById('cc-response').value     = '';
+  document.getElementById('cc-type').value         = 'text';
+  document.getElementById('cc-embed-title').value  = '';
+  document.getElementById('cc-footer').value       = '';
+  document.getElementById('cc-color-hex').value    = '5865f2';
+  document.getElementById('cc-color-pick').value   = '#5865f2';
+  document.getElementById('cc-editing').value      = '';
+  document.getElementById('cc-form-title').textContent = '➕ Add Custom Command';
+  toggleEmbedFields();
+}
+
+async function saveCustomCmd() {
+  if (!selectedGuildId) { showToast('error','⚠️ Select a server first.'); return; }
+  const name     = document.getElementById('cc-name').value.trim().toLowerCase();
+  const response = document.getElementById('cc-response').value.trim();
+  const isEmbed  = document.getElementById('cc-type').value === 'embed';
+  const title    = document.getElementById('cc-embed-title').value.trim();
+  const footer   = document.getElementById('cc-footer').value.trim();
+  const color    = document.getElementById('cc-color-hex').value.trim().replace('#','');
+
+  if (!name)     { showToast('error','⚠️ Enter a command name.'); return; }
+  if (!response) { showToast('error','⚠️ Enter a response.'); return; }
+  if (!/^[a-z0-9]+$/.test(name)) { showToast('error','⚠️ Name must be letters/numbers only.'); return; }
+
+  const res = await apiFetch('/api/customcmds/save', 'POST', {
+    guild_id: selectedGuildId,
+    name, response,
+    embed:  isEmbed,
+    title:  title,
+    footer: footer,
+    color:  color,
+  });
+  if (res) {
+    showToast('success', '✅ Command saved!');
+    resetCcForm();
+    await loadCustomCmds();
+  }
+}
+
+async function deleteCustomCmd(name) {
+  if (!selectedGuildId) return;
+  if (!confirm(`Delete command +${name}?`)) return;
+  const res = await apiFetch('/api/customcmds/delete', 'POST', {
+    guild_id: selectedGuildId, name,
+  });
+  if (res) {
+    showToast('success', `🗑️ +${name} deleted!`);
+    await loadCustomCmds();
+  }
 }
 
 /* ══════════════════════════════════════════════════════
