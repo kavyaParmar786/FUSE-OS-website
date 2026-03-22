@@ -1,194 +1,829 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — Fuse OS Discord Bot</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Privacy Policy — FUSE OS</title>
+<link rel="icon" href="assets/images/logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;cursor:none}
+:root{
+  --ink:#0f0d0a; --ink2:#1e1a15; --ink3:#3a3228;
+  --muted:#8a7d6e; --muted2:#b5a898;
+  --gold:#c9972a; --gold2:#e8b84b;
+  --violet:#5b21b6; --violet2:#7c3aed;
+  --coral:#dc4a1f;
+  --teal:#0d6f7a;
+  --glass:rgba(255,255,255,0.12);
+  --glass-b:rgba(255,255,255,0.22);
+  --glass-border:rgba(255,255,255,0.22);
+  --glass-dark:rgba(0,0,0,0.25);
+  --grad:linear-gradient(135deg,#5b21b6,#dc4a1f);
+  --grad2:linear-gradient(135deg,#dc4a1f,#c9972a);
+  --grad3:linear-gradient(135deg,#c9972a,#e8b84b);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:#fdf8f0;
+  color:#1a1714;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* ── Canvas always behind everything ── */
+#bg-canvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+}
+
+/* ── Noise grain overlay ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+  opacity:.3;
+}
+
+/* ── All content above canvas ── */
+.page{position:relative;z-index:2}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+
+/* ══════════════════════════════════
+   CURSOR
+══════════════════════════════════ */
+.cursor{position:fixed;z-index:9999;pointer-events:none;top:0;left:0;will-change:transform}
+.cursor-inner{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--gold);
+  transform:translate(-50%,-50%);
+  transition:background .2s,width .25s cubic-bezier(.16,1,.3,1),height .25s cubic-bezier(.16,1,.3,1);
+}
+.cursor.is-hovered .cursor-inner{
+  width:22px;height:22px;
+  background:#0f0d0a;
+}
+.cursor.is-pressed .cursor-inner{
+  width:12px;height:12px;
+  background:#0f0d0a;
+}
+.cur-trail{
+  position:fixed;border-radius:50%;pointer-events:none;
+  z-index:9998;transform:translate(-50%,-50%);
+  background:var(--gold);opacity:0;will-change:transform;
+}
+
+/* ══════════════════════════════════
+   NAV — floating pill
+══════════════════════════════════ */
+nav{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  z-index:500;width:calc(100% - 40px);max-width:1100px;
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;
+  background:rgba(253,248,240,0.82);
+  backdrop-filter:blur(32px);
+  -webkit-backdrop-filter:blur(32px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:18px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.n-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.n-logo img{width:32px;height:32px;border-radius:9px}
+.n-logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.01em}
+.n-links{display:flex;gap:2px}
+.n-links a{padding:7px 13px;border-radius:9px;color:rgba(26,23,20,0.6);font-size:.84rem;font-weight:600;text-decoration:none;transition:all .2s}
+.n-links a:hover{background:rgba(201,151,42,0.1);color:#1a1714}
+.n-btns{display:flex;gap:8px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 20px;border-radius:10px;
+  font-size:.85rem;font-weight:700;text-decoration:none;
+  transition:all .25s;border:none;font-family:'Plus Jakarta Sans',sans-serif;
+  white-space:nowrap;letter-spacing:-.01em;
+}
+.btn-glass{
+  background:rgba(253,248,240,0.7);
+  border:1px solid rgba(201,151,42,0.2);
+  color:#3a3228;
+  backdrop-filter:blur(8px);
+}
+.btn-glass:hover{background:rgba(253,248,240,0.95);color:#1a1714;transform:translateY(-1px);border-color:rgba(201,151,42,0.35)}
+.btn-gold{
+  background:linear-gradient(135deg,#c9972a,#e8b84b);
+  color:#0f0d0a;
+  box-shadow:0 4px 20px rgba(201,151,42,0.4);
+}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(201,151,42,0.5)}
+
+/* ══════════════════════════════════
+   GLASS UTILITY
+══════════════════════════════════ */
+.glass{
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.glass-light{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.18);
+}
+
+/* ══════════════════════════════════
+   HERO
+══════════════════════════════════ */
+#hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:110px 0 80px;position:relative;overflow:hidden;
+}
+
+/* Orbital decorative rings */
+.orb-ring{position:absolute;border-radius:50%;border:1px solid rgba(201,151,42,0.07);pointer-events:none;left:50%;top:50%;transform:translate(-50%,-50%)}
+.orb-ring:nth-child(1){width:700px;height:700px;animation:ring-spin 70s linear infinite}
+.orb-ring:nth-child(2){width:1000px;height:1000px;border-color:rgba(92,33,182,0.05);animation:ring-spin 90s linear infinite reverse}
+.orb-ring:nth-child(3){width:1300px;height:1300px;border-color:rgba(220,74,31,0.04);animation:ring-spin 110s linear infinite}
+
+/* Corner frame brackets */
+.frame-corner{position:absolute;width:80px;height:80px;pointer-events:none}
+.frame-corner.tl{top:88px;left:32px;border-top:1px solid rgba(201,151,42,0.35);border-left:1px solid rgba(201,151,42,0.35)}
+.frame-corner.tr{top:88px;right:32px;border-top:1px solid rgba(201,151,42,0.35);border-right:1px solid rgba(201,151,42,0.35)}
+.frame-corner.bl{bottom:32px;left:32px;border-bottom:1px solid rgba(201,151,42,0.35);border-left:1px solid rgba(201,151,42,0.35)}
+.frame-corner.br{bottom:32px;right:32px;border-bottom:1px solid rgba(201,151,42,0.35);border-right:1px solid rgba(201,151,42,0.35)}
+
+.hero-content{text-align:center;max-width:900px;margin:0 auto;position:relative;z-index:2}
+
+.h-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 18px;border-radius:100px;margin-bottom:36px;
+  background:rgba(201,151,42,0.12);
+  border:1px solid rgba(201,151,42,0.3);
+  color:#a07020;font-size:.75rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.h-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold2);animation:pulse-dot 2s infinite}
+
+.h-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(4rem,9.5vw,8.5rem);
+  font-weight:800;line-height:.9;
+  letter-spacing:-.04em;
+  color:#1a1714;margin-bottom:30px;
+}
+.h-title .t-grad{
+  display:block;
+  background:var(--grad3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.h-title .t-muted{
+  display:block;font-size:.48em;
+  letter-spacing:-.02em;color:rgba(255,255,255,0.35);
+  -webkit-text-fill-color:rgba(255,255,255,0.35);
+}
+
+.h-sub{
+  font-size:1.15rem;color:rgba(26,23,20,0.55);
+  line-height:1.78;max-width:560px;margin:0 auto 44px;
+}
+
+.h-btns{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.h-btns .btn{font-size:.96rem;padding:13px 26px;border-radius:12px}
+
+/* Stat pills */
+.h-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.h-pill{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 20px;border-radius:100px;
+  background:rgba(253,248,240,0.75);
+  border:1px solid rgba(201,151,42,0.18);
+  backdrop-filter:blur(12px);
+  transition:all .3s;
+  box-shadow:0 2px 12px rgba(15,13,10,0.06);
+}
+.h-pill:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.4);transform:translateY(-2px)}
+.h-pill-num{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:#1a1714}
+.h-pill-lbl{font-size:.74rem;color:rgba(26,23,20,0.45);font-weight:500}
+.h-pill-icon{font-size:1rem}
+
+/* Scroll indicator */
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:rgba(26,23,20,0.35);font-size:.68rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,rgba(201,151,42,0.5),transparent);animation:scroll-drip 2s ease-in-out infinite}
+
+/* ══════════════════════════════════
+   TICKER
+══════════════════════════════════ */
+.ticker{
+  padding:13px 0;overflow:hidden;position:relative;z-index:2;
+  border-top:1px solid rgba(201,151,42,0.12);
+  border-bottom:1px solid rgba(201,151,42,0.12);
+  background:rgba(247,240,228,0.7);
+  backdrop-filter:blur(8px);
+}
+.tk-track{display:flex;gap:48px;width:max-content;animation:ticker 24s linear infinite}
+.tk-item{display:flex;align-items:center;gap:9px;font-size:.8rem;font-weight:600;color:rgba(26,23,20,0.45);white-space:nowrap;letter-spacing:.02em}
+.tk-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+/* ══════════════════════════════════
+   QUOTE SECTIONS
+══════════════════════════════════ */
+.q-section{
+  padding:80px 0;position:relative;z-index:2;
+  background:rgba(253,248,240,0.72);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(201,151,42,0.12);
+  border-bottom:1px solid rgba(201,151,42,0.12);
+}
+
+/* Side layout */
+.q-side{display:grid;grid-template-columns:160px 1fr;gap:52px;align-items:center;max-width:900px;margin:0 auto}
+.q-side.reverse{grid-template-columns:1fr 160px}
+.q-side.reverse .q-person{order:2}
+.q-side.reverse .q-body{order:1}
+
+.q-person{text-align:center}
+.q-photo{
+  width:110px;height:110px;border-radius:50%;margin:0 auto 12px;
+  position:relative;display:block;overflow:hidden;
+  border:2px solid rgba(201,151,42,0.3);
+  box-shadow:0 0 0 6px rgba(201,151,42,0.07),0 12px 40px rgba(0,0,0,0.4);
+}
+.q-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.q-photo .q-initials{
+  width:100%;height:100%;display:grid;place-items:center;
+  font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:#fff;
+}
+.q-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:#1a1714;margin-bottom:3px}
+.q-role{font-size:.72rem;color:rgba(26,23,20,0.45);line-height:1.4}
+.q-stars{color:var(--gold2);font-size:.82rem;margin-top:6px;letter-spacing:2px}
+
+.q-mark{font-family:'Syne',sans-serif;font-size:5.5rem;line-height:.5;color:var(--gold2);opacity:.2;display:block;margin-bottom:6px}
+.q-text{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.1rem,2vw,1.45rem);
+  font-weight:700;color:#1a1714;
+  line-height:1.5;font-style:italic;margin-bottom:14px;
+}
+.q-context{font-size:.82rem;color:rgba(26,23,20,0.45);line-height:1.6;font-style:normal}
+
+/* Center layout */
+.q-center{text-align:center;max-width:760px;margin:0 auto}
+.q-center .q-photo{margin:0 auto 14px}
+.q-center .q-mark{text-align:left}
+
+/* ══════════════════════════════════
+   FEATURES
+══════════════════════════════════ */
+#features{padding:100px 0;position:relative;z-index:2;background:rgba(253,248,240,0.05)}
+.section-label{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--coral);margin-bottom:14px}
+.section-label::before{content:'✦'}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-.03em;color:#1a1714;line-height:1.05;margin-bottom:13px}
+.section-sub{font-size:.98rem;color:rgba(26,23,20,0.5);line-height:1.75;max-width:480px}
+
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:52px}
+.fb{
+  background:rgba(253,248,240,0.65);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:20px;padding:26px;
+  transition:all .38s;position:relative;overflow:hidden;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.fb::before{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .38s;border-radius:inherit}
+.fb:hover{
+  border-color:rgba(201,151,42,0.4);
+  background:rgba(253,248,240,0.92);
+  transform:translateY(-6px);
+  box-shadow:0 20px 60px rgba(15,13,10,0.12);
+}
+.fb:hover::before{opacity:.04}
+.fb.s2{grid-column:span 2}
+.fb-num{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;line-height:1;opacity:.07;position:absolute;top:14px;right:18px;color:#1a1714}
+.fb-icon{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:1.4rem;margin-bottom:14px;position:relative;z-index:1;background:rgba(255,255,255,0.6);border:1px solid rgba(201,151,42,0.15)}
+.fb-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.98rem;color:#1a1714;margin-bottom:7px;position:relative;z-index:1}
+.fb-desc{font-size:.83rem;color:rgba(26,23,20,0.55);line-height:1.68;position:relative;z-index:1}
+.fb-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;position:relative;z-index:1}
+.fb-tag{
+  padding:3px 9px;border-radius:100px;font-size:.68rem;font-weight:700;letter-spacing:.03em;
+  background:rgba(201,151,42,0.1);
+  border:1px solid rgba(201,151,42,0.2);
+  color:#7a5a10;
+}
+
+/* ══════════════════════════════════
+   COMMAND SIMULATOR + POKEMON
+══════════════════════════════════ */
+#fun{padding:100px 0;position:relative;z-index:2}
+.fun-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:50px}
+.fun-card{
+  background:rgba(253,248,240,0.7);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:20px;padding:26px;
+  transition:all .3s;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.fun-card:hover{background:rgba(253,248,240,0.92);border-color:rgba(201,151,42,0.3)}
+.fun-head{font-family:'Syne',sans-serif;font-weight:700;font-size:.96rem;color:#1a1714;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.fun-sub{font-size:.78rem;color:rgba(26,23,20,0.45);margin-bottom:16px}
+.cmd-row{display:flex;gap:7px;margin-bottom:10px}
+.cmd-inp{
+  flex:1;background:rgba(255,255,255,0.8);
+  border:1px solid rgba(201,151,42,0.2);
+  border-radius:10px;padding:10px 13px;
+  color:#1a1714;font-family:'JetBrains Mono',monospace;font-size:.8rem;
+  outline:none;transition:border-color .25s;
+}
+.cmd-inp::placeholder{color:rgba(26,23,20,0.3)}
+.cmd-inp:focus{border-color:rgba(201,151,42,0.5);background:#fff}
+.cmd-go{
+  background:#1a1714;color:#fff;border:1px solid rgba(26,23,20,0.2);
+  border-radius:10px;padding:10px 16px;font-weight:700;font-size:.82rem;
+  transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.cmd-go:hover{background:#333;transform:scale(1.04)}
+.cmd-out{
+  background:rgba(255,255,255,0.6);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:12px;padding:13px 14px;
+  min-height:100px;font-size:.8rem;line-height:1.6;
+  color:rgba(26,23,20,0.8);
+}
+.cmd-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.cmd-chip{
+  padding:3px 11px;border-radius:100px;
+  background:rgba(201,151,42,0.1);
+  border:1px solid rgba(201,151,42,0.2);
+  color:var(--gold2);font-size:.7rem;
+  font-family:'JetBrains Mono',monospace;
+  transition:all .2s;font-weight:600;
+}
+.cmd-chip:hover{background:rgba(201,151,42,0.25);transform:scale(1.05)}
+.poke-area{text-align:center}
+.poke-sprite{font-size:4.5rem;margin-bottom:8px;display:block;animation:poke-float 3s ease-in-out infinite}
+.poke-name{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#1a1714}
+.poke-type{display:inline-block;padding:4px 13px;border-radius:100px;font-size:.73rem;font-weight:700;margin:6px 0 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff}
+.poke-rar{display:flex;justify-content:center;margin-bottom:16px;font-size:.76rem;color:rgba(26,23,20,0.45)}
+.catch-btn{
+  width:100%;padding:12px;border-radius:11px;border:none;
+  background:linear-gradient(135deg,#c9972a,#e8b84b);
+  color:#0f0d0a;font-family:'Syne',sans-serif;
+  font-size:.94rem;font-weight:800;
+  transition:all .3s;box-shadow:0 4px 16px rgba(201,151,42,0.3);
+}
+.catch-btn:hover{transform:scale(1.02);box-shadow:0 8px 28px rgba(201,151,42,0.45)}
+.catch-btn:disabled{opacity:.4;transform:none}
+
+/* ══════════════════════════════════
+   STATS — glass cards
+══════════════════════════════════ */
+#stats{padding:80px 0;position:relative;z-index:2}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{
+  background:rgba(253,248,240,0.7);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:18px;padding:30px 20px;
+  text-align:center;transition:all .3s;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.stat-card:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.35);transform:translateY(-4px)}
+.stat-icon{font-size:1.5rem;display:block;margin-bottom:12px}
+.stat-num{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;line-height:1;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-lbl{font-size:.8rem;color:rgba(26,23,20,0.45);margin-top:7px;font-weight:500}
+
+/* ══════════════════════════════════
+   COMMANDS
+══════════════════════════════════ */
+#commands{padding:100px 0;position:relative;z-index:2}
+.cmd-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:48px}
+.cmd-cat{
+  background:rgba(253,248,240,0.65);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(201,151,42,0.13);
+  border-radius:15px;padding:20px;transition:all .3s;
+  box-shadow:0 2px 10px rgba(15,13,10,0.05);
+}
+.cmd-cat:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.35);transform:translateY(-2px)}
+.cmd-cat-hd{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.cmd-cat-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.96rem;flex-shrink:0;background:rgba(201,151,42,0.1)}
+.cmd-cat-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;color:#1a1714}
+.cmd-cat-cnt{font-size:.68rem;color:rgba(26,23,20,0.35);margin-left:auto}
+.cmd-pills{display:flex;flex-wrap:wrap;gap:4px}
+.cmd-pill{
+  padding:2px 8px;border-radius:6px;
+  background:rgba(255,255,255,0.5);
+  border:1px solid rgba(201,151,42,0.12);
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  color:rgba(26,23,20,0.55);transition:all .2s;
+}
+.cmd-pill:hover{background:rgba(201,151,42,0.15);border-color:rgba(201,151,42,0.3);color:#7a5a10}
+
+/* ══════════════════════════════════
+   CTA
+══════════════════════════════════ */
+#cta{padding:100px 0;text-align:center;position:relative;z-index:2}
+.cta-box{
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:blur(32px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:28px;padding:72px 60px;
+  max-width:800px;margin:0 auto;
+  position:relative;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,0.5);
+}
+.cta-box::before{content:'';position:absolute;top:-100px;right:-80px;width:320px;height:320px;background:radial-gradient(circle,rgba(201,151,42,0.12),transparent 70%);border-radius:50%;pointer-events:none}
+.cta-box::after{content:'';position:absolute;bottom:-80px;left:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(92,33,182,0.1),transparent 70%);border-radius:50%;pointer-events:none}
+.cta-title{font-family:'Syne',sans-serif;font-size:clamp(2.4rem,5vw,3.8rem);font-weight:800;letter-spacing:-.03em;color:#fff;margin-bottom:18px;line-height:1;position:relative;z-index:1}
+.cta-sub{font-size:.98rem;color:rgba(255,255,255,0.45);max-width:440px;margin:0 auto 36px;line-height:1.75;position:relative;z-index:1}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.cta-btns .btn{font-size:.94rem;padding:13px 28px;border-radius:12px}
+.cta-note{font-size:.72rem;color:rgba(255,255,255,0.25);margin-top:14px;position:relative;z-index:1}
+
+/* ══════════════════════════════════
+   FOOTER
+══════════════════════════════════ */
+footer{
+  background:rgba(15,13,10,0.85);
+  backdrop-filter:blur(20px);
+  border-top:1px solid rgba(201,151,42,0.1);
+  color:rgba(255,255,255,0.45);
+  padding:52px 0 28px;position:relative;z-index:2;
+}
+.ft{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:44px;margin-bottom:40px}
+.f-logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:11px}
+.f-desc{font-size:.8rem;line-height:1.72;max-width:210px;color:rgba(255,255,255,0.35)}
+.f-col-h{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.2);margin-bottom:12px}
+.f-links{display:flex;flex-direction:column;gap:8px}
+.f-links a{color:rgba(255,255,255,0.38);text-decoration:none;font-size:.8rem;transition:color .2s}
+.f-links a:hover{color:#fff}
+.f-bottom{padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;font-size:.72rem}
+
+/* ══════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════ */
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.6)}}
+@keyframes ring-spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes scroll-drip{0%{opacity:0;transform:translateY(-6px)}50%{opacity:1}100%{opacity:0;transform:translateY(8px)}}
+@keyframes poke-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.06)}}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .72s ease,transform .72s ease}
+.reveal.on{opacity:1;transform:translateY(0)}
+
+/* ══════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════ */
+@media(max-width:960px){
+  nav{top:8px;width:calc(100% - 20px);padding:0 14px}
+  .n-links{display:none}
+  .h-title{font-size:clamp(3rem,12vw,5rem)}
+  .bento{grid-template-columns:1fr}.fb.s2{grid-column:span 1}
+  .fun-grid{grid-template-columns:1fr}
+  .q-side{grid-template-columns:1fr;text-align:center}.q-side.reverse{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .cmd-cats{grid-template-columns:1fr 1fr}
+  .ft{grid-template-columns:1fr 1fr}
+  .cta-box{padding:44px 24px}
+  .cta-btns{flex-direction:column;align-items:center}
+}
+@media(max-width:580px){.cmd-cats{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.ft{grid-template-columns:1fr}}
+
+.page-hero{padding:120px 0 60px;text-align:center;position:relative;z-index:2}
+.page-hero h1{font-family:Syne,sans-serif;font-size:clamp(2.8rem,6vw,5rem);font-weight:800;letter-spacing:-.04em;color:#1a1714;margin-bottom:16px;line-height:.95}
+.page-hero p{font-size:1.1rem;color:rgba(26,23,20,0.55);max-width:520px;margin:0 auto;line-height:1.75}
+.page-hero .section-label{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--coral);margin-bottom:14px}
+.page-hero .section-label::before{content:'✦'}
+.glass-card{background:rgba(253,248,240,0.65);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(201,151,42,0.15);border-radius:20px;padding:28px;box-shadow:0 2px 16px rgba(15,13,10,.06);transition:all .3s}
+.glass-card:hover{background:rgba(253,248,240,0.9);border-color:rgba(201,151,42,0.3);transform:translateY(-4px);box-shadow:0 12px 40px rgba(15,13,10,.1)}
+.glass-card h3{font-family:Syne,sans-serif;font-weight:700;font-size:1.05rem;color:#1a1714;margin-bottom:8px}
+.glass-card p{font-size:.86rem;color:rgba(26,23,20,0.55);line-height:1.65}
+.prose{font-size:.96rem;color:rgba(26,23,20,0.7);line-height:1.8}
+.prose h2{font-family:Syne,sans-serif;font-weight:700;font-size:1.4rem;color:#1a1714;margin:36px 0 12px}
+.prose h3{font-family:Syne,sans-serif;font-weight:700;font-size:1.1rem;color:#1a1714;margin:24px 0 8px}
+.prose ul{padding-left:20px;margin:8px 0}
+.prose li{margin-bottom:6px}
+.prose a{color:var(--coral);text-decoration:none}
+.prose a:hover{text-decoration:underline}
+
+</style>
 </head>
 <body>
-
-<canvas id="particle-canvas"></canvas>
-
-<nav class="navbar">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">
-      <div class="nav-logo-icon">⚡</div>
-      <span>FUSE OS</span>
-    </a>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="index.html"     class="nav-link">Home</a></li>
-      <li><a href="features.html"  class="nav-link">Features</a></li>
-      <li><a href="commands.html"  class="nav-link">Commands</a></li>
-      <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-      <li><a href="https://discord.gg/Wej7Cd3XVW" class="nav-link">Support</a></li>
-      <a href="https://discord.gg/Wej7Cd3XVW" class="btn btn-primary nav-cta">Invite Bot</a>
-    </ul>
-    <button class="nav-burger" id="nav-burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
+<div class="cursor"><div class="cursor-inner"></div></div>
+<canvas id="bg-canvas"></canvas>
+<div class="page">
+<nav>
+  <a class="n-logo" href="index.html"><img src="assets/images/logo.png" alt="FUSE OS"/><span class="n-logo-name">FUSE OS</span></a>
+  <div class="n-links"><a href="index.html">Home</a><a href="features.html">Features</a><a href="commands.html">Commands</a><a href="verify.html">Verify</a><a href="support.html">Support</a></div>
+  <div class="n-btns"><a href="dashboard.html" class="btn btn-glass">Dashboard</a><a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" class="btn btn-gold">✦ Add Free</a></div>
 </nav>
 
-<section class="page-hero">
-  <div class="hero-glow hero-glow-1" style="opacity:0.3"></div>
-  <div class="container" style="position:relative;z-index:2">
-    <div class="section-label" style="margin:0 auto 20px;display:table">Legal</div>
-    <h1 class="section-title" style="text-align:center"><span class="gradient-text">Privacy Policy</span></h1>
-    <p class="section-subtitle" style="margin:0 auto;text-align:center">How Fuse OS collects, uses, and protects your data.</p>
+<div class="page-hero">
+  <div class="wrap">
+    <div class="section-label">Legal</div>
+    <h1>Privacy Policy</h1>
+    <p>Last updated: January 2025. We keep this simple and honest.</p>
   </div>
-</section>
-
-<section class="legal-section">
-  <div class="container">
-    <div class="legal-body">
-
-      <div class="legal-meta">
-        <span>📅 Last Updated: January 1, 2025</span>
-        <span>|</span>
-        <span>📋 Version 2.0</span>
-        <span>|</span>
-        <span>✉️ <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7d1b080e18120e3d0e080d0d120f095319140e1e120f19">[email&#160;protected]</a></span>
+</div>
+<section style="padding:0 0 100px;position:relative;z-index:2">
+  <div class="wrap">
+    <div class="glass-card" style="max-width:800px;margin:0 auto;padding:48px">
+      <div class="prose">
+        <h2>What We Collect</h2>
+        <p>FUSE OS collects only the minimum data needed to operate its features:</p>
+        <ul>
+          <li><strong>Discord User IDs</strong> — to track economy balances, XP, Pokémon collections, and giveaway entries</li>
+          <li><strong>Discord Server IDs</strong> — to store per-server configuration settings</li>
+          <li><strong>Message Content</strong> — only when you use a command (e.g. +ai, +ar add) and only the content relevant to that command</li>
+          <li><strong>YouTube Channel Info</strong> — only if you voluntarily use the YouTube Verification feature</li>
+        </ul>
+        <h2>What We Don't Collect</h2>
+        <ul>
+          <li>We do not read, log, or store regular messages in your server</li>
+          <li>We do not collect email addresses or personal information</li>
+          <li>We do not sell any data to third parties</li>
+          <li>We do not use data for advertising purposes</li>
+        </ul>
+        <h2>How We Use Your Data</h2>
+        <p>All collected data is used exclusively to make FUSE OS features work — economy balances, XP progression, Pokémon collections, ticket logs, and server configurations. No data is shared externally.</p>
+        <h2>Data Storage</h2>
+        <p>Data is stored in JSON files on the bot's host server. Server configuration data is deleted if the bot is removed from your server on request. User data (economy, XP, Pokémon) can be reset by server admins using the provided admin commands.</p>
+        <h2>AI Chat Data</h2>
+        <p>When using the AI chat feature (+ai), your messages are sent to Groq's API to generate responses. Groq's own privacy policy applies to this data. Conversation history stored by FUSE OS can be cleared at any time using +aiclearhistory.</p>
+        <h2>Third-Party Services</h2>
+        <ul>
+          <li><strong>Groq API</strong> — used for AI chat and image generation</li>
+          <li><strong>Pollinations</strong> — used for AI image generation</li>
+          <li><strong>YouTube Data API</strong> — used only for YouTube Verification feature</li>
+        </ul>
+        <h2>Your Rights</h2>
+        <p>You can request deletion of your data at any time by contacting us in our <a href="https://discord.gg/Wej7Cd3XVW">Discord support server</a>. Server admins can use admin commands to reset user data for their server.</p>
+        <h2>Contact</h2>
+        <p>For privacy questions, join our <a href="https://discord.gg/Wej7Cd3XVW">Discord support server</a> and open a ticket.</p>
       </div>
-
-      <p>This Privacy Policy describes how Fuse OS ("the Bot", "we", "us", or "our") collects, uses, stores, and shares information when you use our Discord bot service. By adding Fuse OS to your server or interacting with the Bot, you agree to the practices described in this policy.</p>
-
-      <h2>1. Information We Collect</h2>
-
-      <p>Fuse OS collects the minimum data necessary to provide its services. We collect the following categories of information:</p>
-
-      <p><strong>Discord User Data:</strong></p>
-      <ul>
-        <li>Discord User IDs — used to identify users across commands and features</li>
-        <li>Discord Server (Guild) IDs — used to store server-specific configurations</li>
-        <li>Discord Username and Discriminator — used for display in logs and embeds</li>
-        <li>Discord Role IDs — used for autorole and permission management</li>
-        <li>Discord Channel IDs — used for configuration of logging and panel channels</li>
-      </ul>
-
-      <p><strong>Bot Interaction Data:</strong></p>
-      <ul>
-        <li>Command usage logs — timestamps and command names (no message content)</li>
-        <li>Giveaway entries — Discord User IDs linked to giveaway IDs</li>
-        <li>Poll votes — anonymous vote counts and, where enabled, user vote choices</li>
-        <li>Ticket content — message transcripts within ticket channels (server admin-configured)</li>
-        <li>AI conversation history — the last N messages of a user's AI chat session (stored temporarily in memory)</li>
-        <li>Verification codes — temporary codes for YouTube subscription verification</li>
-      </ul>
-
-      <p><strong>YouTube Integration Data (Optional):</strong></p>
-      <ul>
-        <li>YouTube comment scan results — we read comments on a specified video to verify subscription codes</li>
-        <li>YouTube Channel ID — stored in server configuration only; we do not store YouTube viewer data</li>
-        <li>No YouTube account credentials or OAuth tokens are stored by default</li>
-      </ul>
-
-      <h2>2. How We Use Your Data</h2>
-
-      <p>All data collected by Fuse OS is used exclusively to provide and improve the Bot's features. Specifically:</p>
-      <ul>
-        <li>To execute commands and return results to users</li>
-        <li>To persist server configurations between bot restarts</li>
-        <li>To track giveaway entries and select winners</li>
-        <li>To record poll votes and display results</li>
-        <li>To manage ticket creation, assignment, and archival</li>
-        <li>To assign and remove Discord roles automatically</li>
-        <li>To verify YouTube subscription status for Content Fan roles</li>
-        <li>To maintain AI conversation context for the duration of a session</li>
-        <li>To generate leaderboards based on giveaway wins and server activity</li>
-      </ul>
-
-      <p>We do <strong>not</strong> use your data for advertising, profiling, resale, or any commercial purpose beyond operating the Bot.</p>
-
-      <h2>3. Data Storage and Retention</h2>
-
-      <p>Server configuration data (role IDs, channel IDs, settings) is stored in JSON files on our secure server infrastructure and is retained as long as Fuse OS remains in your Discord server.</p>
-
-      <p>Giveaway and poll data is retained for 30 days after the event ends, then permanently deleted.</p>
-
-      <p>AI conversation history is stored in-memory only and is cleared when the bot restarts or when a user runs the <code>+aireset</code> command. It is never written to permanent storage.</p>
-
-      <p>Verification codes expire after 30 minutes and are removed from storage automatically.</p>
-
-      <p>Ticket transcripts are stored only in the Discord channel you configure and are not retained on our servers unless you use the transcript export feature, in which case the export is sent directly to you via Discord DM.</p>
-
-      <h2>4. Data Sharing and Third Parties</h2>
-
-      <p>We do not sell, trade, or rent your personal information to third parties. We may share data with the following parties only to the extent necessary to operate the Bot:</p>
-      <ul>
-        <li><strong>Anthropic (Claude AI):</strong> If you use the AI chat feature, your message content is sent to Anthropic's API to generate a response. Anthropic's own privacy policy governs that data. We do not store AI conversation content after the session ends.</li>
-        <li><strong>Google (YouTube Data API):</strong> If you use the YouTube verification feature, we make read-only API calls to check for public comments. No user data is sent to Google beyond what is required for the API request.</li>
-        <li><strong>Discord:</strong> All bot interactions occur on Discord's platform. Discord's Privacy Policy governs all data on their platform.</li>
-      </ul>
-
-      <h2>5. Security</h2>
-
-      <p>We take reasonable technical measures to protect stored data, including:</p>
-      <ul>
-        <li>Data stored on servers with restricted access and encrypted disks</li>
-        <li>API keys and credentials stored as environment variables, never in code</li>
-        <li>Regular security reviews of our codebase</li>
-        <li>No storage of sensitive personal information beyond Discord IDs</li>
-      </ul>
-      <p>However, no method of transmission or storage is 100% secure. While we strive to protect your data, we cannot guarantee absolute security.</p>
-
-      <h2>6. Children's Privacy</h2>
-      <p>Fuse OS is not directed to children under the age of 13. We do not knowingly collect personal information from children under 13. Discord itself requires users to be at least 13 years old. If you believe a child under 13 has provided us with personal information, please contact us immediately.</p>
-
-      <h2>7. Your Rights and Choices</h2>
-
-      <p>Depending on your jurisdiction, you may have the right to:</p>
-      <ul>
-        <li><strong>Access:</strong> Request information about what data we hold about you</li>
-        <li><strong>Deletion:</strong> Request deletion of your data by contacting us or kicking the Bot from your server</li>
-        <li><strong>Correction:</strong> Request correction of inaccurate data</li>
-        <li><strong>Portability:</strong> Request an export of your server's configuration data</li>
-        <li><strong>Objection:</strong> Object to specific processing of your data</li>
-      </ul>
-      <p>To exercise any of these rights, please contact us via our support Discord server.</p>
-
-      <h2>8. Data Deletion</h2>
-      <p>You can delete all data associated with your server by removing Fuse OS from the server. Within 30 days of removal, all server-specific data will be permanently deleted from our systems. Individual users may request deletion of their personal data by contacting support.</p>
-
-      <h2>9. Changes to This Policy</h2>
-      <p>We may update this Privacy Policy from time to time. We will notify users of significant changes by posting a notice in our support Discord server and updating the "Last Updated" date above. Continued use of the Bot after changes constitutes acceptance of the updated policy.</p>
-
-      <h2>10. Contact Us</h2>
-      <p>If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:</p>
-      <ul>
-        <li><strong>Support Server:</strong> Join our Discord server and open a support ticket</li>
-        <li><strong>Discord:</strong> Direct message the Bot owner via the support server</li>
-      </ul>
-
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="index.html" class="nav-logo" style="margin-bottom:0">
-          <div class="nav-logo-icon">⚡</div>
-          <span style="font-family:var(--font-display);font-size:1.25rem;font-weight:700;background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">FUSE OS</span>
-        </a>
-        <p>The ultimate all-in-one Discord bot.</p>
-      </div>
-      <div class="footer-col"><h4>Product</h4><ul>
-        <li><a href="features.html">Features</a></li>
-        <li><a href="commands.html">Commands</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Community</h4><ul>
-        <li><a href="https://discord.gg/Wej7Cd3XVW">Support Server</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Legal</h4><ul>
-        <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="terms.html">Terms of Service</a></li>
-      </ul></div>
+  <div class="wrap">
+    <div class="ft">
+      <div><span class="f-logo-name">✦ FUSE OS</span><p class="f-desc">The ultimate all-in-one Discord bot. 150+ commands, 21 systems, free forever.</p></div>
+      <div><div class="f-col-h">Product</div><div class="f-links"><a href="features.html">Features</a><a href="commands.html">Commands</a><a href="dashboard.html">Dashboard</a><a href="verify.html">YT Verify</a></div></div>
+      <div><div class="f-col-h">Community</div><div class="f-links"><a href="https://discord.gg/Wej7Cd3XVW">Support Server</a><a href="support.html">FAQ</a><a href="https://discord.gg/Wej7Cd3XVW">Bug Reports</a></div></div>
+      <div><div class="f-col-h">Legal</div><div class="f-links"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a></div></div>
     </div>
-    <div class="footer-bottom">
-      <p class="footer-copy">© 2025 <span>Fuse OS</span>. All rights reserved.</p>
-      <div class="footer-links">
-        <a href="privacy.html">Privacy</a>
-        <a href="t
+    <div class="f-bottom"><span>© 2025 FUSE OS. All rights reserved.</span><a href="https://discord.gg/Wej7Cd3XVW" style="color:rgba(255,255,255,.3);text-decoration:none">💬 Discord</a></div>
+  </div>
+</footer>
+</div>
+<script>
+/* ═══════════════════════════════════════════
+   THREE.JS — Floating geometric shapes
+   Warm palette, all over the page
+═══════════════════════════════════════════ */
+(function(){
+  var c = document.getElementById("bg-canvas");
+  var renderer = new THREE.WebGLRenderer({canvas:c, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  var scene  = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 22;
+
+  var COLORS = [0xc9972a, 0x5b21b6, 0xdc4a1f, 0x0d6f7a, 0xb91c5c, 0x3d7a0c, 0xe8b84b];
+  var GEOS = [
+    new THREE.IcosahedronGeometry(1, 0),
+    new THREE.OctahedronGeometry(1, 0),
+    new THREE.TetrahedronGeometry(1.2, 0),
+    new THREE.IcosahedronGeometry(0.9, 1),
+    new THREE.OctahedronGeometry(1.3, 0),
+    new THREE.IcosahedronGeometry(1.1, 0)
+  ];
+
+  var objects = [];
+  for(var i = 0; i < 36; i++){
+    var geo  = GEOS[i % GEOS.length];
+    var col  = COLORS[Math.floor(Math.random() * COLORS.length)];
+    var wire = Math.random() > 0.38;
+    var mat  = new THREE.MeshPhongMaterial({
+      color: col, transparent: true,
+      opacity: wire ? 0.13 : 0.06,
+      wireframe: wire
+    });
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(
+      (Math.random() - .5) * 38,
+      (Math.random() - .5) * 38,
+      (Math.random() - .5) * 16 - 6
+    );
+    var s = 0.4 + Math.random() * 2.8;
+    mesh.scale.setScalar(s);
+    mesh.rotation.set(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2
+    );
+    mesh.userData = {
+      rx: (Math.random() - .5) * .0038,
+      ry: (Math.random() - .5) * .005,
+      rz: (Math.random() - .5) * .003,
+      fs: 0.22 + Math.random() * .5,
+      fa: 0.4  + Math.random() * .9,
+      fo: Math.random() * Math.PI * 2,
+      by: mesh.position.y
+    };
+    scene.add(mesh);
+    objects.push(mesh);
+  }
+
+  /* Particles */
+  var pg = new THREE.BufferGeometry();
+  var pp = new Float32Array(600);
+  for(var j = 0; j < 200; j++){
+    pp[j*3]   = (Math.random() - .5) * 72;
+    pp[j*3+1] = (Math.random() - .5) * 72;
+    pp[j*3+2] = (Math.random() - .5) * 24;
+  }
+  pg.setAttribute("position", new THREE.BufferAttribute(pp, 3));
+  var pts = new THREE.Points(pg, new THREE.PointsMaterial({
+    color: 0xc9972a, size: 0.065, transparent: true, opacity: 0.22
+  }));
+  scene.add(pts);
+
+  /* Lights */
+  scene.add(new THREE.AmbientLight(0xfdf8f0, 1.2));
+  var dl  = new THREE.DirectionalLight(0xc9972a, 0.7);
+  dl.position.set(8, 12, 8); scene.add(dl);
+  var dl2 = new THREE.DirectionalLight(0x5b21b6, 0.4);
+  dl2.position.set(-8, -6, 6); scene.add(dl2);
+
+  /* Mouse + scroll */
+  var mx=0, my=0, tx=0, ty=0, sy=0;
+  document.addEventListener("mousemove", function(e){
+    mx = (e.clientX / window.innerWidth  - .5) * 2;
+    my = (e.clientY / window.innerHeight - .5) * 2;
+  });
+  window.addEventListener("scroll", function(){ sy = window.scrollY; });
+  window.addEventListener("resize", function(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  var t = 0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    t += 0.008;
+    tx += (mx - tx) * 0.032;
+    ty += (my - ty) * 0.032;
+    camera.position.x = tx * 2.8;
+    camera.position.y = -ty * 1.8 - sy * .0022;
+    camera.lookAt(0, -sy * .0022, 0);
+    for(var k = 0; k < objects.length; k++){
+      var o = objects[k];
+      o.rotation.x += o.userData.rx;
+      o.rotation.y += o.userData.ry;
+      o.rotation.z += o.userData.rz;
+      o.position.y  = o.userData.by + Math.sin(t * o.userData.fs + o.userData.fo) * o.userData.fa;
+    }
+    pts.rotation.y = t * 0.012;
+    pts.rotation.x = t * 0.006;
+    renderer.render(scene, camera);
+  })();
+})();
+
+/* ═══════════════════════════════════════════
+   STICKY STRETCHING CURSOR
+   - Gold blob that stretches in direction of travel
+   - On hover: grows, turns black (mix-blend-mode difference → looks black on light, white on dark)
+   - Trail of fading dots
+   - Sticky snap toward hovered elements
+═══════════════════════════════════════════ */
+(function(){
+  var cursorEl = document.querySelector(".cursor");
+  var inner    = document.querySelector(".cursor-inner");
+  if(!cursorEl || typeof gsap === "undefined") return;
+
+  /* Create trail dots */
+  var TRAIL = 14;
+  var trail = [];
+  for(var i = 0; i < TRAIL; i++){
+    var el = document.createElement("div");
+    el.className = "cur-trail";
+    var sz = Math.max(3, 8 * (1 - i / TRAIL));
+    el.style.cssText = "width:"+sz+"px;height:"+sz+"px;";
+    document.body.appendChild(el);
+    trail.push({el: el, x: window.innerWidth/2, y: window.innerHeight/2});
+  }
+
+  var mouseX = window.innerWidth/2,  mouseY = window.innerHeight/2;
+  var curX   = window.innerWidth/2,  curY   = window.innerHeight/2;
+  var isHovered = false, hoveredEl = null;
+  var frame = 0;
+
+  document.addEventListener("mousemove", function(e){
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  document.addEventListener("mousedown", function(){ cursorEl.classList.add("is-pressed"); });
+  document.addEventListener("mouseup",   function(){ cursorEl.classList.remove("is-pressed"); });
+
+  /* Hover detection */
+  var interactiveEls = document.querySelectorAll("a, button, .btn, .fb, .cmd-cat, .h-pill, .cmd-chip, .cmd-pill, .fun-card, .stat-card, .catch-btn, .cmd-go");
+  interactiveEls.forEach(function(el){
+    el.addEventListener("mouseenter", function(){
+      isHovered = true; hoveredEl = el;
+      cursorEl.classList.add("is-hovered");
+    });
+    el.addEventListener("mouseleave", function(){
+      isHovered = false; hoveredEl = null;
+      cursorEl.classList.remove("is-hovered");
+      gsap.to(inner, {scaleX:1, scaleY:1, rotation:0, duration:.4, ease:"elastic.out(1,.5)"});
+    });
+  });
+
+  (function animCursor(){
+    requestAnimationFrame(animCursor);
+    frame++;
+
+    var prevX = curX, prevY = curY;
+
+    if(isHovered && hoveredEl){
+      /* Sticky — pull toward element center */
+      var rect = hoveredEl.getBoundingClientRect();
+      var ecx  = rect.left + rect.width  / 2;
+      var ecy  = rect.top  + rect.height / 2;
+      var dx   = mouseX - ecx;
+      var dy   = mouseY - ecy;
+      curX += (ecx + dx * 0.38 - curX) * 0.13;
+      curY += (ecy + dy * 0.38 - curY) * 0.13;
+    } else {
+      curX += (mouseX - curX) * 0.13;
+      curY += (mouseY - curY) * 0.13;
+    }
+
+    var velX  = curX - prevX;
+    var velY  = curY - prevY;
+    var speed = Math.sqrt(velX*velX + velY*velY);
+
+    /* Move cursor */
+    gsap.set(cursorEl, {x: curX, y: curY});
+
+    /* Stretch in direction of travel */
+    if(!isHovered && speed > 0.3){
+      var strX  = 1 + Math.min(speed * 0.055, 0.65);
+      var strY  = 1 - Math.min(speed * 0.028, 0.35);
+      var angle = Math.atan2(velY, velX) * (180 / Math.PI);
+      gsap.to(inner, {
+        scaleX: strX, scaleY: strY, rotation: angle,
+        duration: 0.1, ease: "power2.out"
+      });
+    } else if(!isHovered){
+      gsap.to(inner, {scaleX:1, scaleY:1, rotation:0, duration: 0.4, ease:"elastic.out(1,.5)"});
+    }
+
+    /* Trail dots — each follows the previous */
+    if(frame % 2 === 0){
+      trail[0].x = curX;
+      trail[0].y = curY;
+      for(var t = TRAIL - 1; t > 0; t--){
+        trail[t].x += (trail[t-1].x - trail[t].x) * 0.32;
+        trail[t].y += (trail[t-1].y - trail[t].y) * 0.32;
+        var sz2 = Math.max(2, 7 * (1 - t / TRAIL));
+        var op  = isHovered ? 0 : 0.45 * (1 - t / TRAIL);
+        gsap.set(trail[t].el, {
+          x: trail[t].x, y: trail[t].y,
+          width: sz2, height: sz2, opacity: op
+        });
+      }
+    }
+  })();
+})();
+
+/* ═══════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════ */
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add("on"); });
+}, {threshold: 0.07});
+document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+
+
+</script>
+<script>
+var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add("on");});},{threshold:.07});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+</script>
+</body></html>

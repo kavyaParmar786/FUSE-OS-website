@@ -3,307 +3,1334 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Fuse OS — The Ultimate All-In-One Discord Bot</title>
-<meta name="description" content="Fuse OS is the ultimate all-in-one Discord bot. AI, giveaways, tickets, polls, YouTube verification and more."/>
-<meta property="og:title" content="Fuse OS — The Ultimate Discord Bot"/>
-<meta property="og:description" content="AI, giveaways, tickets, polls, YouTube verification and more — one bot."/>
-<meta property="og:type" content="website"/>
-<meta name="theme-color" content="#5eead4"/>
-<link rel="stylesheet" href="css/style.css"/>
+<title>FUSE OS — The Ultimate Discord Bot</title>
 <link rel="icon" href="assets/images/logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;cursor:none}
+:root{
+  --ink:#0f0d0a; --ink2:#1e1a15; --ink3:#3a3228;
+  --muted:#8a7d6e; --muted2:#b5a898;
+  --gold:#c9972a; --gold2:#e8b84b;
+  --violet:#5b21b6; --violet2:#7c3aed;
+  --coral:#dc4a1f;
+  --teal:#0d6f7a;
+  --glass:rgba(255,255,255,0.12);
+  --glass-b:rgba(255,255,255,0.22);
+  --glass-border:rgba(255,255,255,0.22);
+  --glass-dark:rgba(0,0,0,0.25);
+  --grad:linear-gradient(135deg,#5b21b6,#dc4a1f);
+  --grad2:linear-gradient(135deg,#dc4a1f,#c9972a);
+  --grad3:linear-gradient(135deg,#c9972a,#e8b84b);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:#fdf8f0;
+  color:#1a1714;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* ── Canvas always behind everything ── */
+#bg-canvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+}
+
+/* ── Noise grain overlay ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+  opacity:.3;
+}
+
+/* ── All content above canvas ── */
+.page{position:relative;z-index:2}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+
+/* ══════════════════════════════════
+   CURSOR
+══════════════════════════════════ */
+.cursor{position:fixed;z-index:9999;pointer-events:none;top:0;left:0;will-change:transform}
+.cursor-inner{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--gold);
+  transform:translate(-50%,-50%);
+  transition:background .2s,width .25s cubic-bezier(.16,1,.3,1),height .25s cubic-bezier(.16,1,.3,1);
+}
+.cursor.is-hovered .cursor-inner{
+  width:22px;height:22px;
+  background:#0f0d0a;
+}
+.cursor.is-pressed .cursor-inner{
+  width:12px;height:12px;
+  background:#0f0d0a;
+}
+.cur-trail{
+  position:fixed;border-radius:50%;pointer-events:none;
+  z-index:9998;transform:translate(-50%,-50%);
+  background:var(--gold);opacity:0;will-change:transform;
+}
+
+/* ══════════════════════════════════
+   NAV — floating pill
+══════════════════════════════════ */
+nav{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  z-index:500;width:calc(100% - 40px);max-width:1100px;
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;
+  background:rgba(253,248,240,0.82);
+  backdrop-filter:blur(32px);
+  -webkit-backdrop-filter:blur(32px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:18px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.n-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.n-logo img{width:32px;height:32px;border-radius:9px}
+.n-logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.01em}
+.n-links{display:flex;gap:2px}
+.n-links a{padding:7px 13px;border-radius:9px;color:rgba(26,23,20,0.6);font-size:.84rem;font-weight:600;text-decoration:none;transition:all .2s}
+.n-links a:hover{background:rgba(201,151,42,0.1);color:#1a1714}
+.n-btns{display:flex;gap:8px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 20px;border-radius:10px;
+  font-size:.85rem;font-weight:700;text-decoration:none;
+  transition:all .25s;border:none;font-family:'Plus Jakarta Sans',sans-serif;
+  white-space:nowrap;letter-spacing:-.01em;
+}
+.btn-glass{
+  background:rgba(253,248,240,0.7);
+  border:1px solid rgba(201,151,42,0.2);
+  color:#3a3228;
+  backdrop-filter:blur(8px);
+}
+.btn-glass:hover{background:rgba(253,248,240,0.95);color:#1a1714;transform:translateY(-1px);border-color:rgba(201,151,42,0.35)}
+.btn-gold{
+  background:linear-gradient(135deg,#c9972a,#e8b84b);
+  color:#0f0d0a;
+  box-shadow:0 4px 20px rgba(201,151,42,0.4);
+}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(201,151,42,0.5)}
+
+/* ══════════════════════════════════
+   GLASS UTILITY
+══════════════════════════════════ */
+.glass{
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.glass-light{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.18);
+}
+
+/* ══════════════════════════════════
+   HERO
+══════════════════════════════════ */
+#hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:110px 0 80px;position:relative;overflow:hidden;
+}
+
+/* Orbital decorative rings */
+.orb-ring{position:absolute;border-radius:50%;border:1px solid rgba(201,151,42,0.07);pointer-events:none;left:50%;top:50%;transform:translate(-50%,-50%)}
+.orb-ring:nth-child(1){width:700px;height:700px;animation:ring-spin 70s linear infinite}
+.orb-ring:nth-child(2){width:1000px;height:1000px;border-color:rgba(92,33,182,0.05);animation:ring-spin 90s linear infinite reverse}
+.orb-ring:nth-child(3){width:1300px;height:1300px;border-color:rgba(220,74,31,0.04);animation:ring-spin 110s linear infinite}
+
+/* Corner frame brackets */
+.frame-corner{position:absolute;width:80px;height:80px;pointer-events:none}
+.frame-corner.tl{top:88px;left:32px;border-top:1px solid rgba(201,151,42,0.35);border-left:1px solid rgba(201,151,42,0.35)}
+.frame-corner.tr{top:88px;right:32px;border-top:1px solid rgba(201,151,42,0.35);border-right:1px solid rgba(201,151,42,0.35)}
+.frame-corner.bl{bottom:32px;left:32px;border-bottom:1px solid rgba(201,151,42,0.35);border-left:1px solid rgba(201,151,42,0.35)}
+.frame-corner.br{bottom:32px;right:32px;border-bottom:1px solid rgba(201,151,42,0.35);border-right:1px solid rgba(201,151,42,0.35)}
+
+.hero-content{text-align:center;max-width:900px;margin:0 auto;position:relative;z-index:2}
+
+.h-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 18px;border-radius:100px;margin-bottom:36px;
+  background:rgba(201,151,42,0.12);
+  border:1px solid rgba(201,151,42,0.3);
+  color:#a07020;font-size:.75rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.h-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold2);animation:pulse-dot 2s infinite}
+
+.h-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(4rem,9.5vw,8.5rem);
+  font-weight:800;line-height:.9;
+  letter-spacing:-.04em;
+  color:#1a1714;margin-bottom:30px;
+}
+.h-title .t-grad{
+  display:block;
+  background:var(--grad3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.h-title .t-muted{
+  display:block;font-size:.48em;
+  letter-spacing:-.02em;color:rgba(255,255,255,0.35);
+  -webkit-text-fill-color:rgba(255,255,255,0.35);
+}
+
+.h-sub{
+  font-size:1.15rem;color:rgba(26,23,20,0.55);
+  line-height:1.78;max-width:560px;margin:0 auto 44px;
+}
+
+.h-btns{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.h-btns .btn{font-size:.96rem;padding:13px 26px;border-radius:12px}
+
+/* Stat pills */
+.h-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.h-pill{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 20px;border-radius:100px;
+  background:rgba(253,248,240,0.75);
+  border:1px solid rgba(201,151,42,0.18);
+  backdrop-filter:blur(12px);
+  transition:all .3s;
+  box-shadow:0 2px 12px rgba(15,13,10,0.06);
+}
+.h-pill:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.4);transform:translateY(-2px)}
+.h-pill-num{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:#1a1714}
+.h-pill-lbl{font-size:.74rem;color:rgba(26,23,20,0.45);font-weight:500}
+.h-pill-icon{font-size:1rem}
+
+/* Scroll indicator */
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:rgba(26,23,20,0.35);font-size:.68rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,rgba(201,151,42,0.5),transparent);animation:scroll-drip 2s ease-in-out infinite}
+
+/* ══════════════════════════════════
+   TICKER
+══════════════════════════════════ */
+.ticker{
+  padding:13px 0;overflow:hidden;position:relative;z-index:2;
+  border-top:1px solid rgba(201,151,42,0.12);
+  border-bottom:1px solid rgba(201,151,42,0.12);
+  background:rgba(247,240,228,0.7);
+  backdrop-filter:blur(8px);
+}
+.tk-track{display:flex;gap:48px;width:max-content;animation:ticker 24s linear infinite}
+.tk-item{display:flex;align-items:center;gap:9px;font-size:.8rem;font-weight:600;color:rgba(26,23,20,0.45);white-space:nowrap;letter-spacing:.02em}
+.tk-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+/* ══════════════════════════════════
+   QUOTE SECTIONS
+══════════════════════════════════ */
+.q-section{
+  padding:80px 0;position:relative;z-index:2;
+  background:rgba(253,248,240,0.72);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(201,151,42,0.12);
+  border-bottom:1px solid rgba(201,151,42,0.12);
+}
+
+/* Side layout */
+.q-side{display:grid;grid-template-columns:160px 1fr;gap:52px;align-items:center;max-width:900px;margin:0 auto}
+.q-side.reverse{grid-template-columns:1fr 160px}
+.q-side.reverse .q-person{order:2}
+.q-side.reverse .q-body{order:1}
+
+.q-person{text-align:center}
+.q-photo{
+  width:110px;height:110px;border-radius:50%;margin:0 auto 12px;
+  position:relative;display:block;overflow:hidden;
+  border:2px solid rgba(201,151,42,0.3);
+  box-shadow:0 0 0 6px rgba(201,151,42,0.07),0 12px 40px rgba(0,0,0,0.4);
+}
+.q-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.q-photo .q-initials{
+  width:100%;height:100%;display:grid;place-items:center;
+  font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:#fff;
+}
+.q-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:#1a1714;margin-bottom:3px}
+.q-role{font-size:.72rem;color:rgba(26,23,20,0.45);line-height:1.4}
+.q-stars{color:var(--gold2);font-size:.82rem;margin-top:6px;letter-spacing:2px}
+
+.q-mark{font-family:'Syne',sans-serif;font-size:5.5rem;line-height:.5;color:var(--gold2);opacity:.2;display:block;margin-bottom:6px}
+.q-text{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.1rem,2vw,1.45rem);
+  font-weight:700;color:#1a1714;
+  line-height:1.5;font-style:italic;margin-bottom:14px;
+}
+.q-context{font-size:.82rem;color:rgba(26,23,20,0.45);line-height:1.6;font-style:normal}
+
+/* Center layout */
+.q-center{text-align:center;max-width:760px;margin:0 auto}
+.q-center .q-photo{margin:0 auto 14px}
+.q-center .q-mark{text-align:left}
+
+/* ══════════════════════════════════
+   FEATURES
+══════════════════════════════════ */
+#features{padding:100px 0;position:relative;z-index:2;background:rgba(253,248,240,0.05)}
+.section-label{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--coral);margin-bottom:14px}
+.section-label::before{content:'✦'}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-.03em;color:#1a1714;line-height:1.05;margin-bottom:13px}
+.section-sub{font-size:.98rem;color:rgba(26,23,20,0.5);line-height:1.75;max-width:480px}
+
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:52px}
+.fb{
+  background:rgba(253,248,240,0.65);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:20px;padding:26px;
+  transition:all .38s;position:relative;overflow:hidden;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.fb::before{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .38s;border-radius:inherit}
+.fb:hover{
+  border-color:rgba(201,151,42,0.4);
+  background:rgba(253,248,240,0.92);
+  transform:translateY(-6px);
+  box-shadow:0 20px 60px rgba(15,13,10,0.12);
+}
+.fb:hover::before{opacity:.04}
+.fb.s2{grid-column:span 2}
+.fb-num{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;line-height:1;opacity:.07;position:absolute;top:14px;right:18px;color:#1a1714}
+.fb-icon{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:1.4rem;margin-bottom:14px;position:relative;z-index:1;background:rgba(255,255,255,0.6);border:1px solid rgba(201,151,42,0.15)}
+.fb-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.98rem;color:#1a1714;margin-bottom:7px;position:relative;z-index:1}
+.fb-desc{font-size:.83rem;color:rgba(26,23,20,0.55);line-height:1.68;position:relative;z-index:1}
+.fb-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;position:relative;z-index:1}
+.fb-tag{
+  padding:3px 9px;border-radius:100px;font-size:.68rem;font-weight:700;letter-spacing:.03em;
+  background:rgba(201,151,42,0.1);
+  border:1px solid rgba(201,151,42,0.2);
+  color:#7a5a10;
+}
+
+/* ══════════════════════════════════
+   COMMAND SIMULATOR + POKEMON
+══════════════════════════════════ */
+#fun{padding:100px 0;position:relative;z-index:2}
+.fun-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:50px}
+.fun-card{
+  background:rgba(253,248,240,0.7);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:20px;padding:26px;
+  transition:all .3s;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.fun-card:hover{background:rgba(253,248,240,0.92);border-color:rgba(201,151,42,0.3)}
+.fun-head{font-family:'Syne',sans-serif;font-weight:700;font-size:.96rem;color:#1a1714;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.fun-sub{font-size:.78rem;color:rgba(26,23,20,0.45);margin-bottom:16px}
+.cmd-row{display:flex;gap:7px;margin-bottom:10px}
+.cmd-inp{
+  flex:1;background:rgba(255,255,255,0.8);
+  border:1px solid rgba(201,151,42,0.2);
+  border-radius:10px;padding:10px 13px;
+  color:#1a1714;font-family:'JetBrains Mono',monospace;font-size:.8rem;
+  outline:none;transition:border-color .25s;
+}
+.cmd-inp::placeholder{color:rgba(26,23,20,0.3)}
+.cmd-inp:focus{border-color:rgba(201,151,42,0.5);background:#fff}
+.cmd-go{
+  background:#1a1714;color:#fff;border:1px solid rgba(26,23,20,0.2);
+  border-radius:10px;padding:10px 16px;font-weight:700;font-size:.82rem;
+  transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.cmd-go:hover{background:#333;transform:scale(1.04)}
+.cmd-out{
+  background:rgba(255,255,255,0.6);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:12px;padding:13px 14px;
+  min-height:100px;font-size:.8rem;line-height:1.6;
+  color:rgba(26,23,20,0.8);
+}
+.cmd-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.cmd-chip{
+  padding:3px 11px;border-radius:100px;
+  background:rgba(201,151,42,0.1);
+  border:1px solid rgba(201,151,42,0.2);
+  color:var(--gold2);font-size:.7rem;
+  font-family:'JetBrains Mono',monospace;
+  transition:all .2s;font-weight:600;
+}
+.cmd-chip:hover{background:rgba(201,151,42,0.25);transform:scale(1.05)}
+.poke-area{text-align:center}
+.poke-sprite{font-size:4.5rem;margin-bottom:8px;display:block;animation:poke-float 3s ease-in-out infinite}
+.poke-name{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#1a1714}
+.poke-type{display:inline-block;padding:4px 13px;border-radius:100px;font-size:.73rem;font-weight:700;margin:6px 0 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff}
+.poke-rar{display:flex;justify-content:center;margin-bottom:16px;font-size:.76rem;color:rgba(26,23,20,0.45)}
+.catch-btn{
+  width:100%;padding:12px;border-radius:11px;border:none;
+  background:linear-gradient(135deg,#c9972a,#e8b84b);
+  color:#0f0d0a;font-family:'Syne',sans-serif;
+  font-size:.94rem;font-weight:800;
+  transition:all .3s;box-shadow:0 4px 16px rgba(201,151,42,0.3);
+}
+.catch-btn:hover{transform:scale(1.02);box-shadow:0 8px 28px rgba(201,151,42,0.45)}
+.catch-btn:disabled{opacity:.4;transform:none}
+
+/* ══════════════════════════════════
+   STATS — glass cards
+══════════════════════════════════ */
+#stats{padding:80px 0;position:relative;z-index:2}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{
+  background:rgba(253,248,240,0.7);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:18px;padding:30px 20px;
+  text-align:center;transition:all .3s;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.stat-card:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.35);transform:translateY(-4px)}
+.stat-icon{font-size:1.5rem;display:block;margin-bottom:12px}
+.stat-num{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;line-height:1;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-lbl{font-size:.8rem;color:rgba(26,23,20,0.45);margin-top:7px;font-weight:500}
+
+/* ══════════════════════════════════
+   COMMANDS
+══════════════════════════════════ */
+#commands{padding:100px 0;position:relative;z-index:2}
+.cmd-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:48px}
+.cmd-cat{
+  background:rgba(253,248,240,0.65);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(201,151,42,0.13);
+  border-radius:15px;padding:20px;transition:all .3s;
+  box-shadow:0 2px 10px rgba(15,13,10,0.05);
+}
+.cmd-cat:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.35);transform:translateY(-2px)}
+.cmd-cat-hd{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.cmd-cat-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.96rem;flex-shrink:0;background:rgba(201,151,42,0.1)}
+.cmd-cat-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;color:#1a1714}
+.cmd-cat-cnt{font-size:.68rem;color:rgba(26,23,20,0.35);margin-left:auto}
+.cmd-pills{display:flex;flex-wrap:wrap;gap:4px}
+.cmd-pill{
+  padding:2px 8px;border-radius:6px;
+  background:rgba(255,255,255,0.5);
+  border:1px solid rgba(201,151,42,0.12);
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  color:rgba(26,23,20,0.55);transition:all .2s;
+}
+.cmd-pill:hover{background:rgba(201,151,42,0.15);border-color:rgba(201,151,42,0.3);color:#7a5a10}
+
+/* ══════════════════════════════════
+   CTA
+══════════════════════════════════ */
+#cta{padding:100px 0;text-align:center;position:relative;z-index:2}
+.cta-box{
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:blur(32px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:28px;padding:72px 60px;
+  max-width:800px;margin:0 auto;
+  position:relative;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,0.5);
+}
+.cta-box::before{content:'';position:absolute;top:-100px;right:-80px;width:320px;height:320px;background:radial-gradient(circle,rgba(201,151,42,0.12),transparent 70%);border-radius:50%;pointer-events:none}
+.cta-box::after{content:'';position:absolute;bottom:-80px;left:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(92,33,182,0.1),transparent 70%);border-radius:50%;pointer-events:none}
+.cta-title{font-family:'Syne',sans-serif;font-size:clamp(2.4rem,5vw,3.8rem);font-weight:800;letter-spacing:-.03em;color:#fff;margin-bottom:18px;line-height:1;position:relative;z-index:1}
+.cta-sub{font-size:.98rem;color:rgba(255,255,255,0.45);max-width:440px;margin:0 auto 36px;line-height:1.75;position:relative;z-index:1}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.cta-btns .btn{font-size:.94rem;padding:13px 28px;border-radius:12px}
+.cta-note{font-size:.72rem;color:rgba(255,255,255,0.25);margin-top:14px;position:relative;z-index:1}
+
+/* ══════════════════════════════════
+   FOOTER
+══════════════════════════════════ */
+footer{
+  background:rgba(15,13,10,0.85);
+  backdrop-filter:blur(20px);
+  border-top:1px solid rgba(201,151,42,0.1);
+  color:rgba(255,255,255,0.45);
+  padding:52px 0 28px;position:relative;z-index:2;
+}
+.ft{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:44px;margin-bottom:40px}
+.f-logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:11px}
+.f-desc{font-size:.8rem;line-height:1.72;max-width:210px;color:rgba(255,255,255,0.35)}
+.f-col-h{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.2);margin-bottom:12px}
+.f-links{display:flex;flex-direction:column;gap:8px}
+.f-links a{color:rgba(255,255,255,0.38);text-decoration:none;font-size:.8rem;transition:color .2s}
+.f-links a:hover{color:#fff}
+.f-bottom{padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;font-size:.72rem}
+
+/* ══════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════ */
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.6)}}
+@keyframes ring-spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes scroll-drip{0%{opacity:0;transform:translateY(-6px)}50%{opacity:1}100%{opacity:0;transform:translateY(8px)}}
+@keyframes poke-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.06)}}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .72s ease,transform .72s ease}
+.reveal.on{opacity:1;transform:translateY(0)}
+
+/* ══════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════ */
+@media(max-width:960px){
+  nav{top:8px;width:calc(100% - 20px);padding:0 14px}
+  .n-links{display:none}
+  .h-title{font-size:clamp(3rem,12vw,5rem)}
+  .bento{grid-template-columns:1fr}.fb.s2{grid-column:span 1}
+  .fun-grid{grid-template-columns:1fr}
+  .q-side{grid-template-columns:1fr;text-align:center}.q-side.reverse{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .cmd-cats{grid-template-columns:1fr 1fr}
+  .ft{grid-template-columns:1fr 1fr}
+  .cta-box{padding:44px 24px}
+  .cta-btns{flex-direction:column;align-items:center}
+}
+@media(max-width:580px){.cmd-cats{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.ft{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
-<!-- ══ NAV ════════════════════════════════════ -->
-<nav class="nav" id="nav">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">
-      <img src="assets/images/logo.png" alt="Fuse OS logo"/>
-      <span class="nav-logo-name">FUSE OS</span>
-    </a>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="index.html"    class="nav-link">Home</a></li>
-      <li><a href="features.html" class="nav-link">Features</a></li>
-      <li><a href="commands.html" class="nav-link">Commands</a></li>
-      <li><a href="verify.html"   class="nav-link">Verify</a></li>
-      <li><a href="support.html"  class="nav-link">Support</a></li>
-      <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-    </ul>
-    <div class="nav-actions">
-      <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline" style="padding:9px 18px;font-size:0.85rem">Join Server</a>
-      <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem">Invite Bot</a>
-    </div>
-    <button class="burger" id="burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+<div class="cursor"><div class="cursor-inner"></div></div>
+<canvas id="bg-canvas"></canvas>
+
+<div class="page">
+
+<!-- ═══════ NAV ═══════ -->
+<nav>
+  <a class="n-logo" href="index.html">
+    <img src="assets/images/logo.png" alt="FUSE OS"/>
+    <span class="n-logo-name">FUSE OS</span>
+  </a>
+  <div class="n-links">
+    <a href="#features">Features</a>
+    <a href="commands.html">Commands</a>
+    <a href="#fun">Try It</a>
+    <a href="verify.html">Verify</a>
+    <a href="support.html">Support</a>
+  </div>
+  <div class="n-btns">
+    <a href="dashboard.html" class="btn btn-glass">Dashboard</a>
+    <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" class="btn btn-gold">✦ Add Free</a>
   </div>
 </nav>
 
-<!-- ══ HERO ═══════════════════════════════════ -->
-<section class="hero">
-  <div class="hero-blob hero-blob-1"></div>
-  <div class="hero-blob hero-blob-2"></div>
-  <div class="hero-blob hero-blob-3"></div>
-  <div class="hero-grid"></div>
+<!-- ═══════ HERO ═══════ -->
+<section id="hero">
+  <div class="orb-ring"></div>
+  <div class="orb-ring"></div>
+  <div class="orb-ring"></div>
+  <div class="frame-corner tl"></div>
+  <div class="frame-corner tr"></div>
+  <div class="frame-corner bl"></div>
+  <div class="frame-corner br"></div>
 
-  <div class="hero-content">
-    <div class="pill">All-In-One Discord Bot</div>
-
-    <div class="hero-logo">
-      <img src="assets/images/logo.png" alt="Fuse OS"/>
-    </div>
-
-    <h1 class="hero-title">FUSE <span class="grad-text">OS</span></h1>
-    <p class="hero-tagline grad-text">The Ultimate All-In-One Discord Utility Bot</p>
-    <p class="hero-desc">
-      One bot. Every feature your server needs. AI chat, giveaways, tickets, polls, reaction roles, YouTube verification and a whole lot more.
-    </p>
-
-    <div class="hero-btns">
-      <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        Invite to Server
-      </a>
-      <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        Support Server
-      </a>
-    </div>
-
-    <div class="hero-stats">
-      <div>
-        <div class="hero-stat-val" data-stat="servers" data-suffix="+">—</div>
-        <div class="hero-stat-lbl">Servers</div>
+  <div class="wrap">
+    <div class="hero-content">
+      <div class="h-badge">
+        <div class="h-badge-dot"></div>
+        Free Forever · 150+ Commands · Zero Setup
       </div>
-      <div>
-        <div class="hero-stat-val" data-stat="users" data-suffix="+">—</div>
-        <div class="hero-stat-lbl">Users</div>
+
+      <h1 class="h-title">
+        The Only Bot
+        <span class="t-grad">Your Server</span>
+        <span class="t-muted">Will Ever Need.</span>
+      </h1>
+
+      <p class="h-sub">
+        AI chat that remembers conversations. Pokémon that spawn in chat. Full economy with heists & jail. Giveaways, tickets, levels, moderation, music — everything built in. One invite. Zero cost. Forever.
+      </p>
+
+      <div class="h-btns">
+        <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" class="btn btn-gold">🚀 Add to Server — Free</a>
+        <a href="#fun" class="btn btn-glass">🎮 Try Commands Live</a>
+        <a href="dashboard.html" class="btn btn-glass">⚙️ Open Dashboard</a>
       </div>
-      <div>
-        <div class="hero-stat-val" data-stat="commands" data-suffix="+">—</div>
-        <div class="hero-stat-lbl">Commands Run</div>
+
+      <div class="h-pills">
+        <div class="h-pill"><span class="h-pill-icon">⚡</span><span class="h-pill-num">150+</span><span class="h-pill-lbl">Commands</span></div>
+        <div class="h-pill"><span class="h-pill-icon">🧩</span><span class="h-pill-num">21</span><span class="h-pill-lbl">Systems</span></div>
+        <div class="h-pill"><span class="h-pill-icon">🐾</span><span class="h-pill-num">151</span><span class="h-pill-lbl">Pokémon</span></div>
+        <div class="h-pill"><span class="h-pill-icon">🌐</span><span class="h-pill-num">70+</span><span class="h-pill-lbl">Languages</span></div>
+        <div class="h-pill"><span class="h-pill-icon">🎮</span><span class="h-pill-num">12</span><span class="h-pill-lbl">Mini Games</span></div>
+        <div class="h-pill"><span class="h-pill-icon">🤖</span><span class="h-pill-num">Free</span><span class="h-pill-lbl">AI Powered</span></div>
       </div>
     </div>
   </div>
 
   <div class="scroll-hint">
-    <div class="scroll-mouse"></div>
-    Scroll to explore
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
   </div>
 </section>
 
-<!-- ══ STATS BAND ════════════════════════════ -->
-<div class="stats-band">
-  <div class="container">
-    <div class="stats-grid reveal">
-      <div>
-        <div class="s-num" data-stat="servers" data-suffix="+">—</div>
-        <div class="s-lbl">Servers Using Fuse OS</div>
+<!-- ═══════ TICKER ═══════ -->
+<div class="ticker">
+  <div class="tk-track">
+    <div class="tk-item"><div class="tk-dot"></div>AI Chat & Image Generation</div>
+    <div class="tk-item"><div class="tk-dot"></div>Pokémon Spawner · 151 Species</div>
+    <div class="tk-item"><div class="tk-dot"></div>Economy · Heist · Rob · Jail</div>
+    <div class="tk-item"><div class="tk-dot"></div>Giveaway System · Auto DM</div>
+    <div class="tk-item"><div class="tk-dot"></div>Level & XP · Role Rewards</div>
+    <div class="tk-item"><div class="tk-dot"></div>Ticket System · Transcripts</div>
+    <div class="tk-item"><div class="tk-dot"></div>AutoMod · Anti-Raid · AI Filter</div>
+    <div class="tk-item"><div class="tk-dot"></div>12 Mini Games · Akinator</div>
+    <div class="tk-item"><div class="tk-dot"></div>Music Player · 24/7 Mode</div>
+    <div class="tk-item"><div class="tk-dot"></div>70+ Languages · Auto Detect</div>
+    <div class="tk-item"><div class="tk-dot"></div>Starboard · Reaction Roles</div>
+    <div class="tk-item"><div class="tk-dot"></div>Server Backup · Setup Wizard</div>
+    <div class="tk-item"><div class="tk-dot"></div>AI Chat & Image Generation</div>
+    <div class="tk-item"><div class="tk-dot"></div>Pokémon Spawner · 151 Species</div>
+    <div class="tk-item"><div class="tk-dot"></div>Economy · Heist · Rob · Jail</div>
+    <div class="tk-item"><div class="tk-dot"></div>Giveaway System · Auto DM</div>
+    <div class="tk-item"><div class="tk-dot"></div>Level & XP · Role Rewards</div>
+    <div class="tk-item"><div class="tk-dot"></div>Ticket System · Transcripts</div>
+    <div class="tk-item"><div class="tk-dot"></div>AutoMod · Anti-Raid · AI Filter</div>
+    <div class="tk-item"><div class="tk-dot"></div>12 Mini Games · Akinator</div>
+    <div class="tk-item"><div class="tk-dot"></div>Music Player · 24/7 Mode</div>
+    <div class="tk-item"><div class="tk-dot"></div>70+ Languages · Auto Detect</div>
+    <div class="tk-item"><div class="tk-dot"></div>Starboard · Reaction Roles</div>
+    <div class="tk-item"><div class="tk-dot"></div>Server Backup · Setup Wizard</div>
+  </div>
+</div>
+
+<!-- ═══════ QUOTE 1 — Albert Einstein ═══════ -->
+<div class="q-section">
+  <div class="wrap">
+    <div class="q-side reveal">
+      <div class="q-person">
+        <div class="q-photo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Einstein_Head.jpg/800px-Albert_Einstein_Head.jpg" alt="Albert Einstein" onerror="this.style.display='none';this.parentNode.querySelector('.q-initials').style.display='grid'"/>
+          <div class="q-initials" style="display:none;background:linear-gradient(135deg,#2c3e50,#4a6fa5)">AE</div>
+        </div>
+        <div class="q-name">Albert Einstein</div>
+        <div class="q-role">Theoretical Physicist<br/>Nobel Prize in Physics, 1921</div>
+        <div class="q-stars">★★★★★</div>
       </div>
-      <div>
-        <div class="s-num" data-stat="commands" data-suffix="+">—</div>
-        <div class="s-lbl">Commands Executed</div>
-      </div>
-      <div>
-        <div class="s-num" data-stat="users" data-suffix="+">—</div>
-        <div class="s-lbl">Active Users</div>
+      <div class="q-body">
+        <span class="q-mark">"</span>
+        <div class="q-text">"Imagination is more important than knowledge. Knowledge is limited. Imagination encircles the world."</div>
+        <div class="q-context">We imagined what a perfect Discord bot could look like — then we built every feature from scratch. FUSE OS is what happens when imagination meets execution.</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ FEATURES PREVIEW ══════════════════════ -->
-<section class="section-pad">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="pill">Core Systems</div>
-      <h2 class="section-title">Everything Built In.<br><span class="grad-text">Nothing Left Out.</span></h2>
-      <p class="section-sub">Over 60 commands across 12 systems. One invite. Zero compromise.</p>
-    </div>
+<!-- ═══════ FEATURES ═══════ -->
+<section id="features">
+  <div class="wrap">
+    <div class="section-label">What's Inside</div>
+    <h2 class="section-title">Built For Everything.<br/>Held Back By Nothing.</h2>
+    <p class="section-sub">21 complete systems. 150+ commands. One invite, instant setup, always free. No bots come close.</p>
 
-    <div class="feat-tabs reveal">
-      <button class="feat-tab active" data-cat="all">All</button>
-      <button class="feat-tab" data-cat="ai">AI</button>
-      <button class="feat-tab" data-cat="community">Community</button>
-      <button class="feat-tab" data-cat="moderation">Moderation</button>
-      <button class="feat-tab" data-cat="automation">Automation</button>
-    </div>
-
-    <div class="feat-grid">
-
-      <div class="feat-card reveal d1" data-cat="ai">
-        <div class="feat-icon">🤖</div>
-        <div class="feat-name">AI Chat</div>
-        <div class="feat-desc">Claude-powered AI with per-user conversation memory, channel restrictions, daily limits and a full admin panel.</div>
-        <div class="feat-list">
-          <div class="feat-item">Persistent conversation history</div>
-          <div class="feat-item">Admin configuration panel</div>
-          <div class="feat-item">Per-user cooldowns & limits</div>
-          <div class="feat-item">Image generation support</div>
+    <div class="bento">
+      <div class="fb s2 reveal">
+        <div class="fb-num">01</div>
+        <div class="fb-icon">🤖</div>
+        <div class="fb-title">AI Chat & Image Generation</div>
+        <div class="fb-desc">Powered by Groq's llama-3.3-70b — the fastest free AI model available. Each user gets their own conversation memory that persists across sessions. Set custom system prompts, restrict to specific channels, and generate real images via Pollinations AI. Your server gets a genuine brain.</div>
+        <div class="fb-tags">
+          <span class="fb-tag">llama-3.3-70b</span><span class="fb-tag">Conversation Memory</span>
+          <span class="fb-tag">Real Image Gen</span><span class="fb-tag">Custom System Prompt</span>
+          <span class="fb-tag">Daily Limits</span><span class="fb-tag">Free API</span>
         </div>
       </div>
 
-      <div class="feat-card reveal d2" data-cat="community">
-        <div class="feat-icon">🎉</div>
-        <div class="feat-name">Giveaway System</div>
-        <div class="feat-desc">Full-featured giveaways with live countdown, subscriber-only mode, role pings, winner DMs and reroll.</div>
-        <div class="feat-list">
-          <div class="feat-item">Live timer & entry counter</div>
-          <div class="feat-item">Subscriber-only giveaways</div>
-          <div class="feat-item">Auto winner DM</div>
-          <div class="feat-item">Reroll & leaderboard</div>
-        </div>
+      <div class="fb reveal">
+        <div class="fb-num">02</div>
+        <div class="fb-icon">🐾</div>
+        <div class="fb-title">Pokémon Spawner</div>
+        <div class="fb-desc">All 151 original Pokémon spawn randomly in chat every X messages. Five rarity tiers — Common to Legendary. Type +catch to grab it. Build your Pokédex and compete on the leaderboard.</div>
+        <div class="fb-tags"><span class="fb-tag">151 Pokémon</span><span class="fb-tag">5 Rarities</span><span class="fb-tag">Leaderboard</span></div>
       </div>
 
-      <div class="feat-card reveal d3" data-cat="community">
-        <div class="feat-icon">🎟️</div>
-        <div class="feat-name">Ticket System</div>
-        <div class="feat-desc">Dropdown ticket panels, staff claim system, auto transcripts, star ratings and dedicated log channels.</div>
-        <div class="feat-list">
-          <div class="feat-item">Multi-category dropdown panels</div>
-          <div class="feat-item">Staff claim & assignment</div>
-          <div class="feat-item">Auto transcript logs</div>
-          <div class="feat-item">Rating system</div>
-        </div>
+      <div class="fb reveal">
+        <div class="fb-num">03</div>
+        <div class="fb-icon">💰</div>
+        <div class="fb-title">Economy + Heist + Rob</div>
+        <div class="fb-desc">Full virtual coin economy. Daily rewards, hourly work, shop, coin flip, group heists, rob system, rob shield, and a jail system with bail payments.</div>
+        <div class="fb-tags"><span class="fb-tag">Coins</span><span class="fb-tag">Group Heist</span><span class="fb-tag">Rob System</span><span class="fb-tag">Jail + Bail</span></div>
       </div>
 
-      <div class="feat-card reveal d1" data-cat="community">
-        <div class="feat-icon">📊</div>
-        <div class="feat-name">Poll System</div>
-        <div class="feat-desc">Single or multi-vote polls with visual bar graph results, cooldowns, tie detection and auto end timers.</div>
-        <div class="feat-list">
-          <div class="feat-item">Live bar graph results</div>
-          <div class="feat-item">Vote cooldowns</div>
-          <div class="feat-item">Tie detection</div>
-          <div class="feat-item">Automatic end timers</div>
-        </div>
+      <div class="fb reveal">
+        <div class="fb-num">04</div>
+        <div class="fb-icon">⭐</div>
+        <div class="fb-title">Level & XP System</div>
+        <div class="fb-desc">Members earn XP by chatting. Configurable XP range, cooldown, level-up channel, custom announcement message, and role rewards at specific levels.</div>
+        <div class="fb-tags"><span class="fb-tag">XP per Message</span><span class="fb-tag">Role Rewards</span><span class="fb-tag">Leaderboard</span><span class="fb-tag">Config Panel</span></div>
       </div>
 
-      <div class="feat-card reveal d2" data-cat="automation">
-        <div class="feat-icon">🎭</div>
-        <div class="feat-name">Reaction Roles</div>
-        <div class="feat-desc">Emoji reactions, button panels, dropdown menus — fully customisable role assignment with multiple panel support.</div>
-        <div class="feat-list">
-          <div class="feat-item">Button & emoji styles</div>
-          <div class="feat-item">Dropdown select menus</div>
-          <div class="feat-item">Multiple simultaneous panels</div>
-          <div class="feat-item">Toggle mode (add/remove)</div>
-        </div>
+      <div class="fb reveal">
+        <div class="fb-num">05</div>
+        <div class="fb-icon">🎫</div>
+        <div class="fb-title">Ticket System</div>
+        <div class="fb-desc">3 dropdown ticket panels — General/Inquiry, Partnership/Staff Apply, Reports/Appeals. Staff claim, private channels, auto HTML transcripts, star ratings, and detailed staff stats.</div>
+        <div class="fb-tags"><span class="fb-tag">3 Panel Types</span><span class="fb-tag">Auto Transcripts</span><span class="fb-tag">Star Ratings</span><span class="fb-tag">Staff Stats</span></div>
       </div>
 
-      <div class="feat-card reveal d3" data-cat="automation">
-        <div class="feat-icon">📺</div>
-        <div class="feat-name">YouTube Verify</div>
-        <div class="feat-desc">Members post a unique code as a YouTube comment to prove subscription and earn the Content Fan role automatically.</div>
-        <div class="feat-list">
-          <div class="feat-item">Code-based verification</div>
-          <div class="feat-item">Automatic role assignment</div>
-          <div class="feat-item">30-minute code expiry</div>
-          <div class="feat-item">Admin rescan command</div>
-        </div>
+      <div class="fb reveal">
+        <div class="fb-num">06</div>
+        <div class="fb-icon">🛡️</div>
+        <div class="fb-title">AutoMod + Anti-Raid</div>
+        <div class="fb-desc">Bad word filter, spam detection, caps filter, invite blocker, link blocker, AI toxic message detection via Groq, and auto server lockdown when a raid is detected.</div>
+        <div class="fb-tags"><span class="fb-tag">AI Mod</span><span class="fb-tag">Anti-Raid</span><span class="fb-tag">Auto Lockdown</span><span class="fb-tag">5 Filters</span></div>
       </div>
 
-      <div class="feat-card reveal d1" data-cat="moderation">
-        <div class="feat-icon">🛡️</div>
-        <div class="feat-name">Moderation</div>
-        <div class="feat-desc">Full moderation suite — ban, kick, mute, warn, purge, lock channels, and detailed mod action logs.</div>
-        <div class="feat-list">
-          <div class="feat-item">Ban, kick, timeout</div>
-          <div class="feat-item">Warning system & history</div>
-          <div class="feat-item">Bulk message purge</div>
-          <div class="feat-item">Channel lock/slowmode</div>
-        </div>
+      <div class="fb reveal">
+        <div class="fb-num">07</div>
+        <div class="fb-icon">🎉</div>
+        <div class="fb-title">Giveaway System</div>
+        <div class="fb-desc">Live countdown timer, subscriber-only mode, role requirement pings, winner DMs, reroll existing winners, and a full leaderboard of giveaway champions.</div>
+        <div class="fb-tags"><span class="fb-tag">Live Timer</span><span class="fb-tag">Auto DM</span><span class="fb-tag">Reroll</span><span class="fb-tag">Leaderboard</span></div>
       </div>
 
-      <div class="feat-card reveal d2" data-cat="automation">
-        <div class="feat-icon">⚙️</div>
-        <div class="feat-name">Smart Autoroles</div>
-        <div class="feat-desc">Assign roles on join, after timers, on YouTube verification, or as leaderboard rewards. All configurable from a panel.</div>
-        <div class="feat-list">
-          <div class="feat-item">Join autorole</div>
-          <div class="feat-item">Timed role removal</div>
-          <div class="feat-item">Leaderboard reward roles</div>
-          <div class="feat-item">YouTube subscriber role</div>
-        </div>
+      <div class="fb reveal">
+        <div class="fb-num">08</div>
+        <div class="fb-icon">🎮</div>
+        <div class="fb-title">12 Mini Games</div>
+        <div class="fb-desc">Akinator (AI guesses your character), OwO hunt & battle, magic 8ball, trivia, slot machine, hangman, Tic Tac Toe, word scramble, dice roll, Rock Paper Scissors, and more.</div>
+        <div class="fb-tags"><span class="fb-tag">Akinator</span><span class="fb-tag">Slots</span><span class="fb-tag">Trivia</span><span class="fb-tag">Tic Tac Toe</span><span class="fb-tag">+more</span></div>
       </div>
-
-      <div class="feat-card reveal d3" data-cat="community">
-        <div class="feat-icon">🌐</div>
-        <div class="feat-name">Translation</div>
-        <div class="feat-desc">Auto language detection, flag emoji display, 50+ languages and per-channel translation panels for global communities.</div>
-        <div class="feat-list">
-          <div class="feat-item">Auto language detection</div>
-          <div class="feat-item">Flag emoji per language</div>
-          <div class="feat-item">50+ languages supported</div>
-          <div class="feat-item">Per-channel panels</div>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- ══ CTA ════════════════════════════════════ -->
-<section class="section-pad" style="padding-top:0">
-  <div class="container">
-    <div class="cta-wrap reveal">
-      <div class="cta-glow"></div>
-      <h2 class="cta-title">Ready to level up<br><span class="grad-text">your server?</span></h2>
-      <p class="cta-sub">Free to add, instant setup, no credit card. Join thousands of servers already running Fuse OS.</p>
+<!-- ═══════ QUOTE 2 — Elon Musk ═══════ -->
+<div class="q-section">
+  <div class="wrap">
+    <div class="q-center reveal">
+      <div class="q-photo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg/800px-Elon_Musk_Royal_Society_%28crop2%29.jpg" alt="Elon Musk" onerror="this.style.display='none';this.parentNode.querySelector('.q-initials').style.display='grid'"/>
+        <div class="q-initials" style="display:none;background:linear-gradient(135deg,#1a1a2e,#16213e)">EM</div>
+      </div>
+      <div class="q-name">Elon Musk</div>
+      <div class="q-role">CEO of Tesla, SpaceX & X · Founder of xAI · Most Followed Person on X</div>
+      <div class="q-stars">★★★★★</div>
+      <span class="q-mark" style="text-align:left;display:block;margin-top:20px">"</span>
+      <div class="q-text">"When something is important enough, you do it even if the odds are not in your favor."</div>
+      <div class="q-context">Building a Discord bot with 21 systems and 150+ commands from scratch wasn't easy. We did it anyway — because your server deserves the best.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ COMMAND SIMULATOR + POKÉMON ═══════ -->
+<section id="fun">
+  <div class="wrap">
+    <div class="section-label">Try It Out</div>
+    <h2 class="section-title">Play Around<br/>Right Here.</h2>
+    <p class="section-sub">Experience FUSE OS commands live — no bot required, no Discord needed.</p>
+
+    <div class="fun-grid">
+      <div class="fun-card reveal">
+        <div class="fun-head"><span>⚡</span> Command Simulator</div>
+        <div class="fun-sub">Type any command below and hit Run — or click a chip.</div>
+        <div class="cmd-row">
+          <input class="cmd-inp" id="cmdInput" value="+8ball Will I be rich?" placeholder="+8ball Will I be rich?"/>
+          <button class="cmd-go" onclick="runCmd()">Run ↵</button>
+        </div>
+        <div class="cmd-out" id="cmdOutput"></div>
+        <div class="cmd-chips">
+          <span class="cmd-chip" onclick="setCmd('+slots')">+slots</span>
+          <span class="cmd-chip" onclick="setCmd('+roll 20')">+roll 20</span>
+          <span class="cmd-chip" onclick="setCmd('+daily')">+daily</span>
+          <span class="cmd-chip" onclick="setCmd('+trivia')">+trivia</span>
+          <span class="cmd-chip" onclick="setCmd('+owo')">+owo</span>
+          <span class="cmd-chip" onclick="setCmd('+hunt')">+hunt</span>
+          <span class="cmd-chip" onclick="setCmd('+balance')">+balance</span>
+          <span class="cmd-chip" onclick="setCmd('+8ball Am I lucky?')">+8ball</span>
+        </div>
+      </div>
+
+      <div class="fun-card reveal" style="animation-delay:.1s">
+        <div class="fun-head"><span>🐾</span> Live Pokémon Spawner</div>
+        <div class="fun-sub">A wild Pokémon appeared — just like in your real server!</div>
+        <div class="poke-area">
+          <span class="poke-sprite" id="pokeEmoji">⚡</span>
+          <div id="pokeDsp">
+            <div class="poke-name" id="pokeName">Pikachu</div>
+            <div class="poke-type" id="pokeType">Electric</div>
+            <div class="poke-rar" id="pokeRar">⚡ Uncommon</div>
+          </div>
+          <div id="pokeCaught" style="display:none;padding:12px;color:#e8b84b;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700"></div>
+          <button class="catch-btn" id="catchBtn" onclick="catchPoke()">⚡ Catch it!</button>
+          <div style="font-size:.7rem;color:rgba(255,255,255,0.3);margin-top:8px">New Pokémon spawns after each catch!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ QUOTE 3 — Nikola Tesla ═══════ -->
+<div class="q-section">
+  <div class="wrap">
+    <div class="q-side reverse reveal">
+      <div class="q-person">
+        <div class="q-photo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/N.Tesla.JPG/800px-N.Tesla.JPG" alt="Nikola Tesla" onerror="this.style.display='none';this.parentNode.querySelector('.q-initials').style.display='grid'"/>
+          <div class="q-initials" style="display:none;background:linear-gradient(135deg,#1a1a3e,#2d2d6e)">NT</div>
+        </div>
+        <div class="q-name">Nikola Tesla</div>
+        <div class="q-role">Inventor · Electrical Engineer<br/>Father of Modern Electricity</div>
+        <div class="q-stars">★★★★★</div>
+      </div>
+      <div class="q-body">
+        <span class="q-mark">"</span>
+        <div class="q-text">"If you want to find the secrets of the universe, think in terms of energy, frequency and vibration."</div>
+        <div class="q-context">FUSE OS runs on that same principle. The energy of 150+ commands. The frequency of real-time AI. The vibration of a community that never sleeps.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ STATS ═══════ -->
+<section id="stats">
+  <div class="wrap">
+    <div class="section-label">By The Numbers</div>
+    <h2 class="section-title" style="margin-bottom:36px">Numbers Don't Lie.</h2>
+    <div class="stats-grid">
+      <div class="stat-card reveal"><span class="stat-icon">⚡</span><div class="stat-num">150+</div><div class="stat-lbl">Total Commands</div></div>
+      <div class="stat-card reveal" style="animation-delay:.08s"><span class="stat-icon">🧩</span><div class="stat-num">21</div><div class="stat-lbl">Feature Systems</div></div>
+      <div class="stat-card reveal" style="animation-delay:.16s"><span class="stat-icon">🐾</span><div class="stat-num">151</div><div class="stat-lbl">Pokémon Species</div></div>
+      <div class="stat-card reveal" style="animation-delay:.24s"><span class="stat-icon">🌐</span><div class="stat-num">70+</div><div class="stat-lbl">Languages</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ COMMANDS ═══════ -->
+<section id="commands">
+  <div class="wrap">
+    <div class="section-label">All Commands</div>
+    <h2 class="section-title">150+ Commands.<br/>Every Category.</h2>
+    <div class="cmd-cats">
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">🤖</div><div class="cmd-cat-name">AI Chat</div><div class="cmd-cat-cnt">5 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+ai</span><span class="cmd-pill">+ask</span><span class="cmd-pill">+imgen</span><span class="cmd-pill">+aistats</span><span class="cmd-pill">+aichatpanel</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">🐾</div><div class="cmd-cat-name">Pokémon</div><div class="cmd-cat-cnt">5 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+catch</span><span class="cmd-pill">+pokedex</span><span class="cmd-pill">+poketop</span><span class="cmd-pill">+pokeset</span><span class="cmd-pill">+pokestats</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">💰</div><div class="cmd-cat-name">Economy</div><div class="cmd-cat-cnt">10 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+balance</span><span class="cmd-pill">+daily</span><span class="cmd-pill">+work</span><span class="cmd-pill">+pay</span><span class="cmd-pill">+shop</span><span class="cmd-pill">+buy</span><span class="cmd-pill">+rob</span><span class="cmd-pill">+heist</span><span class="cmd-pill">+jail</span><span class="cmd-pill">+bail</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">⭐</div><div class="cmd-cat-name">Levels & XP</div><div class="cmd-cat-cnt">6 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+rank</span><span class="cmd-pill">+leaderboard</span><span class="cmd-pill">+levelpanel</span><span class="cmd-pill">+addxp</span><span class="cmd-pill">+resetxp</span><span class="cmd-pill">+setlevelchannel</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">🎮</div><div class="cmd-cat-name">Mini Games</div><div class="cmd-cat-cnt">13 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+akinator</span><span class="cmd-pill">+slots</span><span class="cmd-pill">+8ball</span><span class="cmd-pill">+trivia</span><span class="cmd-pill">+hangman</span><span class="cmd-pill">+ttt</span><span class="cmd-pill">+rps</span><span class="cmd-pill">+hunt</span><span class="cmd-pill">+battle</span><span class="cmd-pill">+owo</span><span class="cmd-pill">+roll</span><span class="cmd-pill">+guess</span><span class="cmd-pill">+wordguess</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">🎉</div><div class="cmd-cat-name">Giveaways</div><div class="cmd-cat-cnt">6 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+gwy</span><span class="cmd-pill">+gwyend</span><span class="cmd-pill">+gwyreroll</span><span class="cmd-pill">+gwylist</span><span class="cmd-pill">+gwyleaderboard</span><span class="cmd-pill">+gwymywins</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">🛡️</div><div class="cmd-cat-name">Moderation</div><div class="cmd-cat-cnt">15 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+ban</span><span class="cmd-pill">+kick</span><span class="cmd-pill">+mute</span><span class="cmd-pill">+warn</span><span class="cmd-pill">+clear</span><span class="cmd-pill">+lock</span><span class="cmd-pill">+timeout</span><span class="cmd-pill">+slowmode</span><span class="cmd-pill">+lockdown</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">🎫</div><div class="cmd-cat-name">Tickets</div><div class="cmd-cat-cnt">7 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+panel1</span><span class="cmd-pill">+panel2</span><span class="cmd-pill">+panel3</span><span class="cmd-pill">+tag</span><span class="cmd-pill">+note</span><span class="cmd-pill">+staffstats</span><span class="cmd-pill">+ticketlist</span></div>
+      </div>
+      <div class="cmd-cat reveal">
+        <div class="cmd-cat-hd"><div class="cmd-cat-icon">🌐</div><div class="cmd-cat-name">Translation</div><div class="cmd-cat-cnt">2 cmds</div></div>
+        <div class="cmd-pills"><span class="cmd-pill">+translate</span><span class="cmd-pill">+translationpanel</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:32px">
+      <a href="commands.html" class="btn btn-glass" style="font-size:.9rem;padding:12px 26px;border-radius:11px">View All 150+ Commands →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ QUOTE 4 — Steve Jobs ═══════ -->
+<div class="q-section">
+  <div class="wrap">
+    <div class="q-side reveal">
+      <div class="q-person">
+        <div class="q-photo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg" alt="Steve Jobs" onerror="this.style.display='none';this.parentNode.querySelector('.q-initials').style.display='grid'"/>
+          <div class="q-initials" style="display:none;background:linear-gradient(135deg,#2c2c2c,#555)">SJ</div>
+        </div>
+        <div class="q-name">Steve Jobs</div>
+        <div class="q-role">Co-Founder of Apple Inc.<br/>Pioneer of Personal Computing</div>
+        <div class="q-stars">★★★★★</div>
+      </div>
+      <div class="q-body">
+        <span class="q-mark">"</span>
+        <div class="q-text">"Design is not just what it looks like and feels like. Design is how it works."</div>
+        <div class="q-context">FUSE OS isn't just beautiful — every system is designed to actually work. The dashboard, the commands, the interactions. Everything just works.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ QUOTE 5 — Leonardo da Vinci ═══════ -->
+<div class="q-section">
+  <div class="wrap">
+    <div class="q-center reveal">
+      <div class="q-photo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Leonardo_self.jpg/800px-Leonardo_self.jpg" alt="Leonardo da Vinci" onerror="this.style.display='none';this.parentNode.querySelector('.q-initials').style.display='grid'"/>
+        <div class="q-initials" style="display:none;background:linear-gradient(135deg,#8B4513,#D2691E)">LV</div>
+      </div>
+      <div class="q-name">Leonardo da Vinci</div>
+      <div class="q-role">Renaissance Polymath · Artist · Inventor · Scientist · 1452–1519</div>
+      <div class="q-stars">★★★★★</div>
+      <span class="q-mark" style="text-align:left;display:block;margin-top:20px">"</span>
+      <div class="q-text">"Simplicity is the ultimate sophistication. Learning never exhausts the mind."</div>
+      <div class="q-context">One command. Infinite power. FUSE OS is complex under the hood and effortless to use. Just like da Vinci intended — sophistication through simplicity.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CTA ═══════ -->
+<section id="cta">
+  <div class="wrap">
+    <div class="cta-box reveal">
+      <h2 class="cta-title">Ready to<br/><span style="background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Transform</span><br/>Your Server?</h2>
+      <p class="cta-sub">Free forever. No credit card. No hidden fees. Add FUSE OS in 30 seconds and unlock every feature your server deserves.</p>
       <div class="cta-btns">
-        <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary">Invite Fuse OS</a>
-        <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline">Join Support</a>
+        <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" class="btn btn-gold">🚀 Add FUSE OS — Free</a>
+        <a href="https://discord.gg/Wej7Cd3XVW" class="btn btn-glass">💬 Join Community</a>
+        <a href="dashboard.html" class="btn btn-glass">⚙️ Dashboard</a>
       </div>
+      <div class="cta-note">No credit card · Instant setup · Works on any server size · Free forever</div>
     </div>
   </div>
 </section>
 
-<!-- ══ FOOTER ═════════════════════════════════ -->
+<!-- ═══════ FOOTER ═══════ -->
 <footer>
-  <div class="container">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <a href="index.html" class="nav-logo">
-          <img src="assets/images/logo.png" alt="Fuse OS" style="width:28px;height:28px;border-radius:7px"/>
-          <span class="nav-logo-name">FUSE OS</span>
-        </a>
-        <p>The ultimate all-in-one Discord bot for communities that want more.</p>
+  <div class="wrap">
+    <div class="ft">
+      <div>
+        <span class="f-logo-name">✦ FUSE OS</span>
+        <p class="f-desc">The ultimate all-in-one Discord bot. 150+ commands, 21 systems, free forever. Built with care for every server.</p>
       </div>
-      <div class="foot-col">
-        <h5>Product</h5>
-        <ul>
-          <li><a href="features.html">Features</a></li>
-          <li><a href="commands.html">Commands</a></li>
-          <li><a href="verify.html">YouTube Verify</a></li>
-        </ul>
+      <div>
+        <div class="f-col-h">Product</div>
+        <div class="f-links">
+          <a href="features.html">Features</a><a href="commands.html">Commands</a>
+          <a href="dashboard.html">Dashboard</a><a href="verify.html">YT Verify</a>
+        </div>
       </div>
-      <div class="foot-col">
-        <h5>Community</h5>
-        <ul>
-          <li><a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Support Server</a></li>
-          <li><a href="support.html">FAQ</a></li>
-          <li><a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Bug Reports</a></li>
-        </ul>
+      <div>
+        <div class="f-col-h">Community</div>
+        <div class="f-links">
+          <a href="https://discord.gg/Wej7Cd3XVW">Support Server</a>
+          <a href="support.html">FAQ</a>
+          <a href="https://discord.gg/Wej7Cd3XVW">Bug Reports</a>
+        </div>
       </div>
-      <div class="foot-col">
-        <h5>Legal</h5>
-        <ul>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="terms.html">Terms of Service</a></li>
-        </ul>
+      <div>
+        <div class="f-col-h">Legal</div>
+        <div class="f-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+        </div>
       </div>
     </div>
-    <div class="foot-bottom">
-      <p class="foot-copy">© 2025 <span>Fuse OS</span>. All rights reserved.</p>
-      <div class="foot-legal">
-        <a href="privacy.html">Privacy</a>
-        <a href="terms.html">Terms</a>
-        <a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Discord</a>
-      </div>
+    <div class="f-bottom">
+      <span>© 2025 FUSE OS. All rights reserved.</span>
+      <a href="https://discord.gg/Wej7Cd3XVW" style="color:rgba(255,255,255,.3);text-decoration:none">💬 Discord</a>
     </div>
   </div>
 </footer>
 
-<script src="js/script.js"></script>
+</div><!-- .page -->
+
+<script>
+/* ═══════════════════════════════════════════
+   THREE.JS — Floating geometric shapes
+   Warm palette, all over the page
+═══════════════════════════════════════════ */
+(function(){
+  var c = document.getElementById("bg-canvas");
+  var renderer = new THREE.WebGLRenderer({canvas:c, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  var scene  = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 22;
+
+  var COLORS = [0xc9972a, 0x5b21b6, 0xdc4a1f, 0x0d6f7a, 0xb91c5c, 0x3d7a0c, 0xe8b84b];
+  var GEOS = [
+    new THREE.IcosahedronGeometry(1, 0),
+    new THREE.OctahedronGeometry(1, 0),
+    new THREE.TetrahedronGeometry(1.2, 0),
+    new THREE.IcosahedronGeometry(0.9, 1),
+    new THREE.OctahedronGeometry(1.3, 0),
+    new THREE.IcosahedronGeometry(1.1, 0)
+  ];
+
+  var objects = [];
+  for(var i = 0; i < 36; i++){
+    var geo  = GEOS[i % GEOS.length];
+    var col  = COLORS[Math.floor(Math.random() * COLORS.length)];
+    var wire = Math.random() > 0.38;
+    var mat  = new THREE.MeshPhongMaterial({
+      color: col, transparent: true,
+      opacity: wire ? 0.13 : 0.06,
+      wireframe: wire
+    });
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(
+      (Math.random() - .5) * 38,
+      (Math.random() - .5) * 38,
+      (Math.random() - .5) * 16 - 6
+    );
+    var s = 0.4 + Math.random() * 2.8;
+    mesh.scale.setScalar(s);
+    mesh.rotation.set(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2
+    );
+    mesh.userData = {
+      rx: (Math.random() - .5) * .0038,
+      ry: (Math.random() - .5) * .005,
+      rz: (Math.random() - .5) * .003,
+      fs: 0.22 + Math.random() * .5,
+      fa: 0.4  + Math.random() * .9,
+      fo: Math.random() * Math.PI * 2,
+      by: mesh.position.y
+    };
+    scene.add(mesh);
+    objects.push(mesh);
+  }
+
+  /* Particles */
+  var pg = new THREE.BufferGeometry();
+  var pp = new Float32Array(600);
+  for(var j = 0; j < 200; j++){
+    pp[j*3]   = (Math.random() - .5) * 72;
+    pp[j*3+1] = (Math.random() - .5) * 72;
+    pp[j*3+2] = (Math.random() - .5) * 24;
+  }
+  pg.setAttribute("position", new THREE.BufferAttribute(pp, 3));
+  var pts = new THREE.Points(pg, new THREE.PointsMaterial({
+    color: 0xc9972a, size: 0.065, transparent: true, opacity: 0.22
+  }));
+  scene.add(pts);
+
+  /* Lights */
+  scene.add(new THREE.AmbientLight(0xfdf8f0, 1.2));
+  var dl  = new THREE.DirectionalLight(0xc9972a, 0.7);
+  dl.position.set(8, 12, 8); scene.add(dl);
+  var dl2 = new THREE.DirectionalLight(0x5b21b6, 0.4);
+  dl2.position.set(-8, -6, 6); scene.add(dl2);
+
+  /* Mouse + scroll */
+  var mx=0, my=0, tx=0, ty=0, sy=0;
+  document.addEventListener("mousemove", function(e){
+    mx = (e.clientX / window.innerWidth  - .5) * 2;
+    my = (e.clientY / window.innerHeight - .5) * 2;
+  });
+  window.addEventListener("scroll", function(){ sy = window.scrollY; });
+  window.addEventListener("resize", function(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  var t = 0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    t += 0.008;
+    tx += (mx - tx) * 0.032;
+    ty += (my - ty) * 0.032;
+    camera.position.x = tx * 2.8;
+    camera.position.y = -ty * 1.8 - sy * .0022;
+    camera.lookAt(0, -sy * .0022, 0);
+    for(var k = 0; k < objects.length; k++){
+      var o = objects[k];
+      o.rotation.x += o.userData.rx;
+      o.rotation.y += o.userData.ry;
+      o.rotation.z += o.userData.rz;
+      o.position.y  = o.userData.by + Math.sin(t * o.userData.fs + o.userData.fo) * o.userData.fa;
+    }
+    pts.rotation.y = t * 0.012;
+    pts.rotation.x = t * 0.006;
+    renderer.render(scene, camera);
+  })();
+})();
+
+/* ═══════════════════════════════════════════
+   STICKY STRETCHING CURSOR
+   - Gold blob that stretches in direction of travel
+   - On hover: grows, turns black (mix-blend-mode difference → looks black on light, white on dark)
+   - Trail of fading dots
+   - Sticky snap toward hovered elements
+═══════════════════════════════════════════ */
+(function(){
+  var cursorEl = document.querySelector(".cursor");
+  var inner    = document.querySelector(".cursor-inner");
+  if(!cursorEl || typeof gsap === "undefined") return;
+
+  /* Create trail dots */
+  var TRAIL = 14;
+  var trail = [];
+  for(var i = 0; i < TRAIL; i++){
+    var el = document.createElement("div");
+    el.className = "cur-trail";
+    var sz = Math.max(3, 8 * (1 - i / TRAIL));
+    el.style.cssText = "width:"+sz+"px;height:"+sz+"px;";
+    document.body.appendChild(el);
+    trail.push({el: el, x: window.innerWidth/2, y: window.innerHeight/2});
+  }
+
+  var mouseX = window.innerWidth/2,  mouseY = window.innerHeight/2;
+  var curX   = window.innerWidth/2,  curY   = window.innerHeight/2;
+  var isHovered = false, hoveredEl = null;
+  var frame = 0;
+
+  document.addEventListener("mousemove", function(e){
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  document.addEventListener("mousedown", function(){ cursorEl.classList.add("is-pressed"); });
+  document.addEventListener("mouseup",   function(){ cursorEl.classList.remove("is-pressed"); });
+
+  /* Hover detection */
+  var interactiveEls = document.querySelectorAll("a, button, .btn, .fb, .cmd-cat, .h-pill, .cmd-chip, .cmd-pill, .fun-card, .stat-card, .catch-btn, .cmd-go");
+  interactiveEls.forEach(function(el){
+    el.addEventListener("mouseenter", function(){
+      isHovered = true; hoveredEl = el;
+      cursorEl.classList.add("is-hovered");
+    });
+    el.addEventListener("mouseleave", function(){
+      isHovered = false; hoveredEl = null;
+      cursorEl.classList.remove("is-hovered");
+      gsap.to(inner, {scaleX:1, scaleY:1, rotation:0, duration:.4, ease:"elastic.out(1,.5)"});
+    });
+  });
+
+  (function animCursor(){
+    requestAnimationFrame(animCursor);
+    frame++;
+
+    var prevX = curX, prevY = curY;
+
+    if(isHovered && hoveredEl){
+      /* Sticky — pull toward element center */
+      var rect = hoveredEl.getBoundingClientRect();
+      var ecx  = rect.left + rect.width  / 2;
+      var ecy  = rect.top  + rect.height / 2;
+      var dx   = mouseX - ecx;
+      var dy   = mouseY - ecy;
+      curX += (ecx + dx * 0.38 - curX) * 0.13;
+      curY += (ecy + dy * 0.38 - curY) * 0.13;
+    } else {
+      curX += (mouseX - curX) * 0.13;
+      curY += (mouseY - curY) * 0.13;
+    }
+
+    var velX  = curX - prevX;
+    var velY  = curY - prevY;
+    var speed = Math.sqrt(velX*velX + velY*velY);
+
+    /* Move cursor */
+    gsap.set(cursorEl, {x: curX, y: curY});
+
+    /* Stretch in direction of travel */
+    if(!isHovered && speed > 0.3){
+      var strX  = 1 + Math.min(speed * 0.055, 0.65);
+      var strY  = 1 - Math.min(speed * 0.028, 0.35);
+      var angle = Math.atan2(velY, velX) * (180 / Math.PI);
+      gsap.to(inner, {
+        scaleX: strX, scaleY: strY, rotation: angle,
+        duration: 0.1, ease: "power2.out"
+      });
+    } else if(!isHovered){
+      gsap.to(inner, {scaleX:1, scaleY:1, rotation:0, duration: 0.4, ease:"elastic.out(1,.5)"});
+    }
+
+    /* Trail dots — each follows the previous */
+    if(frame % 2 === 0){
+      trail[0].x = curX;
+      trail[0].y = curY;
+      for(var t = TRAIL - 1; t > 0; t--){
+        trail[t].x += (trail[t-1].x - trail[t].x) * 0.32;
+        trail[t].y += (trail[t-1].y - trail[t].y) * 0.32;
+        var sz2 = Math.max(2, 7 * (1 - t / TRAIL));
+        var op  = isHovered ? 0 : 0.45 * (1 - t / TRAIL);
+        gsap.set(trail[t].el, {
+          x: trail[t].x, y: trail[t].y,
+          width: sz2, height: sz2, opacity: op
+        });
+      }
+    }
+  })();
+})();
+
+/* ═══════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════ */
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add("on"); });
+}, {threshold: 0.07});
+document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+
+/* ═══════════════════════════════════════════
+   COMMAND SIMULATOR
+═══════════════════════════════════════════ */
+var CMD = {
+  "+slots": function(){
+    var s=["🍒","🍋","🍊","🍇","⭐","💎","7️⃣","🔔"], w=[30,25,20,15,5,3,1,1];
+    function pick(){ var r=Math.random()*100,sum=0; for(var i=0;i<s.length;i++){sum+=w[i];if(r<sum)return s[i];} return s[0]; }
+    var s1=pick(),s2=pick(),s3=pick();
+    var win=s1===s2&&s2===s3, two=s1===s2||s2===s3||s1===s3;
+    return '<div style="font-weight:700;color:#e8b84b;margin-bottom:8px">🎰 Slot Machine</div>'
+          +'<div style="font-size:2rem;letter-spacing:8px;margin:8px 0">'+s1+' '+s2+' '+s3+'</div>'
+          +'<div style="font-weight:700;color:'+(win?'#e8b84b':two?'#5dd8e8':'#f87171')+'">'
+          +(win?'🎉 JACKPOT! You win 10,000 🪙!':two?'✨ Two of a kind! +100 🪙':'😔 No match. Try again!')+' </div>';
+  },
+  "+roll": function(){
+    var r=Math.floor(Math.random()*20)+1;
+    return '<div style="font-weight:700;color:#e8b84b;margin-bottom:8px">🎲 Rolling d20...</div>'
+          +'<div style="font-size:2.6rem;font-family:Syne,sans-serif;font-weight:800;line-height:1;margin:8px 0">'+r+'</div>'
+          +'<div style="font-weight:700;color:'+(r===20?'#e8b84b':r>=15?'#86efac':r<=3?'#f87171':'#5dd8e8')+'">'
+          +(r===20?'💎 Natural 20 — CRITICAL HIT!':r>=15?'✅ Great roll!':r<=3?'💀 Critical fail...':'Your roll: '+r)+'</div>';
+  },
+  "+daily": function(){
+    var c=500+Math.floor(Math.random()*200);
+    return '<div style="font-weight:700;color:#e8b84b;margin-bottom:8px">📅 Daily Reward!</div>'
+          +'<div style="font-size:1.6rem;font-family:Syne,sans-serif;font-weight:800;margin:8px 0">+'+c.toLocaleString()+' 🪙</div>'
+          +'<div style="color:rgba(255,255,255,.45);font-size:.8rem">Streak bonus applied! Come back tomorrow!</div>';
+  },
+  "+trivia": function(){
+    var qs=[
+      {q:"Capital of France?",a:"Paris",o:["London","Paris","Berlin","Rome"]},
+      {q:"Sides on a hexagon?",a:"6",o:["5","6","7","8"]},
+      {q:"The Red Planet?",a:"Mars",o:["Venus","Mars","Jupiter","Saturn"]},
+      {q:"Discord founded?",a:"2015",o:["2013","2014","2015","2016"]},
+      {q:"Fastest land animal?",a:"Cheetah",o:["Lion","Horse","Cheetah","Falcon"]}
+    ];
+    var q=qs[Math.floor(Math.random()*qs.length)];
+    return '<div style="font-weight:700;color:#e8b84b;margin-bottom:8px">❓ Trivia!</div>'
+          +'<div style="font-weight:600;color:#fff;margin-bottom:10px">'+q.q+'</div>'
+          +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
+          +q.o.map(function(o){
+            return '<span style="padding:4px 12px;border-radius:8px;font-size:.78rem;font-weight:600;'
+                  +'background:'+(o===q.a?'rgba(134,239,172,.15)':'rgba(255,255,255,.07)')+';'
+                  +'border:1px solid '+(o===q.a?'rgba(134,239,172,.4)':'rgba(255,255,255,.1)')+';'
+                  +'color:'+(o===q.a?'#86efac':'rgba(255,255,255,.6)')+'">'+o+'</span>';
+          }).join('')+'</div>';
+  },
+  "+owo": function(){
+    var f=["OwO","UwU","^w^",">w<"], a=["🐱","🦊","🐺","🐻","🦄"];
+    var m=["*nuzzles you warmly* ","H-hewwo!! ","*notices you and blushes* ","*boops your nose* "];
+    return '<div style="font-weight:700;color:#f9a8d4;margin-bottom:8px">'+a[Math.floor(Math.random()*a.length)]+' OwO!</div>'
+          +'<div style="font-size:1rem;color:#f9a8d4;margin-bottom:6px">'+m[Math.floor(Math.random()*m.length)]+f[Math.floor(Math.random()*f.length)]+'</div>'
+          +'<div style="color:rgba(255,255,255,.35);font-size:.78rem">Use +hunt to catch animals for coins!</div>';
+  },
+  "+hunt": function(){
+    var a=[["🐇 Rabbit",10],["🦌 Deer",25],["🦊 Fox",40],["🐺 Wolf",60],["🐻 Bear",80],["🦁 Lion",100],["🐉 Dragon",200]];
+    if(Math.random()<.28) return '<div style="font-weight:700;color:#f87171;margin-bottom:8px">🏹 Hunt Failed!</div><div style="color:rgba(255,255,255,.4)">The animals scattered! Better luck next time.</div>';
+    var p=a[Math.floor(Math.random()*a.length)],b=Math.floor(Math.random()*25);
+    return '<div style="font-weight:700;color:#86efac;margin-bottom:8px">🏹 Successful Hunt!</div>'
+          +'<div style="font-size:1.05rem;font-weight:600;color:#fff;margin-bottom:5px">You caught a '+p[0]+'!</div>'
+          +'<div style="color:#e8b84b;font-weight:700">+'+(p[1]+b)+' coins 🪙 added!</div>';
+  },
+  "+balance": function(){
+    var b=Math.floor(Math.random()*60000)+1000, bk=Math.floor(Math.random()*25000);
+    return '<div style="font-weight:700;color:#e8b84b;margin-bottom:10px">💰 Your Balance</div>'
+          +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'
+          +'<div style="background:rgba(255,255,255,.06);padding:10px 13px;border-radius:10px;border:1px solid rgba(255,255,255,.08)">'
+          +'<div style="font-size:.66rem;color:rgba(255,255,255,.35);font-weight:700;text-transform:uppercase;margin-bottom:4px">Wallet</div>'
+          +'<div style="font-size:1.15rem;font-weight:800;color:#e8b84b">'+b.toLocaleString()+' 🪙</div></div>'
+          +'<div style="background:rgba(255,255,255,.06);padding:10px 13px;border-radius:10px;border:1px solid rgba(255,255,255,.08)">'
+          +'<div style="font-size:.66rem;color:rgba(255,255,255,.35);font-weight:700;text-transform:uppercase;margin-bottom:4px">Bank</div>'
+          +'<div style="font-size:1.15rem;font-weight:800;color:#5dd8e8">'+bk.toLocaleString()+' 🪙</div></div></div>';
+  }
+};
+
+function get8ball(txt){
+  var ans=["✅ It is certain!","✅ Without a doubt.","✅ Yes, definitely!","✅ Most likely yes.","🤔 Ask again later.","🤔 Cannot predict now.","❌ Very doubtful.","❌ My reply is no.","❌ Don't count on it."];
+  var a=ans[Math.floor(Math.random()*ans.length)];
+  var col=a[0]==="✅"?"#86efac":a[0]==="🤔"?"#e8b84b":"#f87171";
+  return '<div style="font-weight:700;color:#5dd8e8;margin-bottom:8px">🎱 Magic 8 Ball</div>'
+        +'<div style="color:rgba(255,255,255,.4);font-size:.8rem;margin-bottom:8px">Q: '+txt.replace(/^\+8ball\s*/i,"")+'</div>'
+        +'<div style="font-size:1.05rem;font-weight:700;color:'+col+'">'+a+'</div>';
+}
+
+function runCmd(){
+  var val=document.getElementById("cmdInput").value.trim();
+  var out=document.getElementById("cmdOutput");
+  var lv=val.toLowerCase();
+  if(lv.indexOf("+8ball")===0){ out.innerHTML=get8ball(val); return; }
+  var key=null;
+  Object.keys(CMD).forEach(function(k){ if(!key&&lv.indexOf(k)===0) key=k; });
+  out.innerHTML = key ? CMD[key]()
+    : '<span style="color:#f87171">❌ Command not in demo.</span><br/>'
+    + '<span style="color:rgba(255,255,255,.3);font-size:.78rem">Try: +slots +roll +daily +trivia +owo +hunt +balance +8ball</span>';
+}
+function setCmd(c){ document.getElementById("cmdInput").value=c; runCmd(); }
+document.getElementById("cmdInput").addEventListener("keydown", function(e){ if(e.key==="Enter") runCmd(); });
+runCmd();
+
+/* ═══════════════════════════════════════════
+   POKÉMON CATCHER
+═══════════════════════════════════════════ */
+var POKES=[
+  {n:"Pikachu",   e:"⚡",t:"Electric",   r:"uncommon",tc:"#fbbf24",s:"#fef3c7"},
+  {n:"Charizard", e:"🔥",t:"Fire/Flying", r:"rare",    tc:"#f97316",s:"#fff7ed"},
+  {n:"Mewtwo",    e:"👾",t:"Psychic",     r:"legendary",tc:"#a78bfa",s:"#ede9fb"},
+  {n:"Bulbasaur", e:"🌿",t:"Grass",       r:"common",  tc:"#86efac",s:"#f0fdf4"},
+  {n:"Gyarados",  e:"🐉",t:"Water/Flying",r:"legendary",tc:"#38bdf8",s:"#e0f2fe"},
+  {n:"Eevee",     e:"🦊",t:"Normal",      r:"rare",    tc:"#fbbf24",s:"#fef3c7"},
+  {n:"Gengar",    e:"👻",t:"Ghost",       r:"epic",    tc:"#c084fc",s:"#faf5ff"},
+  {n:"Snorlax",   e:"😴",t:"Normal",      r:"epic",    tc:"#94a3b8",s:"#f1f5f9"},
+  {n:"Mew",       e:"✨",t:"Psychic",     r:"legendary",tc:"#f472b6",s:"#fdf2f8"},
+  {n:"Articuno",  e:"❄️",t:"Ice/Flying",  r:"legendary",tc:"#38bdf8",s:"#e0f2fe"},
+  {n:"Dragonite", e:"🐉",t:"Dragon",      r:"legendary",tc:"#fb923c",s:"#fff7ed"},
+  {n:"Meowth",    e:"🐱",t:"Normal",      r:"uncommon",tc:"#fbbf24",s:"#fef3c7"},
+  {n:"Ditto",     e:"💜",t:"Normal",      r:"epic",    tc:"#c084fc",s:"#faf5ff"},
+  {n:"Magikarp",  e:"🐟",t:"Water",       r:"common",  tc:"#38bdf8",s:"#e0f2fe"}
+];
+var RMAP={common:"⚪ Common",uncommon:"🟡 Uncommon",rare:"🔵 Rare",epic:"🟣 Epic",legendary:"🌟 Legendary"};
+var curPoke=null;
+
+function spawnPoke(){
+  curPoke=POKES[Math.floor(Math.random()*POKES.length)];
+  document.getElementById("pokeEmoji").textContent=curPoke.e;
+  document.getElementById("pokeName").textContent=curPoke.n;
+  var tb=document.getElementById("pokeType");
+  tb.textContent=curPoke.t;
+  tb.style.background="rgba(255,255,255,0.08)";
+  tb.style.color=curPoke.tc;
+  tb.style.border="1px solid "+curPoke.tc+"55";
+  document.getElementById("pokeRar").textContent=RMAP[curPoke.r]||curPoke.r;
+  document.getElementById("pokeDsp").style.display="block";
+  document.getElementById("pokeCaught").style.display="none";
+  var btn=document.getElementById("catchBtn");
+  btn.disabled=false; btn.textContent="⚡ Catch it!";
+}
+function catchPoke(){
+  if(!curPoke) return;
+  document.getElementById("pokeDsp").style.display="none";
+  var c=document.getElementById("pokeCaught");
+  c.style.display="block";
+  c.textContent="🎉 You caught "+curPoke.n+"! A new one is spawning...";
+  document.getElementById("catchBtn").disabled=true;
+  setTimeout(spawnPoke, 2400);
+}
+spawnPoke();
+</script>
 </body>
 </html>

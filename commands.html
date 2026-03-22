@@ -1,189 +1,1068 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Commands — Fuse OS</title>
-<meta name="description" content="Full command reference for Fuse OS Discord bot. Search and filter by category."/>
-<link rel="stylesheet" href="css/style.css"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Commands — FUSE OS</title>
 <link rel="icon" href="assets/images/logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;cursor:none}
+:root{
+  --ink:#0f0d0a; --ink2:#1e1a15; --ink3:#3a3228;
+  --muted:#8a7d6e; --muted2:#b5a898;
+  --gold:#c9972a; --gold2:#e8b84b;
+  --violet:#5b21b6; --violet2:#7c3aed;
+  --coral:#dc4a1f;
+  --teal:#0d6f7a;
+  --glass:rgba(255,255,255,0.12);
+  --glass-b:rgba(255,255,255,0.22);
+  --glass-border:rgba(255,255,255,0.22);
+  --glass-dark:rgba(0,0,0,0.25);
+  --grad:linear-gradient(135deg,#5b21b6,#dc4a1f);
+  --grad2:linear-gradient(135deg,#dc4a1f,#c9972a);
+  --grad3:linear-gradient(135deg,#c9972a,#e8b84b);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:#fdf8f0;
+  color:#1a1714;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+/* ── Canvas always behind everything ── */
+#bg-canvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+}
+
+/* ── Noise grain overlay ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+  opacity:.3;
+}
+
+/* ── All content above canvas ── */
+.page{position:relative;z-index:2}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+
+/* ══════════════════════════════════
+   CURSOR
+══════════════════════════════════ */
+.cursor{position:fixed;z-index:9999;pointer-events:none;top:0;left:0;will-change:transform}
+.cursor-inner{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--gold);
+  transform:translate(-50%,-50%);
+  transition:background .2s,width .25s cubic-bezier(.16,1,.3,1),height .25s cubic-bezier(.16,1,.3,1);
+}
+.cursor.is-hovered .cursor-inner{
+  width:22px;height:22px;
+  background:#0f0d0a;
+}
+.cursor.is-pressed .cursor-inner{
+  width:12px;height:12px;
+  background:#0f0d0a;
+}
+.cur-trail{
+  position:fixed;border-radius:50%;pointer-events:none;
+  z-index:9998;transform:translate(-50%,-50%);
+  background:var(--gold);opacity:0;will-change:transform;
+}
+
+/* ══════════════════════════════════
+   NAV — floating pill
+══════════════════════════════════ */
+nav{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  z-index:500;width:calc(100% - 40px);max-width:1100px;
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;
+  background:rgba(253,248,240,0.82);
+  backdrop-filter:blur(32px);
+  -webkit-backdrop-filter:blur(32px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:18px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.n-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.n-logo img{width:32px;height:32px;border-radius:9px}
+.n-logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.01em}
+.n-links{display:flex;gap:2px}
+.n-links a{padding:7px 13px;border-radius:9px;color:rgba(26,23,20,0.6);font-size:.84rem;font-weight:600;text-decoration:none;transition:all .2s}
+.n-links a:hover{background:rgba(201,151,42,0.1);color:#1a1714}
+.n-btns{display:flex;gap:8px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 20px;border-radius:10px;
+  font-size:.85rem;font-weight:700;text-decoration:none;
+  transition:all .25s;border:none;font-family:'Plus Jakarta Sans',sans-serif;
+  white-space:nowrap;letter-spacing:-.01em;
+}
+.btn-glass{
+  background:rgba(253,248,240,0.7);
+  border:1px solid rgba(201,151,42,0.2);
+  color:#3a3228;
+  backdrop-filter:blur(8px);
+}
+.btn-glass:hover{background:rgba(253,248,240,0.95);color:#1a1714;transform:translateY(-1px);border-color:rgba(201,151,42,0.35)}
+.btn-gold{
+  background:linear-gradient(135deg,#c9972a,#e8b84b);
+  color:#0f0d0a;
+  box-shadow:0 4px 20px rgba(201,151,42,0.4);
+}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(201,151,42,0.5)}
+
+/* ══════════════════════════════════
+   GLASS UTILITY
+══════════════════════════════════ */
+.glass{
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.glass-light{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.18);
+}
+
+/* ══════════════════════════════════
+   HERO
+══════════════════════════════════ */
+#hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:110px 0 80px;position:relative;overflow:hidden;
+}
+
+/* Orbital decorative rings */
+.orb-ring{position:absolute;border-radius:50%;border:1px solid rgba(201,151,42,0.07);pointer-events:none;left:50%;top:50%;transform:translate(-50%,-50%)}
+.orb-ring:nth-child(1){width:700px;height:700px;animation:ring-spin 70s linear infinite}
+.orb-ring:nth-child(2){width:1000px;height:1000px;border-color:rgba(92,33,182,0.05);animation:ring-spin 90s linear infinite reverse}
+.orb-ring:nth-child(3){width:1300px;height:1300px;border-color:rgba(220,74,31,0.04);animation:ring-spin 110s linear infinite}
+
+/* Corner frame brackets */
+.frame-corner{position:absolute;width:80px;height:80px;pointer-events:none}
+.frame-corner.tl{top:88px;left:32px;border-top:1px solid rgba(201,151,42,0.35);border-left:1px solid rgba(201,151,42,0.35)}
+.frame-corner.tr{top:88px;right:32px;border-top:1px solid rgba(201,151,42,0.35);border-right:1px solid rgba(201,151,42,0.35)}
+.frame-corner.bl{bottom:32px;left:32px;border-bottom:1px solid rgba(201,151,42,0.35);border-left:1px solid rgba(201,151,42,0.35)}
+.frame-corner.br{bottom:32px;right:32px;border-bottom:1px solid rgba(201,151,42,0.35);border-right:1px solid rgba(201,151,42,0.35)}
+
+.hero-content{text-align:center;max-width:900px;margin:0 auto;position:relative;z-index:2}
+
+.h-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 18px;border-radius:100px;margin-bottom:36px;
+  background:rgba(201,151,42,0.12);
+  border:1px solid rgba(201,151,42,0.3);
+  color:#a07020;font-size:.75rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.h-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold2);animation:pulse-dot 2s infinite}
+
+.h-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(4rem,9.5vw,8.5rem);
+  font-weight:800;line-height:.9;
+  letter-spacing:-.04em;
+  color:#1a1714;margin-bottom:30px;
+}
+.h-title .t-grad{
+  display:block;
+  background:var(--grad3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.h-title .t-muted{
+  display:block;font-size:.48em;
+  letter-spacing:-.02em;color:rgba(255,255,255,0.35);
+  -webkit-text-fill-color:rgba(255,255,255,0.35);
+}
+
+.h-sub{
+  font-size:1.15rem;color:rgba(26,23,20,0.55);
+  line-height:1.78;max-width:560px;margin:0 auto 44px;
+}
+
+.h-btns{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.h-btns .btn{font-size:.96rem;padding:13px 26px;border-radius:12px}
+
+/* Stat pills */
+.h-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.h-pill{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 20px;border-radius:100px;
+  background:rgba(253,248,240,0.75);
+  border:1px solid rgba(201,151,42,0.18);
+  backdrop-filter:blur(12px);
+  transition:all .3s;
+  box-shadow:0 2px 12px rgba(15,13,10,0.06);
+}
+.h-pill:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.4);transform:translateY(-2px)}
+.h-pill-num{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:#1a1714}
+.h-pill-lbl{font-size:.74rem;color:rgba(26,23,20,0.45);font-weight:500}
+.h-pill-icon{font-size:1rem}
+
+/* Scroll indicator */
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:rgba(26,23,20,0.35);font-size:.68rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,rgba(201,151,42,0.5),transparent);animation:scroll-drip 2s ease-in-out infinite}
+
+/* ══════════════════════════════════
+   TICKER
+══════════════════════════════════ */
+.ticker{
+  padding:13px 0;overflow:hidden;position:relative;z-index:2;
+  border-top:1px solid rgba(201,151,42,0.12);
+  border-bottom:1px solid rgba(201,151,42,0.12);
+  background:rgba(247,240,228,0.7);
+  backdrop-filter:blur(8px);
+}
+.tk-track{display:flex;gap:48px;width:max-content;animation:ticker 24s linear infinite}
+.tk-item{display:flex;align-items:center;gap:9px;font-size:.8rem;font-weight:600;color:rgba(26,23,20,0.45);white-space:nowrap;letter-spacing:.02em}
+.tk-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+/* ══════════════════════════════════
+   QUOTE SECTIONS
+══════════════════════════════════ */
+.q-section{
+  padding:80px 0;position:relative;z-index:2;
+  background:rgba(253,248,240,0.72);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(201,151,42,0.12);
+  border-bottom:1px solid rgba(201,151,42,0.12);
+}
+
+/* Side layout */
+.q-side{display:grid;grid-template-columns:160px 1fr;gap:52px;align-items:center;max-width:900px;margin:0 auto}
+.q-side.reverse{grid-template-columns:1fr 160px}
+.q-side.reverse .q-person{order:2}
+.q-side.reverse .q-body{order:1}
+
+.q-person{text-align:center}
+.q-photo{
+  width:110px;height:110px;border-radius:50%;margin:0 auto 12px;
+  position:relative;display:block;overflow:hidden;
+  border:2px solid rgba(201,151,42,0.3);
+  box-shadow:0 0 0 6px rgba(201,151,42,0.07),0 12px 40px rgba(0,0,0,0.4);
+}
+.q-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.q-photo .q-initials{
+  width:100%;height:100%;display:grid;place-items:center;
+  font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:#fff;
+}
+.q-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:#1a1714;margin-bottom:3px}
+.q-role{font-size:.72rem;color:rgba(26,23,20,0.45);line-height:1.4}
+.q-stars{color:var(--gold2);font-size:.82rem;margin-top:6px;letter-spacing:2px}
+
+.q-mark{font-family:'Syne',sans-serif;font-size:5.5rem;line-height:.5;color:var(--gold2);opacity:.2;display:block;margin-bottom:6px}
+.q-text{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.1rem,2vw,1.45rem);
+  font-weight:700;color:#1a1714;
+  line-height:1.5;font-style:italic;margin-bottom:14px;
+}
+.q-context{font-size:.82rem;color:rgba(26,23,20,0.45);line-height:1.6;font-style:normal}
+
+/* Center layout */
+.q-center{text-align:center;max-width:760px;margin:0 auto}
+.q-center .q-photo{margin:0 auto 14px}
+.q-center .q-mark{text-align:left}
+
+/* ══════════════════════════════════
+   FEATURES
+══════════════════════════════════ */
+#features{padding:100px 0;position:relative;z-index:2;background:rgba(253,248,240,0.05)}
+.section-label{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--coral);margin-bottom:14px}
+.section-label::before{content:'✦'}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-.03em;color:#1a1714;line-height:1.05;margin-bottom:13px}
+.section-sub{font-size:.98rem;color:rgba(26,23,20,0.5);line-height:1.75;max-width:480px}
+
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:52px}
+.fb{
+  background:rgba(253,248,240,0.65);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:20px;padding:26px;
+  transition:all .38s;position:relative;overflow:hidden;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.fb::before{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .38s;border-radius:inherit}
+.fb:hover{
+  border-color:rgba(201,151,42,0.4);
+  background:rgba(253,248,240,0.92);
+  transform:translateY(-6px);
+  box-shadow:0 20px 60px rgba(15,13,10,0.12);
+}
+.fb:hover::before{opacity:.04}
+.fb.s2{grid-column:span 2}
+.fb-num{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;line-height:1;opacity:.07;position:absolute;top:14px;right:18px;color:#1a1714}
+.fb-icon{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:1.4rem;margin-bottom:14px;position:relative;z-index:1;background:rgba(255,255,255,0.6);border:1px solid rgba(201,151,42,0.15)}
+.fb-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.98rem;color:#1a1714;margin-bottom:7px;position:relative;z-index:1}
+.fb-desc{font-size:.83rem;color:rgba(26,23,20,0.55);line-height:1.68;position:relative;z-index:1}
+.fb-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;position:relative;z-index:1}
+.fb-tag{
+  padding:3px 9px;border-radius:100px;font-size:.68rem;font-weight:700;letter-spacing:.03em;
+  background:rgba(201,151,42,0.1);
+  border:1px solid rgba(201,151,42,0.2);
+  color:#7a5a10;
+}
+
+/* ══════════════════════════════════
+   COMMAND SIMULATOR + POKEMON
+══════════════════════════════════ */
+#fun{padding:100px 0;position:relative;z-index:2}
+.fun-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:50px}
+.fun-card{
+  background:rgba(253,248,240,0.7);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:20px;padding:26px;
+  transition:all .3s;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.fun-card:hover{background:rgba(253,248,240,0.92);border-color:rgba(201,151,42,0.3)}
+.fun-head{font-family:'Syne',sans-serif;font-weight:700;font-size:.96rem;color:#1a1714;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.fun-sub{font-size:.78rem;color:rgba(26,23,20,0.45);margin-bottom:16px}
+.cmd-row{display:flex;gap:7px;margin-bottom:10px}
+.cmd-inp{
+  flex:1;background:rgba(255,255,255,0.8);
+  border:1px solid rgba(201,151,42,0.2);
+  border-radius:10px;padding:10px 13px;
+  color:#1a1714;font-family:'JetBrains Mono',monospace;font-size:.8rem;
+  outline:none;transition:border-color .25s;
+}
+.cmd-inp::placeholder{color:rgba(26,23,20,0.3)}
+.cmd-inp:focus{border-color:rgba(201,151,42,0.5);background:#fff}
+.cmd-go{
+  background:#1a1714;color:#fff;border:1px solid rgba(26,23,20,0.2);
+  border-radius:10px;padding:10px 16px;font-weight:700;font-size:.82rem;
+  transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.cmd-go:hover{background:#333;transform:scale(1.04)}
+.cmd-out{
+  background:rgba(255,255,255,0.6);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:12px;padding:13px 14px;
+  min-height:100px;font-size:.8rem;line-height:1.6;
+  color:rgba(26,23,20,0.8);
+}
+.cmd-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.cmd-chip{
+  padding:3px 11px;border-radius:100px;
+  background:rgba(201,151,42,0.1);
+  border:1px solid rgba(201,151,42,0.2);
+  color:var(--gold2);font-size:.7rem;
+  font-family:'JetBrains Mono',monospace;
+  transition:all .2s;font-weight:600;
+}
+.cmd-chip:hover{background:rgba(201,151,42,0.25);transform:scale(1.05)}
+.poke-area{text-align:center}
+.poke-sprite{font-size:4.5rem;margin-bottom:8px;display:block;animation:poke-float 3s ease-in-out infinite}
+.poke-name{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#1a1714}
+.poke-type{display:inline-block;padding:4px 13px;border-radius:100px;font-size:.73rem;font-weight:700;margin:6px 0 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff}
+.poke-rar{display:flex;justify-content:center;margin-bottom:16px;font-size:.76rem;color:rgba(26,23,20,0.45)}
+.catch-btn{
+  width:100%;padding:12px;border-radius:11px;border:none;
+  background:linear-gradient(135deg,#c9972a,#e8b84b);
+  color:#0f0d0a;font-family:'Syne',sans-serif;
+  font-size:.94rem;font-weight:800;
+  transition:all .3s;box-shadow:0 4px 16px rgba(201,151,42,0.3);
+}
+.catch-btn:hover{transform:scale(1.02);box-shadow:0 8px 28px rgba(201,151,42,0.45)}
+.catch-btn:disabled{opacity:.4;transform:none}
+
+/* ══════════════════════════════════
+   STATS — glass cards
+══════════════════════════════════ */
+#stats{padding:80px 0;position:relative;z-index:2}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{
+  background:rgba(253,248,240,0.7);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:18px;padding:30px 20px;
+  text-align:center;transition:all .3s;
+  box-shadow:0 2px 16px rgba(15,13,10,0.06);
+}
+.stat-card:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.35);transform:translateY(-4px)}
+.stat-icon{font-size:1.5rem;display:block;margin-bottom:12px}
+.stat-num{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;line-height:1;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-lbl{font-size:.8rem;color:rgba(26,23,20,0.45);margin-top:7px;font-weight:500}
+
+/* ══════════════════════════════════
+   COMMANDS
+══════════════════════════════════ */
+#commands{padding:100px 0;position:relative;z-index:2}
+.cmd-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:48px}
+.cmd-cat{
+  background:rgba(253,248,240,0.65);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(201,151,42,0.13);
+  border-radius:15px;padding:20px;transition:all .3s;
+  box-shadow:0 2px 10px rgba(15,13,10,0.05);
+}
+.cmd-cat:hover{background:rgba(253,248,240,0.95);border-color:rgba(201,151,42,0.35);transform:translateY(-2px)}
+.cmd-cat-hd{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.cmd-cat-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.96rem;flex-shrink:0;background:rgba(201,151,42,0.1)}
+.cmd-cat-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.86rem;color:#1a1714}
+.cmd-cat-cnt{font-size:.68rem;color:rgba(26,23,20,0.35);margin-left:auto}
+.cmd-pills{display:flex;flex-wrap:wrap;gap:4px}
+.cmd-pill{
+  padding:2px 8px;border-radius:6px;
+  background:rgba(255,255,255,0.5);
+  border:1px solid rgba(201,151,42,0.12);
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  color:rgba(26,23,20,0.55);transition:all .2s;
+}
+.cmd-pill:hover{background:rgba(201,151,42,0.15);border-color:rgba(201,151,42,0.3);color:#7a5a10}
+
+/* ══════════════════════════════════
+   CTA
+══════════════════════════════════ */
+#cta{padding:100px 0;text-align:center;position:relative;z-index:2}
+.cta-box{
+  background:rgba(255,255,255,0.07);
+  backdrop-filter:blur(32px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:28px;padding:72px 60px;
+  max-width:800px;margin:0 auto;
+  position:relative;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,0.5);
+}
+.cta-box::before{content:'';position:absolute;top:-100px;right:-80px;width:320px;height:320px;background:radial-gradient(circle,rgba(201,151,42,0.12),transparent 70%);border-radius:50%;pointer-events:none}
+.cta-box::after{content:'';position:absolute;bottom:-80px;left:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(92,33,182,0.1),transparent 70%);border-radius:50%;pointer-events:none}
+.cta-title{font-family:'Syne',sans-serif;font-size:clamp(2.4rem,5vw,3.8rem);font-weight:800;letter-spacing:-.03em;color:#fff;margin-bottom:18px;line-height:1;position:relative;z-index:1}
+.cta-sub{font-size:.98rem;color:rgba(255,255,255,0.45);max-width:440px;margin:0 auto 36px;line-height:1.75;position:relative;z-index:1}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.cta-btns .btn{font-size:.94rem;padding:13px 28px;border-radius:12px}
+.cta-note{font-size:.72rem;color:rgba(255,255,255,0.25);margin-top:14px;position:relative;z-index:1}
+
+/* ══════════════════════════════════
+   FOOTER
+══════════════════════════════════ */
+footer{
+  background:rgba(15,13,10,0.85);
+  backdrop-filter:blur(20px);
+  border-top:1px solid rgba(201,151,42,0.1);
+  color:rgba(255,255,255,0.45);
+  padding:52px 0 28px;position:relative;z-index:2;
+}
+.ft{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:44px;margin-bottom:40px}
+.f-logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:11px}
+.f-desc{font-size:.8rem;line-height:1.72;max-width:210px;color:rgba(255,255,255,0.35)}
+.f-col-h{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.2);margin-bottom:12px}
+.f-links{display:flex;flex-direction:column;gap:8px}
+.f-links a{color:rgba(255,255,255,0.38);text-decoration:none;font-size:.8rem;transition:color .2s}
+.f-links a:hover{color:#fff}
+.f-bottom{padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;font-size:.72rem}
+
+/* ══════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════ */
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.6)}}
+@keyframes ring-spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes scroll-drip{0%{opacity:0;transform:translateY(-6px)}50%{opacity:1}100%{opacity:0;transform:translateY(8px)}}
+@keyframes poke-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.06)}}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .72s ease,transform .72s ease}
+.reveal.on{opacity:1;transform:translateY(0)}
+
+/* ══════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════ */
+@media(max-width:960px){
+  nav{top:8px;width:calc(100% - 20px);padding:0 14px}
+  .n-links{display:none}
+  .h-title{font-size:clamp(3rem,12vw,5rem)}
+  .bento{grid-template-columns:1fr}.fb.s2{grid-column:span 1}
+  .fun-grid{grid-template-columns:1fr}
+  .q-side{grid-template-columns:1fr;text-align:center}.q-side.reverse{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .cmd-cats{grid-template-columns:1fr 1fr}
+  .ft{grid-template-columns:1fr 1fr}
+  .cta-box{padding:44px 24px}
+  .cta-btns{flex-direction:column;align-items:center}
+}
+@media(max-width:580px){.cmd-cats{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.ft{grid-template-columns:1fr}}
+
+/* Commands page specific */
+.cmd-blk{
+  background:rgba(253,248,240,0.65);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,151,42,0.15);
+  border-radius:18px;overflow:hidden;
+  transition:all .3s;
+}
+.cmd-blk:hover{border-color:rgba(201,151,42,0.3);background:rgba(253,248,240,0.88)}
+.cmd-blk-hd{
+  display:flex;align-items:center;gap:16px;
+  padding:20px 24px;cursor:pointer;
+  border-bottom:1px solid rgba(201,151,42,0.1);
+  transition:background .2s;
+}
+.cmd-blk-hd:hover{background:rgba(201,151,42,0.04)}
+.cmd-blk-icon{font-size:1.6rem;flex-shrink:0}
+.cmd-blk-name{font-family:Syne,sans-serif;font-weight:700;font-size:1rem;color:#1a1714;margin-bottom:3px}
+.cmd-blk-desc{font-size:.78rem;color:rgba(26,23,20,0.5)}
+.cmd-blk-count{margin-left:auto;font-size:.74rem;font-weight:700;color:rgba(201,151,42,0.8);white-space:nowrap;background:rgba(201,151,42,0.1);padding:4px 12px;border-radius:100px;flex-shrink:0}
+.cmd-blk-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
+  background:rgba(201,151,42,0.08);
+}
+.cmd-row-item{
+  display:flex;align-items:baseline;gap:12px;
+  padding:12px 24px;background:rgba(253,248,240,0.4);
+  transition:background .2s;
+}
+.cmd-row-item:hover{background:rgba(253,248,240,0.8)}
+.cmd-row-item code{
+  font-family:JetBrains Mono,monospace;font-size:.78rem;
+  color:#7a5a10;background:rgba(201,151,42,0.1);
+  padding:2px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;
+}
+.cmd-row-item span{font-size:.8rem;color:rgba(26,23,20,0.6);line-height:1.4}
+#cmd-search:focus{border-color:rgba(201,151,42,0.4);box-shadow:0 4px 20px rgba(201,151,42,0.1)}
+@media(max-width:700px){.cmd-blk-grid{grid-template-columns:1fr}}
+
+</style>
 </head>
 <body>
-<nav class="nav"><div class="nav-inner">
-  <a href="index.html" class="nav-logo"><img src="assets/images/logo.png" alt=""/><span class="nav-logo-name">FUSE OS</span></a>
-  <ul class="nav-links" id="nav-links">
-    <li><a href="index.html" class="nav-link">Home</a></li>
-    <li><a href="features.html" class="nav-link">Features</a></li>
-    <li><a href="commands.html" class="nav-link">Commands</a></li>
-    <li><a href="verify.html" class="nav-link">Verify</a></li>
-    <li><a href="support.html" class="nav-link">Support</a></li>
-  </ul>
-  <div class="nav-actions">
-    <a href="https://discord.gg/Wej7Cd3XVW" target="_blank" class="btn btn-outline" style="padding:9px 18px;font-size:0.85rem">Join Server</a>
-    <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem">Invite Bot</a>
+<div class="cursor"><div class="cursor-inner"></div></div>
+<canvas id="bg-canvas"></canvas>
+<div class="page">
+
+<!-- NAV -->
+<nav>
+  <a class="n-logo" href="index.html">
+    <img src="assets/images/logo.png" alt="FUSE OS"/>
+    <span class="n-logo-name">FUSE OS</span>
+  </a>
+  <div class="n-links">
+    <a href="index.html">Home</a>
+    <a href="features.html">Features</a>
+    <a href="commands.html">Commands</a>
+    <a href="verify.html">Verify</a>
+    <a href="support.html">Support</a>
   </div>
-  <button class="burger" id="burger"><span></span><span></span><span></span></button>
-</div></nav>
-
-<div class="page-hero">
-  <div class="page-hero-blob"></div>
-  <div class="container" style="position:relative;z-index:1">
-    <div class="pill" style="margin:0 auto 20px;display:table">Command Reference</div>
-    <h1 class="section-title">All <span class="grad-text">Commands</span></h1>
-    <p class="section-sub" style="margin:16px auto 0">Prefix: <code style="font-family:var(--font-mono);background:rgba(94,234,212,0.08);border:1px solid rgba(94,234,212,0.2);padding:2px 8px;border-radius:5px;color:var(--cyan)">+</code> &nbsp;·&nbsp; Search or filter by category below</p>
+  <div class="n-btns">
+    <a href="dashboard.html" class="btn btn-glass">Dashboard</a>
+    <a href="https://discord.com/oauth2/authorize?client_id=1479852600370135173&permissions=8&integration_type=0&scope=bot+applications.commands" class="btn btn-gold">✦ Add Free</a>
   </div>
-</div>
+</nav>
 
-<section class="section-pad" style="padding-top:48px">
-  <div class="container">
 
-    <div class="cmd-search-wrap reveal">
-      <span class="cmd-search-icon">🔍</span>
-      <input type="text" class="cmd-search" id="cmd-search" placeholder="Search commands…" autocomplete="off"/>
+<section style="padding:120px 0 80px;position:relative;z-index:2">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:60px">
+      <div class="section-label">Full Reference</div>
+      <h1 class="section-title" style="font-size:clamp(2.8rem,6vw,5rem)">150+ Commands.<br/>Every Single One.</h1>
+      <p class="section-sub" style="margin:0 auto;text-align:center;max-width:520px">Browse every command across all 21 systems. Prefix: <code style="background:rgba(201,151,42,0.1);border:1px solid rgba(201,151,42,0.2);padding:2px 8px;border-radius:6px;font-family:JetBrains Mono,monospace;color:#7a5a10">+</code></p>
     </div>
 
-    <div class="cmd-cats reveal">
-      <button class="cmd-cat active" data-cat="all">All</button>
-      <button class="cmd-cat" data-cat="mod">🛡️ Moderation</button>
-      <button class="cmd-cat" data-cat="util">🛠️ Utility</button>
-      <button class="cmd-cat" data-cat="fun">🎮 Fun</button>
-      <button class="cmd-cat" data-cat="ai">🤖 AI</button>
-      <button class="cmd-cat" data-cat="gwy">🎉 Giveaway</button>
-      <button class="cmd-cat" data-cat="ticket">🎟️ Tickets</button>
-      <button class="cmd-cat" data-cat="roles">🎭 Roles</button>
-      <button class="cmd-cat" data-cat="polls">📊 Polls</button>
-      <button class="cmd-cat" data-cat="server">⚙️ Server</button>
+    <!-- Search bar -->
+    <div style="max-width:500px;margin:0 auto 56px;position:relative">
+      <input id="cmd-search" oninput="filterCmds()" placeholder="🔍  Search commands..." style="width:100%;padding:14px 20px;border-radius:14px;border:1px solid rgba(201,151,42,0.2);background:rgba(253,248,240,0.7);backdrop-filter:blur(16px);font-size:.96rem;font-family:Plus Jakarta Sans,sans-serif;outline:none;color:#1a1714;box-shadow:0 4px 20px rgba(15,13,10,0.08)"/>
     </div>
 
-    <!-- Moderation -->
-    <div class="cmd-group reveal" data-group="mod">
-      <div class="cmd-group-label">Moderation</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="mod"><td><span class="cmd-name">+ban</span></td><td><span class="cmd-desc">Permanently ban a member from the server</span></td><td><span class="cmd-ex">+ban @user Spamming</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+kick</span></td><td><span class="cmd-desc">Kick a member from the server</span></td><td><span class="cmd-ex">+kick @user Rule violation</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+mute</span></td><td><span class="cmd-desc">Timeout a member for a specified duration</span></td><td><span class="cmd-ex">+mute @user 30m Spam</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+unmute</span></td><td><span class="cmd-desc">Remove a timeout from a member</span></td><td><span class="cmd-ex">+unmute @user</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+warn</span></td><td><span class="cmd-desc">Issue a warning to a member</span></td><td><span class="cmd-ex">+warn @user Bad behaviour</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+warnings</span></td><td><span class="cmd-desc">View all warnings for a member</span></td><td><span class="cmd-ex">+warnings @user</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+clearwarn</span></td><td><span class="cmd-desc">Clear all warnings for a member</span></td><td><span class="cmd-ex">+clearwarn @user</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+purge</span></td><td><span class="cmd-desc">Bulk delete messages from a channel</span></td><td><span class="cmd-ex">+purge 50</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+lock</span></td><td><span class="cmd-desc">Lock a channel so only staff can send</span></td><td><span class="cmd-ex">+lock #general</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+unlock</span></td><td><span class="cmd-desc">Unlock a previously locked channel</span></td><td><span class="cmd-ex">+unlock #general</span></td></tr>
-        <tr data-cat="mod"><td><span class="cmd-name">+slowmode</span></td><td><span class="cmd-desc">Set slowmode delay on a channel</span></td><td><span class="cmd-ex">+slowmode 5s</span></td></tr>
-      </tbody></table>
-    </div>
+    <div id="cmd-grid" style="display:flex;flex-direction:column;gap:12px">
 
-    <!-- Utility -->
-    <div class="cmd-group reveal" data-group="util">
-      <div class="cmd-group-label">Utility</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="util"><td><span class="cmd-name">+userinfo</span></td><td><span class="cmd-desc">View detailed info about a user</span></td><td><span class="cmd-ex">+userinfo @user</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+serverinfo</span></td><td><span class="cmd-desc">Display information about the server</span></td><td><span class="cmd-ex">+serverinfo</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+avatar</span></td><td><span class="cmd-desc">Get a user's full-size avatar</span></td><td><span class="cmd-ex">+avatar @user</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+remind</span></td><td><span class="cmd-desc">Set a personal DM reminder</span></td><td><span class="cmd-ex">+remind 2h Meeting</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+timer</span></td><td><span class="cmd-desc">Start a countdown timer in channel</span></td><td><span class="cmd-ex">+timer 10m Round starts</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+translate</span></td><td><span class="cmd-desc">Translate text to a specified language</span></td><td><span class="cmd-ex">+translate es Hello world</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+embed</span></td><td><span class="cmd-desc">Create and send a custom embed message</span></td><td><span class="cmd-ex">+embed #ch Title | Body</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+announce</span></td><td><span class="cmd-desc">Send a rich announcement to a channel</span></td><td><span class="cmd-ex">+announce #news Update</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+ping</span></td><td><span class="cmd-desc">Check the bot's response latency</span></td><td><span class="cmd-ex">+ping</span></td></tr>
-        <tr data-cat="util"><td><span class="cmd-name">+uptime</span></td><td><span class="cmd-desc">Show how long the bot has been online</span></td><td><span class="cmd-ex">+uptime</span></td></tr>
-      </tbody></table>
-    </div>
+      <!-- Each category card -->
+      <div class="cmd-blk reveal" data-cat="ai">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🤖</span><div><div class="cmd-blk-name">AI Chat</div><div class="cmd-blk-desc">Groq-powered AI with conversation memory, image generation, and admin panel</div></div><span class="cmd-blk-count">5 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+ai</code><span>Ask the AI anything — remembers your conversation history</span></div>
+          <div class="cmd-row-item"><code>+ask</code><span>Alias for +ai</span></div>
+          <div class="cmd-row-item"><code>+imgen [prompt]</code><span>Generate a real AI image from a text prompt</span></div>
+          <div class="cmd-row-item"><code>+aistats</code><span>Check your AI chat usage stats for today</span></div>
+          <div class="cmd-row-item"><code>+aichatpanel</code><span>Admin panel — toggle AI, set limits, channel, system prompt</span></div>
+          <div class="cmd-row-item"><code>+aiclearhistory</code><span>Clear your AI conversation history</span></div>
+        </div>
+      </div>
 
-    <!-- Fun -->
-    <div class="cmd-group reveal" data-group="fun">
-      <div class="cmd-group-label">Fun</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="fun"><td><span class="cmd-name">+8ball</span></td><td><span class="cmd-desc">Ask the magic 8-ball a yes/no question</span></td><td><span class="cmd-ex">+8ball Will I win?</span></td></tr>
-        <tr data-cat="fun"><td><span class="cmd-name">+coinflip</span></td><td><span class="cmd-desc">Flip a coin — heads or tails</span></td><td><span class="cmd-ex">+coinflip</span></td></tr>
-        <tr data-cat="fun"><td><span class="cmd-name">+roll</span></td><td><span class="cmd-desc">Roll a dice with custom sides</span></td><td><span class="cmd-ex">+roll 20</span></td></tr>
-        <tr data-cat="fun"><td><span class="cmd-name">+meme</span></td><td><span class="cmd-desc">Fetch a random meme</span></td><td><span class="cmd-ex">+meme</span></td></tr>
-        <tr data-cat="fun"><td><span class="cmd-name">+joke</span></td><td><span class="cmd-desc">Get a random joke</span></td><td><span class="cmd-ex">+joke</span></td></tr>
-        <tr data-cat="fun"><td><span class="cmd-name">+trivia</span></td><td><span class="cmd-desc">Start a trivia question</span></td><td><span class="cmd-ex">+trivia science</span></td></tr>
-      </tbody></table>
-    </div>
+      <div class="cmd-blk reveal" data-cat="pokemon">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🐾</span><div><div class="cmd-blk-name">Pokémon Spawner</div><div class="cmd-blk-desc">151 original Pokémon with 5 rarity tiers — catch them, collect them, compete</div></div><span class="cmd-blk-count">5 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+catch</code><span>Catch the wild Pokémon that appeared in chat</span></div>
+          <div class="cmd-row-item"><code>+pokedex [@user]</code><span>View your Pokémon collection — total, unique, by rarity</span></div>
+          <div class="cmd-row-item"><code>+poketop</code><span>Server Pokémon catching leaderboard</span></div>
+          <div class="cmd-row-item"><code>+pokeset [setting]</code><span>Admin: configure spawn rate, channels, enable/disable</span></div>
+          <div class="cmd-row-item"><code>+pokestats</code><span>Your catching statistics and rarity breakdown</span></div>
+        </div>
+      </div>
 
-    <!-- AI -->
-    <div class="cmd-group reveal" data-group="ai">
-      <div class="cmd-group-label">AI Commands</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="ai"><td><span class="cmd-name">+aichat</span></td><td><span class="cmd-desc">Start a conversation with Claude AI</span></td><td><span class="cmd-ex">+aichat Explain black holes</span></td></tr>
-        <tr data-cat="ai"><td><span class="cmd-name">+aireset</span></td><td><span class="cmd-desc">Reset your AI conversation history</span></td><td><span class="cmd-ex">+aireset</span></td></tr>
-        <tr data-cat="ai"><td><span class="cmd-name">+aistats</span></td><td><span class="cmd-desc">View your personal AI usage stats</span></td><td><span class="cmd-ex">+aistats</span></td></tr>
-        <tr data-cat="ai"><td><span class="cmd-name">+imgen</span></td><td><span class="cmd-desc">Generate an image from a text prompt</span></td><td><span class="cmd-ex">+imgen futuristic city</span></td></tr>
-        <tr data-cat="ai"><td><span class="cmd-name">+aiconfig</span></td><td><span class="cmd-desc">Open AI admin configuration panel</span></td><td><span class="cmd-ex">+aiconfig</span></td></tr>
-      </tbody></table>
-    </div>
+      <div class="cmd-blk reveal" data-cat="economy">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">💰</span><div><div class="cmd-blk-name">Economy</div><div class="cmd-blk-desc">Full virtual coin economy — earn, spend, gamble, rob, and heist</div></div><span class="cmd-blk-count">10 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+balance [@user]</code><span>Check your wallet and bank balance</span></div>
+          <div class="cmd-row-item"><code>+daily</code><span>Claim daily free coins (500 + streak bonus)</span></div>
+          <div class="cmd-row-item"><code>+work</code><span>Work a job for coins — 1 hour cooldown</span></div>
+          <div class="cmd-row-item"><code>+pay @user [amount]</code><span>Send coins to another user</span></div>
+          <div class="cmd-row-item"><code>+coinflip [amount]</code><span>Bet coins — double or lose</span></div>
+          <div class="cmd-row-item"><code>+shop</code><span>View the coin shop with all items</span></div>
+          <div class="cmd-row-item"><code>+buy [item]</code><span>Buy an item from the shop</span></div>
+          <div class="cmd-row-item"><code>+richest</code><span>Top 10 richest users leaderboard</span></div>
+          <div class="cmd-row-item"><code>+addcoins @user [n]</code><span>Admin: add coins to a user</span></div>
+          <div class="cmd-row-item"><code>+setcoins @user [n]</code><span>Admin: set a user's coins exactly</span></div>
+        </div>
+      </div>
 
-    <!-- Giveaway -->
-    <div class="cmd-group reveal" data-group="gwy">
-      <div class="cmd-group-label">Giveaway</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="gwy"><td><span class="cmd-name">+gwy</span></td><td><span class="cmd-desc">Open the giveaway creation panel</span></td><td><span class="cmd-ex">+gwy</span></td></tr>
-        <tr data-cat="gwy"><td><span class="cmd-name">+gwyend</span></td><td><span class="cmd-desc">Force-end an active giveaway</span></td><td><span class="cmd-ex">+gwyend A3F2E1</span></td></tr>
-        <tr data-cat="gwy"><td><span class="cmd-name">+gwyreroll</span></td><td><span class="cmd-desc">Reroll winners for an ended giveaway</span></td><td><span class="cmd-ex">+gwyreroll A3F2E1</span></td></tr>
-        <tr data-cat="gwy"><td><span class="cmd-name">+gwylist</span></td><td><span class="cmd-desc">List all active giveaways</span></td><td><span class="cmd-ex">+gwylist</span></td></tr>
-        <tr data-cat="gwy"><td><span class="cmd-name">+gwyconfig</span></td><td><span class="cmd-desc">Configure giveaway settings</span></td><td><span class="cmd-ex">+gwyconfig</span></td></tr>
-      </tbody></table>
-    </div>
+      <div class="cmd-blk reveal" data-cat="heist">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🔫</span><div><div class="cmd-blk-name">Heist & Rob</div><div class="cmd-blk-desc">Group heist events, rob other users, and deal with the jail system</div></div><span class="cmd-blk-count">7 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+heist</code><span>Start a group heist — others can join for 30 seconds</span></div>
+          <div class="cmd-row-item"><code>+joinheist</code><span>Join an active heist before it starts</span></div>
+          <div class="cmd-row-item"><code>+rob @user</code><span>Rob coins from another user (45% success rate)</span></div>
+          <div class="cmd-row-item"><code>+jail [@user]</code><span>Check jail status for yourself or another user</span></div>
+          <div class="cmd-row-item"><code>+bail</code><span>Pay bail to get out of jail early</span></div>
+          <div class="cmd-row-item"><code>+jailmember @user [mins]</code><span>Admin: jail a member for X minutes</span></div>
+          <div class="cmd-row-item"><code>+freemember @user</code><span>Admin: free a jailed member</span></div>
+        </div>
+      </div>
 
-    <!-- Tickets -->
-    <div class="cmd-group reveal" data-group="ticket">
-      <div class="cmd-group-label">Tickets</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="ticket"><td><span class="cmd-name">+ticketpanel</span></td><td><span class="cmd-desc">Create a ticket panel in the channel</span></td><td><span class="cmd-ex">+ticketpanel</span></td></tr>
-        <tr data-cat="ticket"><td><span class="cmd-name">+closeticket</span></td><td><span class="cmd-desc">Close the current ticket</span></td><td><span class="cmd-ex">+closeticket</span></td></tr>
-        <tr data-cat="ticket"><td><span class="cmd-name">+claimticket</span></td><td><span class="cmd-desc">Claim a ticket as assigned staff</span></td><td><span class="cmd-ex">+claimticket</span></td></tr>
-        <tr data-cat="ticket"><td><span class="cmd-name">+adduser</span></td><td><span class="cmd-desc">Add a user to a ticket</span></td><td><span class="cmd-ex">+adduser @user</span></td></tr>
-        <tr data-cat="ticket"><td><span class="cmd-name">+transcript</span></td><td><span class="cmd-desc">Generate and DM a ticket transcript</span></td><td><span class="cmd-ex">+transcript</span></td></tr>
-      </tbody></table>
-    </div>
+      <div class="cmd-blk reveal" data-cat="levels">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">⭐</span><div><div class="cmd-blk-name">Levels & XP</div><div class="cmd-blk-desc">XP system with role rewards, leaderboard, and full config panel</div></div><span class="cmd-blk-count">6 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+rank [@user]</code><span>View rank card — level, XP, rank, progress bar</span></div>
+          <div class="cmd-row-item"><code>+leaderboard</code><span>Top 10 XP leaderboard for this server</span></div>
+          <div class="cmd-row-item"><code>+levelpanel</code><span>Open the level system config panel</span></div>
+          <div class="cmd-row-item"><code>+setlevelchannel #ch</code><span>Set level-up announcement channel</span></div>
+          <div class="cmd-row-item"><code>+addxp @user [n]</code><span>Admin: add XP to a user</span></div>
+          <div class="cmd-row-item"><code>+resetxp @user</code><span>Admin: reset a user's XP to zero</span></div>
+        </div>
+      </div>
 
-    <!-- Roles -->
-    <div class="cmd-group reveal" data-group="roles">
-      <div class="cmd-group-label">Roles</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="roles"><td><span class="cmd-name">+reactionrole</span></td><td><span class="cmd-desc">Create a reaction role panel</span></td><td><span class="cmd-ex">+reactionrole</span></td></tr>
-        <tr data-cat="roles"><td><span class="cmd-name">+buttonrole</span></td><td><span class="cmd-desc">Create a button-based role panel</span></td><td><span class="cmd-ex">+buttonrole</span></td></tr>
-        <tr data-cat="roles"><td><span class="cmd-name">+autoroleconfig</span></td><td><span class="cmd-desc">Open the autorole admin panel</span></td><td><span class="cmd-ex">+autoroleconfig</span></td></tr>
-        <tr data-cat="roles"><td><span class="cmd-name">+ytlink</span></td><td><span class="cmd-desc">Start YouTube subscription verification</span></td><td><span class="cmd-ex">+ytlink</span></td></tr>
-        <tr data-cat="roles"><td><span class="cmd-name">+ytstatus</span></td><td><span class="cmd-desc">Check your YouTube verification status</span></td><td><span class="cmd-ex">+ytstatus</span></td></tr>
-        <tr data-cat="roles"><td><span class="cmd-name">+ytrescan</span></td><td><span class="cmd-desc">Admin: rescan all linked YouTube members</span></td><td><span class="cmd-ex">+ytrescan</span></td></tr>
-      </tbody></table>
-    </div>
+      <div class="cmd-blk reveal" data-cat="giveaway">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🎉</span><div><div class="cmd-blk-name">Giveaways</div><div class="cmd-blk-desc">Timed giveaways with live counter, winner DMs, and leaderboard</div></div><span class="cmd-blk-count">6 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+gwy</code><span>Open the giveaway creation panel</span></div>
+          <div class="cmd-row-item"><code>+gwyend [id]</code><span>Force-end an active giveaway early</span></div>
+          <div class="cmd-row-item"><code>+gwyreroll [id]</code><span>Reroll winners for an ended giveaway</span></div>
+          <div class="cmd-row-item"><code>+gwylist</code><span>List all active giveaways in this server</span></div>
+          <div class="cmd-row-item"><code>+gwyleaderboard</code><span>Top 10 giveaway winners leaderboard</span></div>
+          <div class="cmd-row-item"><code>+gwymywins</code><span>Check how many giveaways you have won</span></div>
+        </div>
+      </div>
 
-    <!-- Polls -->
-    <div class="cmd-group reveal" data-group="polls">
-      <div class="cmd-group-label">Polls</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="polls"><td><span class="cmd-name">+poll</span></td><td><span class="cmd-desc">Create a new interactive poll</span></td><td><span class="cmd-ex">+poll Best game? Val|CS2|Apex</span></td></tr>
-        <tr data-cat="polls"><td><span class="cmd-name">+endpoll</span></td><td><span class="cmd-desc">Manually end an active poll</span></td><td><span class="cmd-ex">+endpoll POLL-ID</span></td></tr>
-        <tr data-cat="polls"><td><span class="cmd-name">+pollresults</span></td><td><span class="cmd-desc">Display current poll results</span></td><td><span class="cmd-ex">+pollresults POLL-ID</span></td></tr>
-      </tbody></table>
-    </div>
+      <div class="cmd-blk reveal" data-cat="tickets">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🎫</span><div><div class="cmd-blk-name">Ticket System</div><div class="cmd-blk-desc">3 dropdown panels, staff claim, auto transcripts, star ratings</div></div><span class="cmd-blk-count">7 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+panel1</code><span>Post General / Inquiry / Meet Owner panel</span></div>
+          <div class="cmd-row-item"><code>+panel2</code><span>Post Partnership / Recording / Staff Apply panel</span></div>
+          <div class="cmd-row-item"><code>+panel3</code><span>Post Report / Ban Appeal / Punishment panel</span></div>
+          <div class="cmd-row-item"><code>+tag [label]</code><span>Add a tag/label to the current ticket</span></div>
+          <div class="cmd-row-item"><code>+note [text]</code><span>Add a private staff note to the ticket</span></div>
+          <div class="cmd-row-item"><code>+staffstats [@user]</code><span>View staff ticket stats and response times</span></div>
+          <div class="cmd-row-item"><code>+ticketlist</code><span>List all currently open ticket channels</span></div>
+        </div>
+      </div>
 
-    <!-- Server -->
-    <div class="cmd-group reveal" data-group="server">
-      <div class="cmd-group-label">Server Management</div>
-      <table class="cmd-table"><thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead><tbody>
-        <tr data-cat="server"><td><span class="cmd-name">+setup</span></td><td><span class="cmd-desc">Run the interactive server setup wizard</span></td><td><span class="cmd-ex">+setup</span></td></tr>
-        <tr data-cat="server"><td><span class="cmd-name">+welcome</span></td><td><span class="cmd-desc">Configure the welcome message system</span></td><td><span class="cmd-ex">+welcome</span></td></tr>
-        <tr data-cat="server"><td><span class="cmd-name">+setlog</span></td><td><span class="cmd-desc">Set the moderation log channel</span></td><td><span class="cmd-ex">+setlog #mod-logs</span></td></tr>
-        <tr data-cat="server"><td><span class="cmd-name">+help</span></td><td><span class="cmd-desc">Open the interactive help panel</span></td><td><span class="cmd-ex">+help</span></td></tr>
-        <tr data-cat="server"><td><span class="cmd-name">+stats</span></td><td><span class="cmd-desc">View server-wide usage statistics</span></td><td><span class="cmd-ex">+stats</span></td></tr>
-      </tbody></table>
-    </div>
+      <div class="cmd-blk reveal" data-cat="moderation">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🛡️</span><div><div class="cmd-blk-name">Moderation</div><div class="cmd-blk-desc">Full moderation suite — ban, kick, mute, warn, purge, lock and more</div></div><span class="cmd-blk-count">15 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+modpanel</code><span>Open the moderation admin panel</span></div>
+          <div class="cmd-row-item"><code>+ban @user [reason]</code><span>Ban a member from the server</span></div>
+          <div class="cmd-row-item"><code>+unban [id]</code><span>Unban a user by their ID</span></div>
+          <div class="cmd-row-item"><code>+kick @user [reason]</code><span>Kick a member from the server</span></div>
+          <div class="cmd-row-item"><code>+timeout @user [dur]</code><span>Timeout a member (e.g. 10m, 1h)</span></div>
+          <div class="cmd-row-item"><code>+clear [amount]</code><span>Delete bulk messages from the channel</span></div>
+          <div class="cmd-row-item"><code>+warn @user [reason]</code><span>Warn a member and log it</span></div>
+          <div class="cmd-row-item"><code>+warnings @user</code><span>View a member's warning history</span></div>
+          <div class="cmd-row-item"><code>+mute @user</code><span>Mute a member in all channels</span></div>
+          <div class="cmd-row-item"><code>+unmute @user</code><span>Unmute a muted member</span></div>
+          <div class="cmd-row-item"><code>+lock</code><span>Lock the current channel</span></div>
+          <div class="cmd-row-item"><code>+unlock</code><span>Unlock the current channel</span></div>
+          <div class="cmd-row-item"><code>+slowmode [secs]</code><span>Set slowmode delay on the channel</span></div>
+          <div class="cmd-row-item"><code>+nick @user [name]</code><span>Change a member's nickname</span></div>
+          <div class="cmd-row-item"><code>+role @user @role</code><span>Add or remove a role from a member</span></div>
+        </div>
+      </div>
 
+      <div class="cmd-blk reveal" data-cat="automod">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🤖</span><div><div class="cmd-blk-name">AutoMod & Anti-Raid</div><div class="cmd-blk-desc">Spam filter, bad words, caps, invite blocker, AI toxic detection, anti-raid</div></div><span class="cmd-blk-count">10 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+automod [status]</code><span>Enable, disable, or view AutoMod status</span></div>
+          <div class="cmd-row-item"><code>+addword [word]</code><span>Add a word to the banned list</span></div>
+          <div class="cmd-row-item"><code>+removeword [word]</code><span>Remove a word from the banned list</span></div>
+          <div class="cmd-row-item"><code>+badwords</code><span>List all currently banned words</span></div>
+          <div class="cmd-row-item"><code>+invitefilter on/off</code><span>Toggle Discord invite link filter</span></div>
+          <div class="cmd-row-item"><code>+linkfilter on/off</code><span>Toggle all external link filter</span></div>
+          <div class="cmd-row-item"><code>+antiraid on [n] [s]</code><span>Set anti-raid threshold (joins/seconds)</span></div>
+          <div class="cmd-row-item"><code>+lockdown [reason]</code><span>Lock ALL channels in the server</span></div>
+          <div class="cmd-row-item"><code>+unlockdown</code><span>Unlock all locked channels</span></div>
+          <div class="cmd-row-item"><code>+setlogchannel #ch</code><span>Set the AutoMod log channel</span></div>
+        </div>
+      </div>
+
+      <div class="cmd-blk reveal" data-cat="games">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🎮</span><div><div class="cmd-blk-name">Mini Games</div><div class="cmd-blk-desc">12 fun games — Akinator, OwO, trivia, slots, hangman and more</div></div><span class="cmd-blk-count">13 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+akinator</code><span>Think of a character — AI guesses in 20 questions</span></div>
+          <div class="cmd-row-item"><code>+owo</code><span>OwO cute reaction with a random animal</span></div>
+          <div class="cmd-row-item"><code>+hunt</code><span>Hunt animals for coins</span></div>
+          <div class="cmd-row-item"><code>+battle [@user]</code><span>Battle a monster or challenge another user</span></div>
+          <div class="cmd-row-item"><code>+8ball [question]</code><span>Ask the magic 8 ball</span></div>
+          <div class="cmd-row-item"><code>+trivia</code><span>Random multiple choice trivia question</span></div>
+          <div class="cmd-row-item"><code>+slots</code><span>Spin the slot machine</span></div>
+          <div class="cmd-row-item"><code>+hangman</code><span>Start a hangman word game</span></div>
+          <div class="cmd-row-item"><code>+guess [letter]</code><span>Guess a letter in an active hangman game</span></div>
+          <div class="cmd-row-item"><code>+roll [n]</code><span>Roll a dice — supports NdN format (e.g. 2d6)</span></div>
+          <div class="cmd-row-item"><code>+rps</code><span>Play Rock Paper Scissors vs the bot</span></div>
+          <div class="cmd-row-item"><code>+ttt @user</code><span>Play Tic Tac Toe against another user</span></div>
+          <div class="cmd-row-item"><code>+wordguess [difficulty]</code><span>Unscramble a word — easy/medium/hard</span></div>
+        </div>
+      </div>
+
+      <div class="cmd-blk reveal" data-cat="music">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🎵</span><div><div class="cmd-blk-name">Music</div><div class="cmd-blk-desc">Play music from YouTube, manage queue, loop, volume, and 24/7 mode</div></div><span class="cmd-blk-count">17 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+play [song]</code><span>Play a song from YouTube by name or URL</span></div>
+          <div class="cmd-row-item"><code>+pause</code><span>Pause the current song</span></div>
+          <div class="cmd-row-item"><code>+resume</code><span>Resume a paused song</span></div>
+          <div class="cmd-row-item"><code>+skip</code><span>Skip to the next song in queue</span></div>
+          <div class="cmd-row-item"><code>+stop</code><span>Stop music and clear the queue</span></div>
+          <div class="cmd-row-item"><code>+leave</code><span>Disconnect bot from voice channel</span></div>
+          <div class="cmd-row-item"><code>+queue</code><span>Show the current music queue</span></div>
+          <div class="cmd-row-item"><code>+clearqueue</code><span>Clear all songs from the queue</span></div>
+          <div class="cmd-row-item"><code>+loop</code><span>Toggle loop mode</span></div>
+          <div class="cmd-row-item"><code>+volume [1-100]</code><span>Set the playback volume</span></div>
+          <div class="cmd-row-item"><code>+nowplaying</code><span>Show the currently playing song</span></div>
+          <div class="cmd-row-item"><code>+lyrics [song]</code><span>Fetch lyrics for the current or named song</span></div>
+          <div class="cmd-row-item"><code>+autoplay</code><span>Toggle autoplay of related songs</span></div>
+          <div class="cmd-row-item"><code>+247</code><span>Toggle 24/7 mode — bot stays in voice</span></div>
+          <div class="cmd-row-item"><code>+playlist</code><span>View your saved playlists</span></div>
+          <div class="cmd-row-item"><code>+playlistadd [name]</code><span>Add current song to a playlist</span></div>
+          <div class="cmd-row-item"><code>+playlistplay [name]</code><span>Play all songs from a saved playlist</span></div>
+        </div>
+      </div>
+
+      <div class="cmd-blk reveal" data-cat="roles">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🎭</span><div><div class="cmd-blk-name">Role Management</div><div class="cmd-blk-desc">Reaction roles, button panels, dropdown selectors, and auto-roles</div></div><span class="cmd-blk-count">9 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+rrsetup</code><span>Open the reaction role config panel</span></div>
+          <div class="cmd-row-item"><code>+rrlist</code><span>List all active reaction role bindings</span></div>
+          <div class="cmd-row-item"><code>+brpanel</code><span>Create a button role panel</span></div>
+          <div class="cmd-row-item"><code>+drpanel</code><span>Create a dropdown role selector</span></div>
+          <div class="cmd-row-item"><code>+autopanel</code><span>Auto-generate a role panel from role IDs</span></div>
+          <div class="cmd-row-item"><code>+autoroleconfig</code><span>Configure auto-roles on join</span></div>
+          <div class="cmd-row-item"><code>+addautorole</code><span>Add an auto-role assignment</span></div>
+          <div class="cmd-row-item"><code>+removeautorole</code><span>Remove an auto-role assignment</span></div>
+          <div class="cmd-row-item"><code>+autorolestats</code><span>View auto-role stats and assignment history</span></div>
+        </div>
+      </div>
+
+      <div class="cmd-blk reveal" data-cat="translate">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">🌐</span><div><div class="cmd-blk-name">Translation</div><div class="cmd-blk-desc">Translate text into 70+ languages with automatic source detection</div></div><span class="cmd-blk-count">2 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+translate</code><span>Open language picker then type text to translate</span></div>
+          <div class="cmd-row-item"><code>+translationpanel</code><span>Post a persistent translation button in this channel</span></div>
+        </div>
+      </div>
+
+      <div class="cmd-blk reveal" data-cat="starboard">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">⭐</span><div><div class="cmd-blk-name">Starboard</div><div class="cmd-blk-desc">Highlight great messages by starring them to a dedicated channel</div></div><span class="cmd-blk-count">2 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+starboard #channel</code><span>Set the starboard channel</span></div>
+          <div class="cmd-row-item"><code>+starcount [n]</code><span>Set how many stars a message needs</span></div>
+        </div>
+      </div>
+
+      <div class="cmd-blk reveal" data-cat="utility">
+        <div class="cmd-blk-hd"><span class="cmd-blk-icon">⚙️</span><div><div class="cmd-blk-name">Utilities</div><div class="cmd-blk-desc">Timers, reminders, announcements, countdowns, and embed tools</div></div><span class="cmd-blk-count">5 commands</span></div>
+        <div class="cmd-blk-grid">
+          <div class="cmd-row-item"><code>+timer [duration]</code><span>Start a countdown timer (e.g. 1h30m)</span></div>
+          <div class="cmd-row-item"><code>+reminder [time] [msg]</code><span>Set a reminder — bot DMs you at that time</span></div>
+          <div class="cmd-row-item"><code>+aa #ch [message]</code><span>Send a formatted announcement embed</span></div>
+          <div class="cmd-row-item"><code>+countdown [time] [msg]</code><span>Post a live-updating countdown embed</span></div>
+          <div class="cmd-row-item"><code>+es #ch [message]</code><span>Send a custom embed message to any channel</span></div>
+        </div>
+      </div>
+
+    </div><!-- #cmd-grid -->
   </div>
 </section>
 
-<footer><div class="container">
-  <div class="foot-grid">
-    <div class="foot-brand"><a href="index.html" class="nav-logo"><img src="assets/images/logo.png" alt="" style="width:28px;height:28px;border-radius:7px"/><span class="nav-logo-name">FUSE OS</span></a><p>The ultimate all-in-one Discord bot.</p></div>
-    <div class="foot-col"><h5>Product</h5><ul><li><a href="features.html">Features</a></li><li><a href="commands.html">Commands</a></li></ul></div>
-    <div class="foot-col"><h5>Community</h5><ul><li><a href="https://discord.gg/Wej7Cd3XVW" target="_blank">Support Server</a></li></ul></div>
-    <div class="foot-col"><h5>Legal</h5><ul><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li></ul></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="ft">
+      <div>
+        <span class="f-logo-name">✦ FUSE OS</span>
+        <p class="f-desc">The ultimate all-in-one Discord bot. 150+ commands, 21 systems, free forever.</p>
+      </div>
+      <div><div class="f-col-h">Product</div><div class="f-links"><a href="features.html">Features</a><a href="commands.html">Commands</a><a href="dashboard.html">Dashboard</a><a href="verify.html">YT Verify</a></div></div>
+      <div><div class="f-col-h">Community</div><div class="f-links"><a href="https://discord.gg/Wej7Cd3XVW">Support Server</a><a href="support.html">FAQ</a><a href="https://discord.gg/Wej7Cd3XVW">Bug Reports</a></div></div>
+      <div><div class="f-col-h">Legal</div><div class="f-links"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a></div></div>
+    </div>
+    <div class="f-bottom">
+      <span>© 2025 FUSE OS. All rights reserved.</span>
+      <a href="https://discord.gg/Wej7Cd3XVW" style="color:rgba(255,255,255,.3);text-decoration:none">💬 Discord</a>
+    </div>
   </div>
-  <div class="foot-bottom"><p class="foot-copy">© 2025 <span>Fuse OS</span>. All rights reserved.</p><div class="foot-legal"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div></div>
-</div></footer>
-<script src="js/script.js"></script>
-</body></html>
+</footer>
+
+</div>
+<script>
+/* ═══════════════════════════════════════════
+   THREE.JS — Floating geometric shapes
+   Warm palette, all over the page
+═══════════════════════════════════════════ */
+(function(){
+  var c = document.getElementById("bg-canvas");
+  var renderer = new THREE.WebGLRenderer({canvas:c, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  var scene  = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 22;
+
+  var COLORS = [0xc9972a, 0x5b21b6, 0xdc4a1f, 0x0d6f7a, 0xb91c5c, 0x3d7a0c, 0xe8b84b];
+  var GEOS = [
+    new THREE.IcosahedronGeometry(1, 0),
+    new THREE.OctahedronGeometry(1, 0),
+    new THREE.TetrahedronGeometry(1.2, 0),
+    new THREE.IcosahedronGeometry(0.9, 1),
+    new THREE.OctahedronGeometry(1.3, 0),
+    new THREE.IcosahedronGeometry(1.1, 0)
+  ];
+
+  var objects = [];
+  for(var i = 0; i < 36; i++){
+    var geo  = GEOS[i % GEOS.length];
+    var col  = COLORS[Math.floor(Math.random() * COLORS.length)];
+    var wire = Math.random() > 0.38;
+    var mat  = new THREE.MeshPhongMaterial({
+      color: col, transparent: true,
+      opacity: wire ? 0.13 : 0.06,
+      wireframe: wire
+    });
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(
+      (Math.random() - .5) * 38,
+      (Math.random() - .5) * 38,
+      (Math.random() - .5) * 16 - 6
+    );
+    var s = 0.4 + Math.random() * 2.8;
+    mesh.scale.setScalar(s);
+    mesh.rotation.set(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2
+    );
+    mesh.userData = {
+      rx: (Math.random() - .5) * .0038,
+      ry: (Math.random() - .5) * .005,
+      rz: (Math.random() - .5) * .003,
+      fs: 0.22 + Math.random() * .5,
+      fa: 0.4  + Math.random() * .9,
+      fo: Math.random() * Math.PI * 2,
+      by: mesh.position.y
+    };
+    scene.add(mesh);
+    objects.push(mesh);
+  }
+
+  /* Particles */
+  var pg = new THREE.BufferGeometry();
+  var pp = new Float32Array(600);
+  for(var j = 0; j < 200; j++){
+    pp[j*3]   = (Math.random() - .5) * 72;
+    pp[j*3+1] = (Math.random() - .5) * 72;
+    pp[j*3+2] = (Math.random() - .5) * 24;
+  }
+  pg.setAttribute("position", new THREE.BufferAttribute(pp, 3));
+  var pts = new THREE.Points(pg, new THREE.PointsMaterial({
+    color: 0xc9972a, size: 0.065, transparent: true, opacity: 0.22
+  }));
+  scene.add(pts);
+
+  /* Lights */
+  scene.add(new THREE.AmbientLight(0xfdf8f0, 1.2));
+  var dl  = new THREE.DirectionalLight(0xc9972a, 0.7);
+  dl.position.set(8, 12, 8); scene.add(dl);
+  var dl2 = new THREE.DirectionalLight(0x5b21b6, 0.4);
+  dl2.position.set(-8, -6, 6); scene.add(dl2);
+
+  /* Mouse + scroll */
+  var mx=0, my=0, tx=0, ty=0, sy=0;
+  document.addEventListener("mousemove", function(e){
+    mx = (e.clientX / window.innerWidth  - .5) * 2;
+    my = (e.clientY / window.innerHeight - .5) * 2;
+  });
+  window.addEventListener("scroll", function(){ sy = window.scrollY; });
+  window.addEventListener("resize", function(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  var t = 0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    t += 0.008;
+    tx += (mx - tx) * 0.032;
+    ty += (my - ty) * 0.032;
+    camera.position.x = tx * 2.8;
+    camera.position.y = -ty * 1.8 - sy * .0022;
+    camera.lookAt(0, -sy * .0022, 0);
+    for(var k = 0; k < objects.length; k++){
+      var o = objects[k];
+      o.rotation.x += o.userData.rx;
+      o.rotation.y += o.userData.ry;
+      o.rotation.z += o.userData.rz;
+      o.position.y  = o.userData.by + Math.sin(t * o.userData.fs + o.userData.fo) * o.userData.fa;
+    }
+    pts.rotation.y = t * 0.012;
+    pts.rotation.x = t * 0.006;
+    renderer.render(scene, camera);
+  })();
+})();
+
+/* ═══════════════════════════════════════════
+   STICKY STRETCHING CURSOR
+   - Gold blob that stretches in direction of travel
+   - On hover: grows, turns black (mix-blend-mode difference → looks black on light, white on dark)
+   - Trail of fading dots
+   - Sticky snap toward hovered elements
+═══════════════════════════════════════════ */
+(function(){
+  var cursorEl = document.querySelector(".cursor");
+  var inner    = document.querySelector(".cursor-inner");
+  if(!cursorEl || typeof gsap === "undefined") return;
+
+  /* Create trail dots */
+  var TRAIL = 14;
+  var trail = [];
+  for(var i = 0; i < TRAIL; i++){
+    var el = document.createElement("div");
+    el.className = "cur-trail";
+    var sz = Math.max(3, 8 * (1 - i / TRAIL));
+    el.style.cssText = "width:"+sz+"px;height:"+sz+"px;";
+    document.body.appendChild(el);
+    trail.push({el: el, x: window.innerWidth/2, y: window.innerHeight/2});
+  }
+
+  var mouseX = window.innerWidth/2,  mouseY = window.innerHeight/2;
+  var curX   = window.innerWidth/2,  curY   = window.innerHeight/2;
+  var isHovered = false, hoveredEl = null;
+  var frame = 0;
+
+  document.addEventListener("mousemove", function(e){
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  document.addEventListener("mousedown", function(){ cursorEl.classList.add("is-pressed"); });
+  document.addEventListener("mouseup",   function(){ cursorEl.classList.remove("is-pressed"); });
+
+  /* Hover detection */
+  var interactiveEls = document.querySelectorAll("a, button, .btn, .fb, .cmd-cat, .h-pill, .cmd-chip, .cmd-pill, .fun-card, .stat-card, .catch-btn, .cmd-go");
+  interactiveEls.forEach(function(el){
+    el.addEventListener("mouseenter", function(){
+      isHovered = true; hoveredEl = el;
+      cursorEl.classList.add("is-hovered");
+    });
+    el.addEventListener("mouseleave", function(){
+      isHovered = false; hoveredEl = null;
+      cursorEl.classList.remove("is-hovered");
+      gsap.to(inner, {scaleX:1, scaleY:1, rotation:0, duration:.4, ease:"elastic.out(1,.5)"});
+    });
+  });
+
+  (function animCursor(){
+    requestAnimationFrame(animCursor);
+    frame++;
+
+    var prevX = curX, prevY = curY;
+
+    if(isHovered && hoveredEl){
+      /* Sticky — pull toward element center */
+      var rect = hoveredEl.getBoundingClientRect();
+      var ecx  = rect.left + rect.width  / 2;
+      var ecy  = rect.top  + rect.height / 2;
+      var dx   = mouseX - ecx;
+      var dy   = mouseY - ecy;
+      curX += (ecx + dx * 0.38 - curX) * 0.13;
+      curY += (ecy + dy * 0.38 - curY) * 0.13;
+    } else {
+      curX += (mouseX - curX) * 0.13;
+      curY += (mouseY - curY) * 0.13;
+    }
+
+    var velX  = curX - prevX;
+    var velY  = curY - prevY;
+    var speed = Math.sqrt(velX*velX + velY*velY);
+
+    /* Move cursor */
+    gsap.set(cursorEl, {x: curX, y: curY});
+
+    /* Stretch in direction of travel */
+    if(!isHovered && speed > 0.3){
+      var strX  = 1 + Math.min(speed * 0.055, 0.65);
+      var strY  = 1 - Math.min(speed * 0.028, 0.35);
+      var angle = Math.atan2(velY, velX) * (180 / Math.PI);
+      gsap.to(inner, {
+        scaleX: strX, scaleY: strY, rotation: angle,
+        duration: 0.1, ease: "power2.out"
+      });
+    } else if(!isHovered){
+      gsap.to(inner, {scaleX:1, scaleY:1, rotation:0, duration: 0.4, ease:"elastic.out(1,.5)"});
+    }
+
+    /* Trail dots — each follows the previous */
+    if(frame % 2 === 0){
+      trail[0].x = curX;
+      trail[0].y = curY;
+      for(var t = TRAIL - 1; t > 0; t--){
+        trail[t].x += (trail[t-1].x - trail[t].x) * 0.32;
+        trail[t].y += (trail[t-1].y - trail[t].y) * 0.32;
+        var sz2 = Math.max(2, 7 * (1 - t / TRAIL));
+        var op  = isHovered ? 0 : 0.45 * (1 - t / TRAIL);
+        gsap.set(trail[t].el, {
+          x: trail[t].x, y: trail[t].y,
+          width: sz2, height: sz2, opacity: op
+        });
+      }
+    }
+  })();
+})();
+
+/* ═══════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════ */
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add("on"); });
+}, {threshold: 0.07});
+document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+
+
+</script>
+<script>
+var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add("on");});},{threshold:.07});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+</script>
+<script>
+function filterCmds(){
+  var q=document.getElementById("cmd-search").value.toLowerCase();
+  document.querySelectorAll(".cmd-blk").forEach(function(b){
+    var txt=b.textContent.toLowerCase();
+    b.style.display=(!q||txt.includes(q))?"block":"none";
+  });
+}
+</script>
+</body>
+</html>
